@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- SDK 本身不声明权限，由集成方在 App 的 AndroidManifest.xml 中声明 -->
+    <!-- 参考文档：README.md 权限配置章节 -->
+</manifest>

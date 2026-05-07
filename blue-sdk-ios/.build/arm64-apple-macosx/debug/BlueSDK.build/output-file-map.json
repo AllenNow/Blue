@@ -1,0 +1,229 @@
+{
+  "": {
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/primary.swiftdeps"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/BlueSDK.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDK.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDK.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDK~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDK.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDK.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/BlueSDKDelegate.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDKDelegate.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDKDelegate.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDKDelegate~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDKDelegate.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDKDelegate.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/ConnectionState.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionState.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionState.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionState~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionState.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionState.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/LogLevel.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogLevel.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogLevel.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogLevel~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogLevel.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogLevel.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/MedicationStatus.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationStatus.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationStatus.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationStatus~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationStatus.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationStatus.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/SoundType.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/SoundType.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/SoundType.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/SoundType~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/SoundType.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/SoundType.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/TimeFormat.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/TimeFormat.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/TimeFormat.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/TimeFormat~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/TimeFormat.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/TimeFormat.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/VolumeLevel.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/VolumeLevel.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/VolumeLevel.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/VolumeLevel~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/VolumeLevel.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/VolumeLevel.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Error/BlueError.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueError.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueError.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueError~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueError.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueError.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/BlueLogger.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueLogger.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueLogger.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueLogger~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueLogger.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueLogger.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CallbackDispatcher.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CallbackDispatcher.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CallbackDispatcher.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CallbackDispatcher~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CallbackDispatcher.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CallbackDispatcher.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CommandDispatcher.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandDispatcher.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandDispatcher.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandDispatcher~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandDispatcher.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandDispatcher.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CommandQueue.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandQueue.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandQueue.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandQueue~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandQueue.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandQueue.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/LogFormatter.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogFormatter.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogFormatter.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogFormatter~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogFormatter.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogFormatter.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AlarmManager.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmManager.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmManager.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmManager.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmManager.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AudioManager.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AudioManager.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AudioManager.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AudioManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AudioManager.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AudioManager.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AuthManager.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AuthManager.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AuthManager.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AuthManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AuthManager.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AuthManager.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/ConnectionManager.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionManager.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionManager.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionManager.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionManager.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/DeviceManager.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceManager.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceManager.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceManager.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceManager.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/MedicationManager.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationManager.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationManager.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationManager.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationManager.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/PermissionManager.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/PermissionManager.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/PermissionManager.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/PermissionManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/PermissionManager.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/PermissionManager.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/AlarmInfo.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmInfo.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmInfo.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmInfo~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmInfo.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmInfo.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/DeviceInfo.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceInfo.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceInfo.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceInfo~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceInfo.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceInfo.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/MedicationRecord.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationRecord.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationRecord.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationRecord~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationRecord.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationRecord.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/BLEConnector.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEConnector.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEConnector.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEConnector~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEConnector.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEConnector.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/BLEScanner.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEScanner.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEScanner.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEScanner~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEScanner.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEScanner.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/CRC8Calculator.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CRC8Calculator.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CRC8Calculator.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CRC8Calculator~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CRC8Calculator.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CRC8Calculator.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/CommandCode.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandCode.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandCode.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandCode~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandCode.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandCode.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/DPIDConstants.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DPIDConstants.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DPIDConstants.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DPIDConstants~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DPIDConstants.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DPIDConstants.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameBuilder.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameBuilder.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameBuilder.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameBuilder~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameBuilder.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameBuilder.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameConstants.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameConstants.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameConstants.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameConstants~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameConstants.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameConstants.dia"
+  },
+  "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameParser.swift": {
+    "dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameParser.d",
+    "object": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameParser.swift.o",
+    "swiftmodule": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameParser~partial.swiftmodule",
+    "swift-dependencies": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameParser.swiftdeps",
+    "diagnostics": "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameParser.dia"
+  }
+}

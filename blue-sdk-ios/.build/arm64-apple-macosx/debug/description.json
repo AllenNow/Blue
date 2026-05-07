@@ -1,0 +1,1331 @@
+{
+  "builtTestProducts" : [
+    {
+      "binaryPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.xctest/Contents/MacOS/BlueSDKPackageTests",
+      "packagePath" : "/Users/mac/Documents/Blue/blue-sdk-ios",
+      "productName" : "BlueSDKPackageTests"
+    }
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.BlueSDK-arm64-apple-macosx-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/sources",
+      "importPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/BlueSDK.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/BlueSDKDelegate.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/ConnectionState.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/LogLevel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/MedicationStatus.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/SoundType.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/TimeFormat.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/VolumeLevel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Error/BlueError.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/BlueLogger.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CallbackDispatcher.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CommandDispatcher.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CommandQueue.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/LogFormatter.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AlarmManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AudioManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AuthManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/ConnectionManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/DeviceManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/MedicationManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/PermissionManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/AlarmInfo.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/DeviceInfo.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/MedicationRecord.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/BLEConnector.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/BLEScanner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/CRC8Calculator.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/CommandCode.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/DPIDConstants.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameBuilder.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameConstants.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameParser.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "BlueSDK",
+      "moduleOutputPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules/BlueSDK.swiftmodule",
+      "objects" : [
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDK.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDKDelegate.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionState.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogLevel.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationStatus.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/SoundType.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/TimeFormat.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/VolumeLevel.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueError.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueLogger.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CallbackDispatcher.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandDispatcher.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandQueue.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogFormatter.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmManager.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AudioManager.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AuthManager.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionManager.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceManager.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationManager.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/PermissionManager.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmInfo.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceInfo.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationRecord.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEConnector.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEScanner.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CRC8Calculator.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandCode.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DPIDConstants.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameBuilder.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameConstants.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameParser.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/include/BlueSDK-Swift.h",
+        "-color-diagnostics",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g"
+      ],
+      "outputFileMapPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDK.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDKDelegate.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogLevel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationStatus.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/SoundType.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/TimeFormat.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/VolumeLevel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueError.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueLogger.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CallbackDispatcher.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandDispatcher.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandQueue.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogFormatter.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AudioManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AuthManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/PermissionManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmInfo.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceInfo.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationRecord.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEConnector.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEScanner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CRC8Calculator.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandCode.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DPIDConstants.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameBuilder.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameConstants.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules/BlueSDK.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/BlueSDK.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/BlueSDKDelegate.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/ConnectionState.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/LogLevel.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/MedicationStatus.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/SoundType.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/TimeFormat.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/VolumeLevel.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Error/BlueError.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/BlueLogger.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CallbackDispatcher.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CommandDispatcher.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CommandQueue.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/LogFormatter.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AlarmManager.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AudioManager.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AuthManager.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/ConnectionManager.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/DeviceManager.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/MedicationManager.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/PermissionManager.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/AlarmInfo.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/DeviceInfo.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/MedicationRecord.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/BLEConnector.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/BLEScanner.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/CRC8Calculator.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/CommandCode.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/DPIDConstants.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameBuilder.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameConstants.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameParser.swift"
+      ],
+      "tempsPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.BlueSDKPackageTests-arm64-apple-macosx-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.build/sources",
+      "importPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.derived/runner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules/BlueSDKTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "BlueSDKPackageTests",
+      "moduleOutputPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules/BlueSDKPackageTests.swiftmodule",
+      "objects" : [
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.build/runner.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.build/include/BlueSDKPackageTests-Swift.h",
+        "-color-diagnostics",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g"
+      ],
+      "outputFileMapPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules/BlueSDKPackageTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.derived/runner.swift"
+      ],
+      "tempsPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.BlueSDKTests-arm64-apple-macosx-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/sources",
+      "importPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/BlueSDKLifecycleTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/BlueSDKTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Internal/CommandQueueTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Internal/LogFormatterTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Manager/AlarmManagerTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Manager/MedicationManagerTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/CRC8CalculatorTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/FrameBuilderTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/FrameParserTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules/BlueSDK.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "BlueSDKTests",
+      "moduleOutputPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules/BlueSDKTests.swiftmodule",
+      "objects" : [
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/BlueSDKLifecycleTests.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/BlueSDKTests.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/CommandQueueTests.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/LogFormatterTests.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/AlarmManagerTests.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/MedicationManagerTests.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/CRC8CalculatorTests.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/FrameBuilderTests.swift.o",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/FrameParserTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-color-diagnostics",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g"
+      ],
+      "outputFileMapPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/BlueSDKLifecycleTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/BlueSDKTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/CommandQueueTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/LogFormatterTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/AlarmManagerTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/MedicationManagerTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/CRC8CalculatorTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/FrameBuilderTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/FrameParserTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules/BlueSDKTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/BlueSDKLifecycleTests.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/BlueSDKTests.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Internal/CommandQueueTests.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Internal/LogFormatterTests.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Manager/AlarmManagerTests.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Manager/MedicationManagerTests.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/CRC8CalculatorTests.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/FrameBuilderTests.swift",
+        "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/FrameParserTests.swift"
+      ],
+      "tempsPath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "BlueSDK" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "BlueSDK",
+      "-c",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/BlueSDK.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/BlueSDKDelegate.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/ConnectionState.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/LogLevel.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/MedicationStatus.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/SoundType.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/TimeFormat.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/VolumeLevel.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Error/BlueError.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/BlueLogger.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CallbackDispatcher.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CommandDispatcher.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CommandQueue.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/LogFormatter.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AlarmManager.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AudioManager.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AuthManager.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/ConnectionManager.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/DeviceManager.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/MedicationManager.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/PermissionManager.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/AlarmInfo.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/DeviceInfo.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/MedicationRecord.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/BLEConnector.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/BLEScanner.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/CRC8Calculator.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/CommandCode.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/DPIDConstants.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameBuilder.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameConstants.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameParser.swift",
+      "-I",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/include/BlueSDK-Swift.h",
+      "-color-diagnostics",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "BlueSDKPackageTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "BlueSDKPackageTests",
+      "-c",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.derived/runner.swift",
+      "-I",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.build/include/BlueSDKPackageTests-Swift.h",
+      "-color-diagnostics",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "BlueSDKTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "BlueSDKTests",
+      "-c",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/BlueSDKLifecycleTests.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/BlueSDKTests.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Internal/CommandQueueTests.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Internal/LogFormatterTests.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Manager/AlarmManagerTests.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Manager/MedicationManagerTests.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/CRC8CalculatorTests.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/FrameBuilderTests.swift",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/FrameParserTests.swift",
+      "-I",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-color-diagnostics",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.4.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "BlueSDK" : [
+
+    ],
+    "BlueSDKPackageTests" : [
+      "BlueSDKTests",
+      "BlueSDK"
+    ],
+    "BlueSDKTests" : [
+      "BlueSDK"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+    "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.derived/runner.swift" : {
+      "inputs" : [
+
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.derived/runner.swift"
+        }
+      ]
+    }
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/BlueSDK.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/BlueSDKDelegate.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/ConnectionState.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/LogLevel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/MedicationStatus.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/SoundType.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/TimeFormat.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Enums/VolumeLevel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Error/BlueError.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/BlueLogger.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CallbackDispatcher.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CommandDispatcher.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/CommandQueue.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Internal/LogFormatter.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AlarmManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AudioManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/AuthManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/ConnectionManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/DeviceManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/MedicationManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Manager/PermissionManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/AlarmInfo.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/DeviceInfo.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Model/MedicationRecord.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/BLEConnector.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/BLEScanner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/CRC8Calculator.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/CommandCode.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/DPIDConstants.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameBuilder.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameConstants.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/BlueSDK/BlueSDK/Classes/Transport/FrameParser.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/sources"
+    },
+    "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.derived/runner.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.build/sources"
+    },
+    "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmInfo.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AlarmManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AudioManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/AuthManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEConnector.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BLEScanner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueError.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueLogger.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDK.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/BlueSDKDelegate.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CRC8Calculator.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CallbackDispatcher.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandCode.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandDispatcher.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/CommandQueue.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/ConnectionState.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DPIDConstants.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceInfo.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/DeviceManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameBuilder.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameConstants.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/FrameParser.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogFormatter.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/LogLevel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationRecord.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/MedicationStatus.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/PermissionManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/SoundType.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/TimeFormat.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/VolumeLevel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/AlarmManagerTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/BlueSDKLifecycleTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/BlueSDKTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/CRC8CalculatorTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/CommandQueueTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/FrameBuilderTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/FrameParserTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/LogFormatterTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/MedicationManagerTests.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.product/Objects.LinkFileList"
+    },
+    "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/BlueSDKLifecycleTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/BlueSDKTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Internal/CommandQueueTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Internal/LogFormatterTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Manager/AlarmManagerTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Manager/MedicationManagerTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/CRC8CalculatorTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/FrameBuilderTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/FrameParserTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKTests.build/sources"
+    },
+    "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

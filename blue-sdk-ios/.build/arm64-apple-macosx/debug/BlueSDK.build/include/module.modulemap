@@ -1,0 +1,3 @@
+module BlueSDK {
+    header "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDK.build/include/BlueSDK-Swift.h"
+}

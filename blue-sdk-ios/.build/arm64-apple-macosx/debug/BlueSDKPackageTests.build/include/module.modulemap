@@ -1,0 +1,3 @@
+module BlueSDKPackageTests {
+    header "/Users/mac/Documents/Blue/blue-sdk-ios/.build/arm64-apple-macosx/debug/BlueSDKPackageTests.build/include/BlueSDKPackageTests-Swift.h"
+}
