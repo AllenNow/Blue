@@ -57,6 +57,7 @@ final class MedicationManagerTests: XCTestCase {
         XCTAssertNotNil(record)
         XCTAssertEqual(record?.alarmIndex, 3)
         XCTAssertEqual(record?.status, .taken)
+        XCTAssertGreaterThan(record?.timestamp ?? 0, 0) // 时间戳为毫秒，应大于0
     }
 
     /// 验证：数据不足时返回 nil

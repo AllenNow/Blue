@@ -9,6 +9,7 @@ package com.blue.sdk
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import com.blue.sdk.enums.ConnectionState
+import com.blue.sdk.manager.PermissionManager
 import com.blue.sdk.enums.LogLevel
 import com.blue.sdk.enums.PermissionStatus
 import com.blue.sdk.enums.SoundType
@@ -55,6 +56,7 @@ class BlueSDK private constructor(private val context: Context) {
     private lateinit var alarmManager: AlarmManager
     private lateinit var medicationManager: MedicationManager
     private lateinit var audioManager: AudioManager
+    private val scanner = com.blue.sdk.transport.BLEScanner()
 
     /** 事件监听器 */
     @Volatile var listener: BlueSDKListener? = null
@@ -101,6 +103,42 @@ class BlueSDK private constructor(private val context: Context) {
 
     /** 当前连接状态（FR06）*/
     val connectionState: ConnectionState get() = connectionManager.state
+
+    /**
+     * 开始扫描 LX-PD02 设备（FR01）
+     * @param onDeviceFound 发现设备回调（主线程），返回 ScannedDevice
+     * @param onError 错误回调（主线程）
+     */
+    fun startScan(
+        onDeviceFound: (com.blue.sdk.model.ScannedDevice) -> Unit,
+        onError: (BlueError) -> Unit
+    ) {
+        if (!requireInitialized { }) return
+        val btManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+        val adapter = btManager?.adapter ?: run {
+            onError(BlueError.BleError(Exception("BluetoothAdapter unavailable")))
+            return
+        }
+        scanner.startScan(adapter, onDeviceFound, onError)
+    }
+
+    /** 停止扫描（FR01）*/
+    fun stopScan() {
+        val btManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+        btManager?.adapter?.let { scanner.stopScan(it) }
+    }
+
+    /**
+     * 连接指定设备（FR02）
+     * @param device 由 startScan 回调返回的 ScannedDevice
+     */
+    fun connect(device: com.blue.sdk.model.ScannedDevice) {
+        if (!requireInitialized { }) return
+        val btManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+        val adapter = btManager?.adapter ?: return
+        val peripheral = adapter.getRemoteDevice(device.deviceId) ?: return
+        connectionManager.connect(peripheral)
+    }
 
     /** 断开连接（FR03）*/
     fun disconnect() {

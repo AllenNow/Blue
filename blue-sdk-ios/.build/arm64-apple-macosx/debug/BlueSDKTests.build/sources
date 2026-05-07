@@ -1,9 +1,0 @@
-/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/BlueSDKLifecycleTests.swift
-/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/BlueSDKTests.swift
-/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Internal/CommandQueueTests.swift
-/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Internal/LogFormatterTests.swift
-/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Manager/AlarmManagerTests.swift
-/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Manager/MedicationManagerTests.swift
-/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/CRC8CalculatorTests.swift
-/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/FrameBuilderTests.swift
-/Users/mac/Documents/Blue/blue-sdk-ios/Tests/BlueSDKTests/Transport/FrameParserTests.swift

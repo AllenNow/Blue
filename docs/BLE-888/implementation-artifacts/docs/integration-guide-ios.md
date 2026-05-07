@@ -140,8 +140,20 @@ if status != .granted {
 ### 步骤2：扫描设备
 
 ```swift
-// 扫描功能需通过 ConnectionManager 实现（需传入 CBCentralManager）
-// 详见 Demo 工程：blue-sdk-ios/BlueSDK/Example/
+// 开始扫描（FR01）
+BlueSDK.shared.startScan(
+    onDeviceFound: { device in
+        print("发现设备：\(device.deviceName)，信号：\(device.rssi) dBm")
+        // 选择目标设备后连接
+        BlueSDK.shared.connect(device)
+    },
+    onError: { error in
+        print("扫描错误：\(error)")
+    }
+)
+
+// 停止扫描
+BlueSDK.shared.stopScan()
 ```
 
 ### 步骤3：认证
@@ -153,8 +165,10 @@ let deviceMac: [UInt8] = [0xA6, 0xC0, 0x82, 0x00, 0xA1, 0xC2]
 
 BlueSDK.shared.authenticate(phoneMac: phoneMac, deviceMac: deviceMac) { result in
     switch result {
-    case .success: print("认证成功")
-    case .failure(let error): print("认证失败：\(error)")
+    case .success:
+        print("认证成功")
+    case .failure(let error):
+        print("认证失败：\(error.localizedDescription ?? "")")
     }
 }
 ```
@@ -211,19 +225,26 @@ iOS 系统对后台 BLE 连接有严格限制：
 
 ---
 
-## 8. 日志配置
+## 9. 隐私合规
 
-```swift
-// 开发阶段
-BlueSDK.shared.setLogLevel(.debug)
+### 数据处理声明
 
-// 接管日志输出
-BlueSDK.shared.setLogHandler { level, tag, message in
-    MyLogger.log("[\(level)] [\(tag)] \(message)")
-}
+本 SDK **不收集、不存储、不上传**任何用户数据：
+- 用药记录通过回调传递给 APP，SDK 不做存储
+- 设备 MAC 地址仅在内存中用于密钥计算，不持久化
+- 不包含任何网络请求
 
-// 生产环境关闭日志
-BlueSDK.shared.setLogLevel(.none)
+### APP 隐私政策建议文案
+
+```
+本应用使用蓝牙功能连接 LX-PD02 智能药盒，用于设置用药提醒和接收服药通知。
+蓝牙连接过程中不会收集您的地理位置信息。
 ```
 
-> ⚠️ 密钥值在任何日志级别下均不输出明文。
+### App Store 隐私问卷
+
+在 App Store Connect 数据安全部分：
+- **蓝牙数据**：选择"是，我们收集蓝牙数据" → 用途选"应用功能" → 不与第三方共享 → 不用于追踪
+
+详见：[permission-manifest.md](./permission-manifest.md)
+

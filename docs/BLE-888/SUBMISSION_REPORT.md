@@ -23,11 +23,13 @@
 - [x] spec-1-2-ios-protocol-constants.md（协议常量定义）
 
 #### 技术文档
-- [x] integration-guide-ios.md
-- [x] integration-guide-android.md
-- [x] api-reference.md
+- [x] integration-guide-ios.md（含扫描API、隐私合规章节）
+- [x] integration-guide-android.md（含扫描API、隐私合规章节）
+- [x] api-reference.md（含扫描API、ScannedDevice模型）
 - [x] protocol-reference.md
 - [x] troubleshooting.md
+- [x] privacy-policy.md（SDK隐私政策说明）
+- [x] permission-manifest.md（iOS/Android权限清单）
 
 **实施文档总计**: 7 个文件 ✅
 

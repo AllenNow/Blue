@@ -159,7 +159,26 @@ if (status != PermissionStatus.GRANTED) {
 }
 ```
 
-### 步骤2：认证
+### 步骤2：扫描并连接设备
+
+```kotlin
+// 开始扫描（FR01）
+sdk.startScan(
+    onDeviceFound = { device ->
+        println("发现设备：${device.deviceName}，信号：${device.rssi} dBm")
+        // 选择目标设备后连接
+        sdk.connect(device)
+    },
+    onError = { error ->
+        println("扫描错误：${error.message}")
+    }
+)
+
+// 停止扫描
+sdk.stopScan()
+```
+
+### 步骤3：认证
 
 ```kotlin
 val phoneMac = byteArrayOf(0xC7.toByte(), 0x50, 0xB2.toByte(), 0xAA.toByte(), 0xC3.toByte(), 0xF3.toByte())
@@ -255,3 +274,29 @@ sdk.setAlarm(1, 8, 0, 0x7F, result -> {
     }
 });
 ```
+
+---
+
+## 9. 隐私合规
+
+### 数据处理声明
+
+本 SDK **不收集、不存储、不上传**任何用户数据：
+- 用药记录通过回调传递给 APP，SDK 不做存储
+- 设备 MAC 地址仅在内存中用于密钥计算，不持久化
+- 不包含任何网络请求
+
+### APP 隐私政策建议文案
+
+```
+本应用使用蓝牙功能连接 LX-PD02 智能药盒，用于设置用药提醒和接收服药通知。
+Android 系统要求扫描蓝牙设备时需要位置权限，本应用仅将此权限用于蓝牙扫描，
+不会获取或记录您的地理位置。
+```
+
+### Google Play 数据安全表单
+
+- **位置数据**：选择"否，不收集位置数据"（`neverForLocation` 标志已声明）
+- **蓝牙数据**：选择"是" → 用途选"应用功能" → 不与第三方共享
+
+详见：[permission-manifest.md](./permission-manifest.md)

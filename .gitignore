@@ -84,9 +84,8 @@ kotlin/
 # 项目特定忽略
 # ============================================================
 
-# SPM 构建产物（blue-sdk-ios 根目录）
-blue-sdk-ios/.build/
-blue-sdk-ios/.build/**
+# SPM 构建产物
+**/.build/
 blue-sdk-ios/Sources/BlueSDK/
 
 # Android Gradle 缓存

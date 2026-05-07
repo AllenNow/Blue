@@ -27,6 +27,9 @@
 | 方法 | iOS | Android | 说明 |
 |------|-----|---------|------|
 | 检查权限 | `checkPermissions() -> PermissionStatus` | `checkPermissions(): PermissionStatus` | FR07 |
+| 开始扫描 | `startScan(onDeviceFound:onError:)` | `startScan(onDeviceFound, onError)` | FR01 |
+| 停止扫描 | `stopScan()` | `stopScan()` | FR01 |
+| 连接设备 | `connect(_ device: ScannedDevice)` | `connect(device: ScannedDevice)` | FR02 |
 | 查询连接状态 | `connectionState: ConnectionState` | `connectionState: ConnectionState` | FR06 |
 | 断开连接 | `disconnect()` | `disconnect()` | FR03 |
 
@@ -171,9 +174,19 @@
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| timestamp | TimeInterval / Long | Unix 时间戳（iOS: 秒，Android: 毫秒）|
+| timestamp | Int64（iOS）/ Long（Android） | Unix 时间戳，**毫秒**（双平台一致）|
 | alarmIndex | Int | 关联闹钟槽位（1~7）|
 | status | MedicationStatus | 用药状态 |
+
+> iOS 额外提供 `date: Date` 计算属性，等价于 `Date(timeIntervalSince1970: TimeInterval(timestamp) / 1000.0)`
+
+### ScannedDevice
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| deviceId | String | 设备唯一标识（iOS: UUID字符串，Android: MAC地址）|
+| deviceName | String | 设备广播名称（如 `LX-PD02-A1B2`）|
+| rssi | Int | 信号强度（dBm，值越大信号越强）|
 
 ### DeviceInfo
 
