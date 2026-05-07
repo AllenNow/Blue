@@ -1,0 +1,147 @@
+# ============================================================
+# Blue SDK - .gitignore
+# 工作区包含：iOS SDK、Android SDK、规划文档、接入文档
+# ============================================================
+
+# ============================================================
+# macOS 系统文件
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ============================================================
+# iOS / Xcode
+# ============================================================
+
+# Xcode 构建产物
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# Swift Package Manager 构建缓存
+.build/
+.swiftpm/
+
+# CocoaPods（保留 Podfile.lock 用于版本锁定）
+Pods/
+*.xcworkspace/xcuserdata/
+
+# Carthage
+Carthage/Build/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# 代码覆盖率
+*.gcno
+*.gcda
+
+# Instruments
+*.trace
+
+# AppCode
+.idea/
+*.iml
+
+# ============================================================
+# Android / Gradle
+# ============================================================
+
+# Gradle 构建缓存
+.gradle/
+build/
+local.properties
+
+# Android Studio
+*.iml
+.idea/
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+
+# Kotlin 增量编译缓存
+kotlin/
+
+# ============================================================
+# 项目特定忽略
+# ============================================================
+
+# SPM 构建产物（blue-sdk-ios 根目录）
+blue-sdk-ios/.build/
+blue-sdk-ios/.build/**
+blue-sdk-ios/Sources/BlueSDK/
+
+# Android Gradle 缓存
+blue-sdk-android/.gradle/
+blue-sdk-android/.idea/
+blue-sdk-android/local.properties
+
+# CocoaPods 生成的工程文件（保留 Podfile.lock）
+blue-sdk-ios/BlueSDK/Example/Pods/
+blue-sdk-ios/BlueSDK/Example/BlueSDK.xcworkspace/xcuserdata/
+blue-sdk-ios/BlueSDK/_Pods.xcodeproj
+
+# BMAD 工作流构建缓存（保留规划产出物）
+_bmad-output/.DS_Store
+
+# ============================================================
+# 编辑器 / IDE
+# ============================================================
+
+# VS Code / Kiro
+.vscode/
+*.code-workspace
+
+# JetBrains
+*.iws
+out/
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+\#*\#
+.#*
+
+# ============================================================
+# 日志 / 临时文件
+# ============================================================
+*.log
+*.tmp
+*.temp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================================
+# 敏感信息（绝不提交）
+# ============================================================
+*.p12
+*.mobileprovision
+*.cer
+*.pem
+*.key
+secrets.json
+.env
+.env.local
+.env.*.local
+GoogleService-Info.plist
+google-services.json
