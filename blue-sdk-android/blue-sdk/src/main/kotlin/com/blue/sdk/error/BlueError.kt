@@ -5,9 +5,9 @@ package com.blue.sdk.error
 
 /**
  * SDK 统一错误类型
- * 所有异步操作通过回调返回，不抛出异常（ARCH-08）
+ * 继承 Exception 以支持 Result.failure()，所有异步操作通过回调返回，不向上层抛出（ARCH-08）
  */
-sealed class BlueError(val message: String) {
+sealed class BlueError(message: String) : Exception(message) {
     /** SDK 未初始化，需先调用 initialize() */
     object NotInitialized : BlueError("SDK 未初始化，请先调用 initialize()")
     /** 设备未完成认证，需先完成 authenticate() */

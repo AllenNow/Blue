@@ -297,17 +297,26 @@ class BlueSDK private constructor(private val context: Context) {
         when {
             dpidInt in a1..a7 -> {
                 val index = dpidInt - a1 + 1
-                // 0x68（alarm3）同时用于用药事件上报，通过 byte9 状态值区分
                 val alarm3Int = DPIDConstants.ALARM_3.toInt() and 0xFF
                 if (dpidInt == alarm3Int && data.size >= 11) {
-                    MedicationManager.parseMedicationEvent(data)?.let { (idx, status) ->
-                        CallbackDispatcher.dispatch { listener?.onMedicationResult(idx, status) }
-                        return
+                    val statusByte = data[10].toInt() and 0xFF
+                    val alarmInfo = AlarmManager.parseAlarmInfo(data, index)
+                    if (alarmInfo != null) {
+                        when (statusByte) {
+                            0x00 -> CallbackDispatcher.dispatch { listener?.onAlarmRinging(index, alarmInfo) }
+                            0x01 -> CallbackDispatcher.dispatch { listener?.onAlarmTimeout(index, alarmInfo) }
+                            else -> {
+                                val status = com.blue.sdk.enums.MedicationStatus.fromByte(data[10])
+                                if (status != null) {
+                                    CallbackDispatcher.dispatch { listener?.onMedicationResult(index, status) }
+                                }
+                            }
+                        }
                     }
-                }
-                // 普通闹钟配置上报
-                AlarmManager.parseAlarmInfo(data, index)?.let { alarm ->
-                    CallbackDispatcher.dispatch { listener?.onAlarmUpdated(alarm) }
+                } else {
+                    AlarmManager.parseAlarmInfo(data, index)?.let { alarm ->
+                        CallbackDispatcher.dispatch { listener?.onAlarmUpdated(alarm) }
+                    }
                 }
             }
             dpid == DPIDConstants.ALARM_RECORD -> {

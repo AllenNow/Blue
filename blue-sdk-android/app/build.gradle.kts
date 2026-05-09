@@ -34,4 +34,5 @@ android {
 dependencies {
     implementation(project(":blue-sdk"))
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
 }

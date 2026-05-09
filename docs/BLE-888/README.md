@@ -60,17 +60,17 @@ BLE-888/
 |:-----|:-----|
 | 规划文档 | 3（PRD、架构、Epics）|
 | Story 实施 | 2（已完成）|
-| 技术文档 | 5 |
+| 技术文档 | 7（含隐私政策、权限清单）|
 | 说明文档 | 2 |
-| **总计** | **12** |
+| **总计** | **14** |
 
 ### 开发统计
 | 指标 | 数值 |
 |:-----|:-----|
 | Epic 完成 | 1/7（Epic 1 代码完成）|
 | Story 完成 | Epic 1 全部 8 个 Story |
-| iOS 测试用例 | 65（100% passing）|
-| Android 测试用例 | 待验证 |
+| iOS 测试用例 | 79（100% passing）|
+| Android 测试用例 | 8 个文件已编写，待 Android Studio 验证 |
 | 功能需求覆盖 | 36/36 FR（100%）|
 | 平台 | iOS + Android 双平台 |
 
@@ -130,9 +130,15 @@ BLE-888/
 | # | 问题 | 修复 |
 |---|------|------|
 | 1 | AudioManager DPID 常量名称混乱（双平台） | 重命名常量，以示例帧为准 |
-| 2 | iOS handleDeviceReport 中 alarm3 死代码 | 合并到闹钟范围判断，按内容区分 |
+| 2 | iOS handleDeviceReport 中 alarm3 死代码 | 合并到闹钟范围判断，按 byte10 区分 |
 | 3 | Android 同样的 DPID 路由死代码 | 同步修复 |
 | 4 | MedicationManager 解析逻辑 alarmDPID 字段偏移错误 | 修正为从 data[0] 和 data[4] 读取 |
+| 5 | `didAlarmRinging` / `didAlarmTimeout` 未正确触发 | 按 byte10 路由：0x00=响铃、0x01=超时、其他=用药结果 |
+| 6 | `CommandDispatcher` 死代码 | iOS 中已删除 |
+| 7 | `PermissionStatus` 位置不规范 | 移至 `Enums/` 目录，与 Android 对称 |
+| 8 | `MedicationRecord.timestamp` 单位不一致 | 统一为毫秒（iOS 改为 Int64）|
+| 9 | 扫描 API 未暴露 | 双平台新增 `startScan()`、`stopScan()`、`connect(device)` |
+| 10 | Example 工程 Deployment Target 9.3 | 升级至 iOS 13.0 |
 
 ---
 

@@ -50,7 +50,8 @@ internal class AlarmManager(private val commandQueue: CommandQueue) {
     }
 
     fun clearAllAlarms(completion: (Result<Unit>) -> Unit) {
-        val data = byteArrayOf(DPIDConstants.EMPTY_ALL_ALARMS, 0x00, 0x00, 0x01, 0x01)
+        // DPID 0x70 = 提醒持续时间（以示例帧为准），此处用于清空所有闹钟指令
+        val data = byteArrayOf(DPIDConstants.ALERT_DURATION_SETTING, 0x00, 0x00, 0x01, 0x01)
         val frame = FrameBuilder.build(CommandCode.SEND_COMMAND, data)
         commandQueue.enqueue(CommandCode.SEND_COMMAND, frame) { result ->
             result.fold(

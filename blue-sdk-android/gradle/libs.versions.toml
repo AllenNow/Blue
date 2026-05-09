@@ -2,6 +2,7 @@
 agp = "8.3.2"
 kotlin = "1.9.23"
 coreKtx = "1.13.1"
+appcompat = "1.6.1"
 junit = "4.13.2"
 junitExt = "1.1.5"
 minSdk = "21"
@@ -10,6 +11,7 @@ targetSdk = "34"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitExt" }
 

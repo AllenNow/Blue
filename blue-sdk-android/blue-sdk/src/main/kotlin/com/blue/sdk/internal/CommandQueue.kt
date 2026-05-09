@@ -72,7 +72,7 @@ internal class CommandQueue {
     fun clear() {
         synchronized(lock) {
             cancelTimeout()
-            pendingCommand?.completion(Result.failure(BlueError.Disconnected))
+            pendingCommand?.let { it.completion(Result.failure(BlueError.Disconnected)) }
             pendingCommand = null
             waitingQueue.forEach { it.completion(Result.failure(BlueError.Disconnected)) }
             waitingQueue.clear()
