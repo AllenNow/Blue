@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothProfile
 import android.content.Context
+import android.os.Build
 import com.blue.sdk.internal.BlueLogger
 import java.util.UUID
 
@@ -68,8 +69,9 @@ internal class BLEConnector {
             if (notifyChar != null) {
                 gatt.setCharacteristicNotification(notifyChar, true)
                 val descriptor = notifyChar.getDescriptor(CCCD_UUID)
-                descriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                descriptor?.let { gatt.writeDescriptor(it) }
+                if (descriptor != null) {
+                    writeDescriptorCompat(gatt, descriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
+                }
             }
             if (writeCharacteristic != null) {
                 BlueLogger.info("GATT 特征就绪，连接完成")
@@ -77,10 +79,18 @@ internal class BLEConnector {
             }
         }
 
+        @Suppress("DEPRECATION")
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+            // API 33 以下的旧回调
             val data = characteristic.value ?: return
             BlueLogger.debug("收到数据：${data.joinToString(" ") { "%02X".format(it) }}")
             delegate?.onDataReceived(data)
+        }
+
+        // API 33+ 的新回调
+        override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) {
+            BlueLogger.debug("收到数据：${value.joinToString(" ") { "%02X".format(it) }}")
+            delegate?.onDataReceived(value)
         }
 
         override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
@@ -110,9 +120,42 @@ internal class BLEConnector {
             BlueLogger.error("写特征未就绪，无法发送数据")
             return
         }
-        char.value = bytes
-        char.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-        g.writeCharacteristic(char)
+        writeCharacteristicCompat(g, char, bytes)
         BlueLogger.debug("发送帧：${bytes.joinToString(" ") { "%02X".format(it) }}")
+    }
+
+    // MARK: - API 版本兼容方法
+
+    @Suppress("DEPRECATION")
+    private fun writeCharacteristicCompat(
+        gatt: BluetoothGatt,
+        characteristic: BluetoothGattCharacteristic,
+        value: ByteArray
+    ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+ (API 33) 新版 API
+            gatt.writeCharacteristic(characteristic, value, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+        } else {
+            // Android 12 及以下旧版 API
+            characteristic.value = value
+            characteristic.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+            gatt.writeCharacteristic(characteristic)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun writeDescriptorCompat(
+        gatt: BluetoothGatt,
+        descriptor: BluetoothGattDescriptor,
+        value: ByteArray
+    ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+ (API 33) 新版 API
+            gatt.writeDescriptor(descriptor, value)
+        } else {
+            // Android 12 及以下旧版 API
+            descriptor.value = value
+            gatt.writeDescriptor(descriptor)
+        }
     }
 }

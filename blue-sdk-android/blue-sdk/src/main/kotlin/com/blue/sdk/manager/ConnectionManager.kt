@@ -13,7 +13,8 @@ import com.blue.sdk.internal.CommandQueue
 import com.blue.sdk.transport.BLEConnector
 import com.blue.sdk.transport.BLEConnectorDelegate
 import com.blue.sdk.transport.CommandCode
-import com.blue.sdk.transport.FrameParser
+import com.blue.sdk.transport.ParsedFrame
+import com.blue.sdk.transport.StreamFrameParser
 import java.util.Timer
 import java.util.TimerTask
 
@@ -25,6 +26,7 @@ internal class ConnectionManager(private val context: Context) {
     }
 
     private val connector = BLEConnector()
+    private val streamParser = StreamFrameParser()
     val commandQueue = CommandQueue()
 
     @Volatile private var _state: ConnectionState = ConnectionState.DISCONNECTED
@@ -36,9 +38,12 @@ internal class ConnectionManager(private val context: Context) {
 
     var onStateChanged: ((ConnectionState) -> Unit)? = null
     var onError: ((BlueError) -> Unit)? = null
-    var onDataReceived: ((com.blue.sdk.transport.ParsedFrame) -> Unit)? = null
+    var onDataReceived: ((ParsedFrame) -> Unit)? = null
 
     init {
+        // 流式解析器回调
+        streamParser.onFrameParsed = { frame -> handleParsedFrame(frame) }
+
         connector.delegate = object : BLEConnectorDelegate {
             override fun onConnected() {
                 reconnectAttempts = 0
@@ -47,27 +52,29 @@ internal class ConnectionManager(private val context: Context) {
             }
             override fun onDisconnected(error: Exception?) {
                 commandQueue.clear()
+                streamParser.reset()
                 if (_state == ConnectionState.DISCONNECTED) return
                 if (error != null) startReconnect()
                 else transitionTo(ConnectionState.DISCONNECTED)
             }
             override fun onDataReceived(data: ByteArray) {
-                val frame = FrameParser.parse(data) ?: run {
-                    BlueLogger.warn("帧解析失败，已丢弃")
-                    return
-                }
-                val cmdInt = frame.cmd.toInt() and 0xFF
-                if (cmdInt == (CommandCode.DEVICE_REPORT.toInt() and 0xFF) ||
-                    cmdInt == (CommandCode.TIME_SYNC.toInt() and 0xFF)) {
-                    onDataReceived?.invoke(frame)
-                    return
-                }
-                if (!commandQueue.handleResponse(frame)) {
-                    onDataReceived?.invoke(frame)
-                }
+                // 通过流式解析器处理粘包/分包
+                streamParser.receive(data)
             }
         }
         commandQueue.sendBlock = { bytes -> connector.write(bytes) }
+    }
+
+    private fun handleParsedFrame(frame: ParsedFrame) {
+        val cmdInt = frame.cmd.toInt() and 0xFF
+        if (cmdInt == (CommandCode.DEVICE_REPORT.toInt() and 0xFF) ||
+            cmdInt == (CommandCode.TIME_SYNC.toInt() and 0xFF)) {
+            onDataReceived?.invoke(frame)
+            return
+        }
+        if (!commandQueue.handleResponse(frame)) {
+            onDataReceived?.invoke(frame)
+        }
     }
 
     fun connect(device: BluetoothDevice) {
@@ -82,6 +89,7 @@ internal class ConnectionManager(private val context: Context) {
         reconnectAttempts = 0
         connector.disconnect()
         commandQueue.clear()
+        streamParser.reset()
         transitionTo(ConnectionState.DISCONNECTED)
     }
 

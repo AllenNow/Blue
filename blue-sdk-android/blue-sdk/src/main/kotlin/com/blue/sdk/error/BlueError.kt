@@ -25,5 +25,5 @@ sealed class BlueError(message: String) : Exception(message) {
     /** 设备已断开连接 */
     object Disconnected : BlueError("设备已断开连接")
     /** 系统 BLE 错误 */
-    data class BleError(val cause: Throwable) : BlueError("蓝牙系统错误：${cause.message}")
+    data class BleError(val rootCause: Throwable) : BlueError("蓝牙系统错误：${rootCause.message}")
 }
