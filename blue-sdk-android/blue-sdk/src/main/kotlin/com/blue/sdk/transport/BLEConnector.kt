@@ -24,10 +24,9 @@ internal class BLEConnector {
 
     companion object {
         // LX-PD02 GATT 服务/特征 UUID
-        // ⚠️ 实际 UUID 需根据硬件规格确认，此处使用通用串口服务作为占位
-        private val SERVICE_UUID    = UUID.fromString("0000FFE0-0000-1000-8000-00805F9B34FB")
-        private val WRITE_CHAR_UUID = UUID.fromString("0000FFE1-0000-1000-8000-00805F9B34FB")
-        private val NOTIFY_CHAR_UUID = UUID.fromString("0000FFE1-0000-1000-8000-00805F9B34FB")
+        private val SERVICE_UUID    = UUID.fromString("0000D459-0000-1000-8000-00805F9B34FB")
+        private val WRITE_CHAR_UUID = UUID.fromString("00000013-0000-1000-8000-00805F9B34FB")
+        private val NOTIFY_CHAR_UUID = UUID.fromString("00000014-0000-1000-8000-00805F9B34FB")
         private val CCCD_UUID = UUID.fromString("00002902-0000-1000-8000-00805F9B34FB")
     }
 

@@ -93,10 +93,6 @@ blue-sdk-android/.gradle/
 blue-sdk-android/.idea/
 blue-sdk-android/local.properties
 
-# CocoaPods 生成的工程文件（保留 Podfile.lock）
-blue-sdk-ios/BlueSDK/Example/Pods/
-blue-sdk-ios/BlueSDK/Example/BlueSDK.xcworkspace/xcuserdata/
-blue-sdk-ios/BlueSDK/_Pods.xcodeproj
 
 # BMAD 工作流构建缓存（保留规划产出物）
 _bmad-output/.DS_Store
