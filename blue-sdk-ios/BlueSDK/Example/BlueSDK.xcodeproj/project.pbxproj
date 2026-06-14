@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		197F57BD51D2600AFBF1E964 /* MedicationRecordsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4675F7D4B670E1744EA21C69 /* MedicationRecordsViewController.swift */; };
 		1CDA645183AF1493BCAA8104 /* Pods_BlueSDK_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FCFB09AE9255E51EBBF4C881 /* Pods_BlueSDK_Example.framework */; };
+		57AE167D928B6CEDCEB66D3C /* AlarmEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AE286F5020F5BEB483F3FFA /* AlarmEditorViewController.swift */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACD81AFB9204008FA782 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
@@ -15,6 +17,9 @@
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
 		607FACEC1AFB9204008FA782 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACEB1AFB9204008FA782 /* Tests.swift */; };
 		93AE1ED9CBDB0CFCF845BA3E /* Pods_BlueSDK_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A2AC49C22783DE348C0D344F /* Pods_BlueSDK_Tests.framework */; };
+		B68194BFBA842540A3883A18 /* ProtocolTestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5C3EF66285FC6340BEA7E2 /* ProtocolTestViewController.swift */; };
+		C323E8E813769E3B95E32653 /* AlarmManagerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1C8CB304B94D39FEA9FB14 /* AlarmManagerViewController.swift */; };
+		DE6FE45D61DC92AE8FC9C6ED /* MedicationDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0F59A49F9491DFCA56FA17B /* MedicationDatabase.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,6 +36,8 @@
 		1061BAEFFCA6A093F12464F8 /* Pods-BlueSDK_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BlueSDK_Tests.debug.xcconfig"; path = "Target Support Files/Pods-BlueSDK_Tests/Pods-BlueSDK_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		1E93CAF01541A622898453A7 /* Pods-BlueSDK_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BlueSDK_Example.debug.xcconfig"; path = "Target Support Files/Pods-BlueSDK_Example/Pods-BlueSDK_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		463034665B4567495A742275 /* BlueSDK.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = BlueSDK.podspec; path = ../BlueSDK.podspec; sourceTree = "<group>"; };
+		4675F7D4B670E1744EA21C69 /* MedicationRecordsViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MedicationRecordsViewController.swift; path = BlueSDK/MedicationRecordsViewController.swift; sourceTree = "<group>"; };
+		5F5C3EF66285FC6340BEA7E2 /* ProtocolTestViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProtocolTestViewController.swift; path = BlueSDK/ProtocolTestViewController.swift; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* BlueSDK_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BlueSDK_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACD51AFB9204008FA782 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -44,7 +51,10 @@
 		72B3CAB4469DF4F43695720D /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		78EF314E9844F155EB83F18E /* Pods-BlueSDK_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BlueSDK_Tests.release.xcconfig"; path = "Target Support Files/Pods-BlueSDK_Tests/Pods-BlueSDK_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		7A591A7C20237551EDBF337A /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		7AE286F5020F5BEB483F3FFA /* AlarmEditorViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AlarmEditorViewController.swift; path = BlueSDK/AlarmEditorViewController.swift; sourceTree = "<group>"; };
 		A2AC49C22783DE348C0D344F /* Pods_BlueSDK_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_BlueSDK_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA1C8CB304B94D39FEA9FB14 /* AlarmManagerViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AlarmManagerViewController.swift; path = BlueSDK/AlarmManagerViewController.swift; sourceTree = "<group>"; };
+		E0F59A49F9491DFCA56FA17B /* MedicationDatabase.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MedicationDatabase.swift; path = BlueSDK/MedicationDatabase.swift; sourceTree = "<group>"; };
 		FCFB09AE9255E51EBBF4C881 /* Pods_BlueSDK_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_BlueSDK_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEFB2BCEAA7ED868D796B232 /* Pods-BlueSDK_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BlueSDK_Example.release.xcconfig"; path = "Target Support Files/Pods-BlueSDK_Example/Pods-BlueSDK_Example.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -87,6 +97,7 @@
 				607FACD11AFB9204008FA782 /* Products */,
 				67D9123D270585053F1EEF2A /* Pods */,
 				11BD83E73CC8FCF078DCE9C6 /* Frameworks */,
+				EA44555678F2490D48686E73 /* BlueSDK */,
 			);
 			sourceTree = "<group>";
 		};
@@ -159,6 +170,18 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		EA44555678F2490D48686E73 /* BlueSDK */ = {
+			isa = PBXGroup;
+			children = (
+				E0F59A49F9491DFCA56FA17B /* MedicationDatabase.swift */,
+				4675F7D4B670E1744EA21C69 /* MedicationRecordsViewController.swift */,
+				DA1C8CB304B94D39FEA9FB14 /* AlarmManagerViewController.swift */,
+				7AE286F5020F5BEB483F3FFA /* AlarmEditorViewController.swift */,
+				5F5C3EF66285FC6340BEA7E2 /* ProtocolTestViewController.swift */,
+			);
+			name = BlueSDK;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -212,8 +235,9 @@
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						DevelopmentTeam = FHERMW8SJP;
+						DevelopmentTeam = MLAAATX8Y5;
 						LastSwiftMigration = 0900;
+						ProvisioningStyle = Automatic;
 					};
 					607FACE41AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
@@ -294,10 +318,12 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-BlueSDK_Example/Pods-BlueSDK_Example-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/BlueSDK/BlueSDK.framework",
+				"${BUILT_PRODUCTS_DIR}/SnapKit/SnapKit.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/BlueSDK.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SnapKit.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -335,6 +361,11 @@
 			files = (
 				607FACD81AFB9204008FA782 /* ViewController.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
+				DE6FE45D61DC92AE8FC9C6ED /* MedicationDatabase.swift in Sources */,
+				197F57BD51D2600AFBF1E964 /* MedicationRecordsViewController.swift in Sources */,
+				C323E8E813769E3B95E32653 /* AlarmManagerViewController.swift in Sources */,
+				57AE167D928B6CEDCEB66D3C /* AlarmEditorViewController.swift in Sources */,
+				B68194BFBA842540A3883A18 /* ProtocolTestViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -480,14 +511,23 @@
 			baseConfigurationReference = 1E93CAF01541A622898453A7 /* Pods-BlueSDK_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = FHERMW8SJP;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = MLAAATX8Y5;
 				INFOPLIST_FILE = BlueSDK/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.--PRODUCT-NAME-rfc1034identifier-";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -496,14 +536,23 @@
 			baseConfigurationReference = FEFB2BCEAA7ED868D796B232 /* Pods-BlueSDK_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = FHERMW8SJP;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = MLAAATX8Y5;
 				INFOPLIST_FILE = BlueSDK/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.--PRODUCT-NAME-rfc1034identifier-";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -522,10 +571,15 @@
 				);
 				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.--PRODUCT-NAME-rfc1034identifier-";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BlueSDK_Example.app/BlueSDK_Example";
 			};
 			name = Debug;
@@ -541,10 +595,15 @@
 				);
 				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.--PRODUCT-NAME-rfc1034identifier-";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BlueSDK_Example.app/BlueSDK_Example";
 			};
 			name = Release;

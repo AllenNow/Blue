@@ -36,6 +36,11 @@ final class CommandQueue {
     /// 发送指令的实际执行块（由 BLEConnector 注入）
     var sendBlock: (([UInt8]) -> Void)?
 
+    /// 直接发送帧数据，不入队等待应答（用于单向下发指令如时间同步）
+    func sendDirect(frame: [UInt8]) {
+        sendBlock?(frame)
+    }
+
     // MARK: - 入队
 
     /// 将指令加入队列
@@ -84,8 +89,21 @@ final class CommandQueue {
 
         guard let pending = pendingCommand else { return false }
 
-        let isMatch = frame.cmd == pending.cmd + 1 || frame.cmd == pending.cmd
-        guard isMatch else { return false }
+        // CMD 匹配：应答帧 CMD == 发送帧 CMD + 1 或相同
+        let cmdMatch = frame.cmd == pending.cmd + 1 || frame.cmd == pending.cmd
+        guard cmdMatch else { return false }
+
+        // 对于 sendCommand(0x06) 的应答(0x07)，还需匹配 DPID（数据第一字节）
+        // 避免设备主动上报帧（如低电 0x75）被错误匹配
+        if pending.cmd == CommandCode.sendCommand, frame.cmd == CommandCode.deviceReport {
+            let pendingDPID = pending.frame.count > Int(FrameConstants.dataOffset)
+                ? pending.frame[Int(FrameConstants.dataOffset)]
+                : nil
+            let responseDPID = frame.data.first
+            if let pDPID = pendingDPID, let rDPID = responseDPID, pDPID != rDPID {
+                return false
+            }
+        }
 
         cancelTimeout()
         pendingCommand = nil
@@ -118,7 +136,10 @@ final class CommandQueue {
         guard !waitingQueue.isEmpty else { return }
         let next = waitingQueue.removeFirst()
         pendingCommand = next
-        send(next)
+        // 指令间隔至少 200ms，避免设备来不及处理
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            self?.send(next)
+        }
     }
 
     private func scheduleTimeout(for command: PendingCommand) {

@@ -25,5 +25,17 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".AlarmManagerActivity"
+            android:exported="false"
+            android:label="闹钟管理"/>
+        <activity
+            android:name=".MedicationRecordsActivity"
+            android:exported="false"
+            android:label="用药记录"/>
+        <activity
+            android:name=".ProtocolTestActivity"
+            android:exported="false"
+            android:label="协议验证"/>
     </application>
 </manifest>

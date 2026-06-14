@@ -95,7 +95,7 @@ final class AlarmManager {
     /// 清空设备上所有闹钟
     /// - Parameter completion: 结果回调
     func clearAllAlarms(completion: @escaping (Result<Void, BlueError>) -> Void) {
-        let data: [UInt8] = [DPIDConstants.alertDurationSetting, 0x00, 0x00, 0x01, 0x01]
+        let data: [UInt8] = [DPIDConstants.emptyAllAlarms, 0x01, 0x00, 0x01, 0x01]
         let frame = FrameBuilder.build(cmd: CommandCode.sendCommand, data: data)
 
         commandQueue.enqueue(cmd: CommandCode.sendCommand, frame: frame) { result in

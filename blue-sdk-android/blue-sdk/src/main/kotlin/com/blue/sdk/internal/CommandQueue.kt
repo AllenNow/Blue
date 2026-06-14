@@ -8,6 +8,8 @@ package com.blue.sdk.internal
 import android.os.Handler
 import android.os.Looper
 import com.blue.sdk.error.BlueError
+import com.blue.sdk.transport.CommandCode
+import com.blue.sdk.transport.FrameConstants
 import com.blue.sdk.transport.ParsedFrame
 import java.util.LinkedList
 
@@ -54,6 +56,13 @@ internal class CommandQueue {
         }
     }
 
+    /**
+     * 直接发送帧，不经过队列排队和等待应答（用于时间同步等 fire-and-forget 场景）
+     */
+    fun sendDirect(frame: ByteArray) {
+        sendBlock?.invoke(frame)
+    }
+
     fun handleResponse(frame: ParsedFrame): Boolean {
         synchronized(lock) {
             val pending = pendingCommand ?: return false
@@ -61,6 +70,18 @@ internal class CommandQueue {
             val respInt = frame.cmd.toInt() and 0xFF
             val isMatch = respInt == cmdInt + 1 || respInt == cmdInt
             if (!isMatch) return false
+            
+            // 对于 sendCommand(0x06) 的应答(0x07)，需匹配 DPID 避免主动上报帧误匹配
+            if (cmdInt == (CommandCode.SEND_COMMAND.toInt() and 0xFF) &&
+                respInt == (CommandCode.DEVICE_REPORT.toInt() and 0xFF)) {
+                val pendingDPID = if (pending.frame.size > FrameConstants.DATA_OFFSET)
+                    pending.frame[FrameConstants.DATA_OFFSET] else null
+                val responseDPID = frame.data.firstOrNull()
+                if (pendingDPID != null && responseDPID != null && pendingDPID != responseDPID) {
+                    return false
+                }
+            }
+
             cancelTimeout()
             pendingCommand = null
             pending.completion(Result.success(frame))
@@ -88,7 +109,8 @@ internal class CommandQueue {
         if (waitingQueue.isEmpty()) return
         val next = waitingQueue.poll() ?: return
         pendingCommand = next
-        send(next)
+        // 指令间隔至少 200ms
+        handler.postDelayed({ send(next) }, 200)
     }
 
     private fun scheduleTimeout(command: PendingCommand) {

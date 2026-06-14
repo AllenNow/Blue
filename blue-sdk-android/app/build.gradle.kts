@@ -18,6 +18,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
@@ -35,4 +36,5 @@ dependencies {
     implementation(project(":blue-sdk"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.recyclerview)
 }

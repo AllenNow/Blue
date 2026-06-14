@@ -1,16 +1,28 @@
 package com.blue.sdk.model
 
-import com.blue.sdk.model.ScannedDevice
-
 /**
  * 设备基础信息
  * @param firmwareVersion 固件版本号（如 "1.0.0"）
- * @param deviceId 设备 MAC 地址
+ * @param macAddress 设备 MAC 地址
  */
 data class DeviceInfo(
     val firmwareVersion: String,
-    val deviceId: String
-)
+    val macAddress: String
+) {
+    companion object {
+        /** 版本号正则（从固件信息字符串中提取版本号）*/
+        private val VERSION_REGEX = Regex("""(\d+\.\d+\.\d+)""")
+        
+        /**
+         * 从原始固件版本字符串中解析标准版本号
+         * @param raw 原始版本字符串（如 "LX-PD02_V1.0.3_20240101"）
+         * @return 标准版本号（如 "1.0.3"），解析失败返回原始字符串
+         */
+        fun parseFirmwareVersion(raw: String): String {
+            return VERSION_REGEX.find(raw)?.groupValues?.getOrNull(1) ?: raw
+        }
+    }
+}
 
 /**
  * 扫描到的设备信息

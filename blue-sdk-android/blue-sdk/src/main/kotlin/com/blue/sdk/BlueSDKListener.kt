@@ -63,4 +63,12 @@ interface BlueSDKListener {
 
     /** 时间格式变更上报（FR31）*/
     fun onTimeFormatChanged(format: TimeFormat) {}
+
+    // MARK: - 设备状态
+
+    /** 设备低电量上报 */
+    fun onLowBattery() {}
+
+    /** 连接错误（超时、断开等）*/
+    fun onError(error: BlueError) {}
 }

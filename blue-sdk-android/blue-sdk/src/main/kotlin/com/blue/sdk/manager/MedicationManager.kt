@@ -15,8 +15,8 @@ import java.util.Calendar
 internal class MedicationManager(private val commandQueue: CommandQueue) {
 
     fun sendMedicationNotification(status: Byte, completion: (Result<Unit>) -> Unit) {
-        // 用药结果通知使用 0x6F（SOUND_TYPE_SETTING 同值，协议文档注释有歧义，以示例帧为准）
-        val data = byteArrayOf(0x6F.toByte(), 0x00, 0x00, 0x01, status)
+        // 用药结果通知使用 DPID 0x6F（NOTIFICATION_OF_RESULTS）
+        val data = byteArrayOf(DPIDConstants.NOTIFICATION_OF_RESULTS, 0x00, 0x00, 0x01, status)
         val frame = FrameBuilder.build(CommandCode.SEND_COMMAND, data)
         commandQueue.enqueue(CommandCode.SEND_COMMAND, frame) { result ->
             result.fold(

@@ -56,12 +56,13 @@ final class MedicationManager {
     }
 
     /// 解析用药记录上报帧（DPID=0x65）
-    /// - Parameter data: 上报帧数据段
-    /// - Returns: 用药记录，解析失败返回 nil
+    /// 数据格式（15字节）：
+    ///   [0]=DPID(0x65) [1-3]=type/len(00 00 0B)
+    ///   [4]=闹钟DP点 [5-6]=年(高低) [7]=月 [8]=日
+    ///   [9]=闹钟小时 [10]=闹钟分钟 [11]=响铃小时 [12]=响铃分钟
+    ///   [13]=状态(01取药/02超时/03漏服/04提前) [14]=提前标志
     static func parseMedicationRecord(from data: [UInt8]) -> MedicationRecord? {
-        // 数据格式：[DPID(0x65)][0x00][0x00][0x0B][alarmDPID][yearHigh][yearLow][month][day][hour][minute][statusByte]...
-        // data[4] 是关联的闹钟 DPID（如 0x68=alarm3）
-        guard data.count >= 12 else { return nil }
+        guard data.count >= 14 else { return nil }
 
         let alarmDPID = data[4]
         guard let alarmIndex = DPIDConstants.alarmIndex(for: alarmDPID) else { return nil }
@@ -71,9 +72,11 @@ final class MedicationManager {
         let year     = (yearHigh << 8) | yearLow
         let month    = Int(data[7])
         let day      = Int(data[8])
-        let hour     = Int(data[9])
-        let minute   = Int(data[10])
-        let statusByte = data[11]
+        let alarmHour   = Int(data[9])
+        let alarmMinute = Int(data[10])
+        let ringHour    = Int(data[11])
+        let ringMinute  = Int(data[12])
+        let statusByte  = data[13]
 
         guard let status = MedicationStatus.from(byte: statusByte) else { return nil }
 
@@ -81,12 +84,12 @@ final class MedicationManager {
         components.year   = year
         components.month  = month
         components.day    = day
-        components.hour   = hour
-        components.minute = minute
+        components.hour   = ringHour
+        components.minute = ringMinute
         let date = Calendar.current.date(from: components) ?? Date()
 
         return MedicationRecord(
-            timestamp: Int64(date.timeIntervalSince1970 * 1000), // 毫秒，与 Android 一致
+            timestamp: Int64(date.timeIntervalSince1970 * 1000),
             alarmIndex: alarmIndex,
             status: status
         )

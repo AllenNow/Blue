@@ -1,275 +1,155 @@
-# BlueSDK - Android
+# BlueSDK Android
 
-LX-PD02 智能药盒蓝牙通信 SDK（Android 原生）
-
-[![Platform](https://img.shields.io/badge/platform-Android%205.0%2B-green)](https://developer.android.com)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9%2B-purple)](https://kotlinlang.org)
-[![Bluetooth](https://img.shields.io/badge/Bluetooth-5.0%2B-blue)](https://www.bluetooth.com)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-
----
-
-## 简介
-
-BlueSDK 完整封装 LX-PD02 私有蓝牙 5.0 通信协议，向上提供简洁、类型安全的高层 API。第三方开发者无需了解底层帧结构、CRC 校验、密钥认证等协议细节，即可快速构建具备完整用药提醒闭环能力的移动应用。
-
-**核心能力：**
-- 🔵 BLE 设备扫描与连接（自动重连、指数退避）
-- 🔐 密钥认证（手机 MAC + 设备 MAC 累加算法）
-- ⏰ 闹钟管理（7 个槽位）
-- 💊 用药事件接收（响铃/超时/取药/漏服）
-- 📋 用药记录上报（含毫秒时间戳）
-- 🔊 音频与系统设置
-- 📝 分级日志（密钥脱敏）
-
----
+LX-PD02 智能药盒蓝牙通信 SDK（Android 原生 Kotlin）
 
 ## 系统要求
 
-- Android 5.0+（API Level 21+）
+- Android 5.0+（API 21+）
 - Kotlin 1.9+
-- 设备蓝牙须支持 Bluetooth 5.0+
+- Bluetooth 5.0+ 硬件
 
----
+## 项目结构
 
-## 集成
-
-### 本地 AAR（推荐）
-
-将 `blue-sdk-x.x.x.aar` 放入 `app/libs/`：
-
-```kotlin
-// app/build.gradle.kts
-dependencies {
-    implementation(files("libs/blue-sdk-x.x.x.aar"))
-}
 ```
-
-### 本地模块依赖（开发阶段）
-
-```kotlin
-// settings.gradle.kts
-include(":blue-sdk")
-project(":blue-sdk").projectDir = File("../blue-sdk-android/blue-sdk")
-
-// app/build.gradle.kts
-dependencies {
-    implementation(project(":blue-sdk"))
-}
+blue-sdk-android/
+├── blue-sdk/          # SDK Library 模块
+│   └── src/main/kotlin/com/blue/sdk/
+│       ├── BlueSDK.kt              # 公开 API 入口（单例）
+│       ├── BlueSDKListener.kt      # 事件回调接口
+│       ├── enums/                   # 枚举（ConnectionState、SoundType 等）
+│       ├── error/BlueError.kt      # 错误类型
+│       ├── internal/               # 内部组件（CommandQueue、KeyStorage 等）
+│       ├── manager/                # 业务管理器（Auth、Alarm、Audio 等）
+│       ├── model/                  # 数据模型（AlarmInfo、DeviceInfo 等）
+│       └── transport/              # 传输协议层（BLE、帧构建/解析）
+└── app/               # Demo App
+    └── src/main/kotlin/com/blue/demo/
+        ├── MainActivity.kt             # 主控台
+        ├── AlarmManagerActivity.kt     # 闹钟管理
+        ├── MedicationRecordsActivity.kt # 用药记录
+        ├── ProtocolTestActivity.kt     # 协议验证
+        └── MedicationDatabase.kt       # SQLite 持久化
 ```
-
----
-
-## 权限配置
-
-在 `AndroidManifest.xml` 中添加：
-
-```xml
-<!-- Android 6-11 -->
-<uses-permission android:name="android.permission.BLUETOOTH"/>
-<uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-<!-- Android 12+ -->
-<uses-permission android:name="android.permission.BLUETOOTH_SCAN"
-    android:usesPermissionFlags="neverForLocation"/>
-<uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
-
-<uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
-```
-
-> **说明**：Android 6~11 的 `ACCESS_FINE_LOCATION` 是系统对 BLE 扫描的强制要求，SDK 不读取或使用位置数据。
-
----
 
 ## 快速开始
 
-### 1. 初始化
+### 初始化
 
 ```kotlin
-// Application.kt
-import com.blue.sdk.BlueSDK
-import com.blue.sdk.enums.LogLevel
-
-class MyApplication : Application() {
-    override fun onCreate() {
-        super.onCreate()
-        BlueSDK.getInstance(this).initialize()
-        BlueSDK.getInstance(this).setLogLevel(LogLevel.DEBUG) // 开发阶段
-    }
-    override fun onTerminate() {
-        super.onTerminate()
-        BlueSDK.getInstance(this).destroy()
-    }
-}
+// Application 中
+BlueSDK.getInstance(this).initialize()
+BlueSDK.getInstance(this).setLogLevel(LogLevel.DEBUG)
 ```
 
-### 2. 注册事件监听
+### 扫描连接（自动认证）
 
 ```kotlin
-class MainActivity : AppCompatActivity(), BlueSDKListener {
+val sdk = BlueSDK.getInstance(this)
+sdk.listener = this
 
-    private val sdk get() = BlueSDK.getInstance(this)
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        sdk.listener = this
-    }
-
-    override fun onConnectionStateChanged(state: ConnectionState) {
-        println("连接状态：$state")
-    }
-
-    override fun onAlarmRinging(alarmIndex: Int, alarmInfo: AlarmInfo) {
-        println("闹钟${alarmIndex}响铃：${alarmInfo.hour}:${alarmInfo.minute}")
-    }
-
-    override fun onMedicationResult(alarmIndex: Int, status: MedicationStatus) {
-        println("用药结果：$status")
-    }
-
-    override fun onTimeSyncRequested() {
-        sdk.syncTime { _ -> }
-    }
-}
+sdk.startScan(
+    onDeviceFound = { device ->
+        sdk.connect(device)  // 连接成功后 SDK 自动完成密钥认证
+        sdk.stopScan()
+    },
+    onError = { error -> /* 处理错误 */ }
+)
 ```
 
-### 3. 申请权限并扫描
+连接成功后 SDK 自动：
+1. 从 SharedPreferences 读取/生成 phoneMac（6字节）
+2. 用设备蓝牙 MAC + phoneMac 计算密钥（12字节累加取16-bit总和）
+3. 发送认证帧，成功后状态变为 `AUTHENTICATED`
+
+### 操作指令
 
 ```kotlin
-// 申请运行时权限（Android 6+）
-private fun requestPermissionsAndScan() {
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
-    } else {
-        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-    }
-    ActivityCompat.requestPermissions(this, permissions, REQUEST_CODE)
-}
+// 设置闹钟（需认证后调用）
+sdk.setAlarm(1, 8, 0, 0x7F) { result -> }
 
-// 扫描设备
-private fun startScan() {
-    sdk.startScan(
-        onDeviceFound = { device ->
-            println("发现：${device.deviceName}，信号：${device.rssi} dBm")
-            sdk.connect(device)
-            sdk.stopScan()
-        },
-        onError = { error ->
-            println("扫描错误：${error.message}")
-        }
-    )
-}
+// 设置铃声类型
+sdk.setSoundType(SoundType.TYPE_A) { result -> }
+
+// 同步时间
+sdk.syncTime { result -> }
+
+// 恢复出厂
+sdk.restoreFactory { result -> }
 ```
 
-### 4. 认证
+## 公开 API
 
-```kotlin
-sdk.authenticate(phoneMac, deviceMac) { result ->
-    result.fold(
-        onSuccess = { println("认证成功") },
-        onFailure = { println("认证失败：${(it as BlueError).message}") }
-    )
-}
-```
-
-### 5. 设置闹钟
-
-```kotlin
-// 设置闹钟1：每天 08:00
-sdk.setAlarm(index = 1, hour = 8, minute = 0, weekMask = 0x7F) { result ->
-    result.fold(
-        onSuccess = { alarm -> println("闹钟${alarm.index}设置成功") },
-        onFailure = { println("设置失败：${(it as BlueError).message}") }
-    )
-}
-```
-
----
-
-## 错误处理
-
-```kotlin
-when (error) {
-    is BlueError.NotInitialized   -> // 未调用 initialize()
-    is BlueError.NotAuthenticated -> // 未完成认证
-    is BlueError.AuthFailed       -> // 密钥不匹配
-    is BlueError.Timeout          -> // 指令超时（5秒，自动重试3次）
-    is BlueError.PermissionDenied -> // 蓝牙权限未授权
-    is BlueError.InvalidParameter -> // 参数无效
-    is BlueError.Disconnected     -> // 设备已断开
-    is BlueError.BleError         -> // 系统 BLE 错误，error.cause 含原始异常
-}
-```
-
----
-
-## 日志配置
-
-```kotlin
-// 开发阶段
-sdk.setLogLevel(LogLevel.DEBUG)
-
-// 接管日志
-sdk.setLogHandler { level, tag, message ->
-    Log.d(tag, "[$level] $message")
-}
-
-// 生产环境关闭
-sdk.setLogLevel(LogLevel.NONE)
-```
-
-> ⚠️ 密钥值在任何日志级别下均不输出明文。
-
----
-
-## Java 调用
-
-```java
-BlueSDK sdk = BlueSDK.getInstance(context);
-sdk.initialize();
-
-sdk.setAlarm(1, 8, 0, 0x7F, result -> {
-    if (result.isSuccess()) {
-        AlarmInfo alarm = result.getOrNull();
-        Log.d("Demo", "闹钟" + alarm.getIndex() + "设置成功");
-    }
-});
-```
-
----
-
-## 隐私说明
-
-本 SDK **不收集、不存储、不上传**任何用户数据：
-- 用药记录通过回调传递给 APP，SDK 不做存储
-- 设备 MAC 地址仅在内存中用于密钥计算，不持久化
-- 不包含任何网络请求
-
-详见 [隐私政策](../docs/BLE-888/implementation-artifacts/docs/privacy-policy.md)
-
----
-
-## 文档
-
-| 文档 | 说明 |
+| 方法 | 功能 |
 |------|------|
-| [API 参考](../docs/BLE-888/implementation-artifacts/docs/api-reference.md) | 完整 API 列表 |
-| [协议参考](../docs/BLE-888/implementation-artifacts/docs/protocol-reference.md) | 帧格式、DPID、CRC8 |
-| [权限清单](../docs/BLE-888/implementation-artifacts/docs/permission-manifest.md) | 权限配置与合规 |
-| [故障排查](../docs/BLE-888/implementation-artifacts/docs/troubleshooting.md) | 常见问题解决 |
-| [兼容性矩阵](compatibility-matrix.md) | 设备与系统兼容性 |
-| [变更日志](CHANGELOG.md) | 版本历史 |
+| `initialize()` / `destroy()` | 生命周期 |
+| `startScan()` / `stopScan()` | 设备扫描 |
+| `connect(device)` / `disconnect()` | 连接管理（含自动认证） |
+| `clearBinding()` | 清除本地绑定密钥 |
+| `authenticateWithKey(h, l)` | 使用指定密钥认证 |
+| `queryDeviceInfo()` | 查询设备 MAC 和固件版本 |
+| `syncTime()` | 时间同步（fire-and-forget） |
+| `setAlarm()` / `deleteAlarm()` / `clearAllAlarms()` | 闹钟管理（7槽位） |
+| `setVolume(level)` | 音量（低/中/高） |
+| `setSoundType(type)` | 铃声（A/B/C） |
+| `setTimeFormat(format)` | 时制（12H/24H） |
+| `setSilence(enabled)` | 静音开关 |
+| `setAlertDuration(minutes)` | 提醒持续时间 |
+| `restoreFactory()` | 恢复出厂设置 |
 
----
+## 事件回调（BlueSDKListener）
 
-## 已知问题
+```kotlin
+interface BlueSDKListener {
+    fun onConnectionStateChanged(state: ConnectionState)
+    fun onAuthResult(success: Boolean, error: BlueError?)
+    fun onTimeSyncRequested()
+    fun onAlarmUpdated(alarm: AlarmInfo)
+    fun onAlarmRinging(alarmIndex: Int, alarmInfo: AlarmInfo)
+    fun onAlarmTimeout(alarmIndex: Int, alarmInfo: AlarmInfo)
+    fun onMedicationResult(alarmIndex: Int, status: MedicationStatus)
+    fun onMedicationRecordReported(record: MedicationRecord)
+    fun onSoundTypeChanged(type: SoundType)
+    fun onTimeFormatChanged(format: TimeFormat)
+}
+```
 
-- BLE GATT UUID 使用通用串口服务占位，待硬件方确认后更新
-- 时间同步帧格式待硬件方确认
-- 编译验证待 Android Studio 执行
+## 协议 DPID 参考
 
----
+| DPID | 用途 | 帧格式 |
+|------|------|--------|
+| 0x66~0x6C | 闹钟1~7 | `XX 00 00 07 01 HH MM WW 00 00 00` |
+| 0x6E | 音量设置 | `6E 04 00 01 XX` (01低/02中/03高) |
+| 0x6F | 铃声类型 | `6F 04 00 01 XX` (01=A/02=B/03=C) |
+| 0x70 | 提醒持续时间 | `70 02 00 04 00 00 00 XX` |
+| 0x73 | 时制 | `73 04 00 01 XX` (00=12H/01=24H) |
+| 0x74 | 静音 | `74 04 00 01 XX` (00=关/01=开) |
+| 0x76 | 恢复出厂 | `76 01 00 01 01` |
 
-## 许可证
+## 权限配置
 
-MIT License
+```xml
+<!-- AndroidManifest.xml -->
+<uses-permission android:name="android.permission.BLUETOOTH"/>
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation"/>
+<uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
+<uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+```
+
+## Demo App 功能
+
+- **主页**：紧凑单页布局，连接状态 + Loading 遮罩 + 全指令操作 + SDK 日志
+- **闹钟管理**：7槽位列表，TimePicker 编辑，长按删除
+- **用药记录**：CalendarView 按日期查询，SQLite 持久化
+- **协议验证**：15条自动化测试，收发帧实时日志
+
+## 构建
+
+```bash
+./gradlew :app:assembleDebug
+```
+
+## License
+
+MIT

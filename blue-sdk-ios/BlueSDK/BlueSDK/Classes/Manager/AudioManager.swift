@@ -2,6 +2,12 @@
 // BlueSDK - LX-PD02 智能药盒蓝牙通信 SDK
 //
 // 音频与系统设置管理器（FR25~FR31）
+// 协议 DPID 对应关系：
+//   0x6D - 声音类型（1-静音 2-声音A 3-声音B）
+//   0x6E - 提醒持续时间
+//   0x6F - 用药结果通知
+//   0x73 - 时制（0-12H 1-24H）
+//   0x74 - 当前闹钟静音（0-关 1-开）
 
 import Foundation
 
@@ -15,25 +21,40 @@ final class AudioManager {
         self.commandQueue = commandQueue
     }
 
-    // MARK: - 音量设置（FR25）
+    // MARK: - 声音类型设置（DPID=0x6F）
+
+    /// 设置设备铃声类型
+    /// APP 下发用 DPID=0x6F，值：01=类型A 02=类型B 03=类型C
+    func setSoundType(_ type: SoundType, completion: @escaping (Result<Void, BlueError>) -> Void) {
+        let data: [UInt8] = [DPIDConstants.notificationOfResults, 0x04, 0x00, 0x01, type.protocolValue]
+        sendCommand(data: data, completion: completion)
+    }
+
+    // MARK: - 提醒持续时间设置（DPID=0x70）
+
+    /// 设置提醒持续时长（分钟）
+    /// 帧格式：70 02 00 04 00 00 00 [分钟数]
+    func setAlertDuration(_ minutes: Int, completion: @escaping (Result<Void, BlueError>) -> Void) {
+        let data: [UInt8] = [
+            DPIDConstants.emptyAllAlarms, // 0x70 实际是提醒持续时间（协议文档 DPID 名称有歧义）
+            0x02, 0x00, 0x04,
+            0x00, 0x00, 0x00,
+            UInt8(min(minutes, 255))
+        ]
+        sendCommand(data: data, completion: completion)
+    }
+
+    // MARK: - 音量设置
 
     /// 设置设备提醒音量
-    /// - Parameters:
-    ///   - level: 音量级别（低/中/高）
-    ///   - completion: 结果回调
+    /// 注意：协议文档中音量设置使用 DPID=0x6E 的示例帧格式 6E 04 00 01 XX
+    /// 与提醒持续时间 DPID 相同但 type 字段不同（04 vs 02），通过 type 区分
     func setVolume(_ level: VolumeLevel, completion: @escaping (Result<Void, BlueError>) -> Void) {
-        let data: [UInt8] = [DPIDConstants.volumeLevel, 0x04, 0x00, 0x01, level.protocolValue]
+        let data: [UInt8] = [DPIDConstants.alertDuration, 0x04, 0x00, 0x01, level.protocolValue]
         sendCommand(data: data, completion: completion)
     }
 
-    // MARK: - 铃声类型设置（FR26）
-
-    func setSoundType(_ type: SoundType, completion: @escaping (Result<Void, BlueError>) -> Void) {
-        let data: [UInt8] = [DPIDConstants.soundTypeSetting, 0x04, 0x00, 0x01, type.protocolValue]
-        sendCommand(data: data, completion: completion)
-    }
-
-    // MARK: - 静音设置（FR28）
+    // MARK: - 静音设置（DPID=0x74）
 
     func setSilence(_ enabled: Bool, completion: @escaping (Result<Void, BlueError>) -> Void) {
         let value: UInt8 = enabled ? 0x01 : 0x00
@@ -41,35 +62,26 @@ final class AudioManager {
         sendCommand(data: data, completion: completion)
     }
 
-    // MARK: - 提醒持续时长设置（FR29）
+    // MARK: - 时间格式设置（DPID=0x73）
 
-    func setAlertDuration(_ minutes: Int, completion: @escaping (Result<Void, BlueError>) -> Void) {
-        let data: [UInt8] = [
-            DPIDConstants.alertDurationSetting,
-            0x02, 0x00, 0x04,
-            0x00, 0x00, 0x00,
-            UInt8(minutes)
-        ]
-        sendCommand(data: data, completion: completion)
-    }
-
-    // MARK: - 时间格式设置（FR30）
-
-    /// 设置设备时间显示格式
-    /// - Parameters:
-    ///   - format: 时间格式（12/24小时制）
-    ///   - completion: 结果回调
     func setTimeFormat(_ format: TimeFormat, completion: @escaping (Result<Void, BlueError>) -> Void) {
         let data: [UInt8] = [DPIDConstants.timeFormat, 0x04, 0x00, 0x01, format.protocolValue]
         sendCommand(data: data, completion: completion)
     }
 
-    // MARK: - 解析上报帧（FR27、FR31）
+    // MARK: - 解析上报帧
 
     /// 解析铃声类型上报（DPID=0x6D）
+    /// 设备上报值：0=静音, 1=类型A, 2=类型B
     static func parseSoundType(from data: [UInt8]) -> SoundType? {
         guard data.count >= 5 else { return nil }
-        return SoundType.from(byte: data[4])
+        let value = data[4]
+        // 设备上报值比 APP 下发值小1（上报0=静音无对应，1=A, 2=B）
+        switch value {
+        case 0x01: return .typeA
+        case 0x02: return .typeB
+        default: return nil // 静音(0x00)通过 DPID=0x74 上报
+        }
     }
 
     /// 解析时间格式上报（DPID=0x73）

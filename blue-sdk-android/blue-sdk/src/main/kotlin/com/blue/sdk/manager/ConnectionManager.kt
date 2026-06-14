@@ -5,6 +5,8 @@ package com.blue.sdk.manager
 
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import com.blue.sdk.enums.ConnectionState
 import com.blue.sdk.error.BlueError
 import com.blue.sdk.internal.BlueLogger
@@ -23,6 +25,7 @@ internal class ConnectionManager(private val context: Context) {
     companion object {
         private val RECONNECT_DELAYS = longArrayOf(2000L, 4000L, 8000L)
         private const val MAX_RECONNECT_ATTEMPTS = 5
+        private const val CONNECTION_TIMEOUT_MS = 15000L
     }
 
     private val connector = BLEConnector()
@@ -35,6 +38,8 @@ internal class ConnectionManager(private val context: Context) {
     private var targetDevice: BluetoothDevice? = null
     private var reconnectAttempts = 0
     private var reconnectTimer: Timer? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private var connectionTimeoutRunnable: Runnable? = null
 
     var onStateChanged: ((ConnectionState) -> Unit)? = null
     var onError: ((BlueError) -> Unit)? = null
@@ -46,11 +51,13 @@ internal class ConnectionManager(private val context: Context) {
 
         connector.delegate = object : BLEConnectorDelegate {
             override fun onConnected() {
+                cancelConnectionTimeout()
                 reconnectAttempts = 0
                 cancelReconnect()
                 transitionTo(ConnectionState.CONNECTED)
             }
             override fun onDisconnected(error: Exception?) {
+                cancelConnectionTimeout()
                 commandQueue.clear()
                 streamParser.reset()
                 if (_state == ConnectionState.DISCONNECTED) return
@@ -67,11 +74,12 @@ internal class ConnectionManager(private val context: Context) {
 
     private fun handleParsedFrame(frame: ParsedFrame) {
         val cmdInt = frame.cmd.toInt() and 0xFF
-        if (cmdInt == (CommandCode.DEVICE_REPORT.toInt() and 0xFF) ||
-            cmdInt == (CommandCode.TIME_SYNC.toInt() and 0xFF)) {
+        // 时间同步帧始终作为上报处理
+        if (cmdInt == (CommandCode.TIME_SYNC.toInt() and 0xFF)) {
             onDataReceived?.invoke(frame)
             return
         }
+        // 其他帧（含 CMD=0x07）先尝试 CommandQueue 匹配，匹配失败则作为上报
         if (!commandQueue.handleResponse(frame)) {
             onDataReceived?.invoke(frame)
         }
@@ -82,9 +90,11 @@ internal class ConnectionManager(private val context: Context) {
         targetDevice = device
         transitionTo(ConnectionState.CONNECTING)
         connector.connect(context, device)
+        startConnectionTimeout()
     }
 
     fun disconnect() {
+        cancelConnectionTimeout()
         cancelReconnect()
         reconnectAttempts = 0
         connector.disconnect()
@@ -100,6 +110,31 @@ internal class ConnectionManager(private val context: Context) {
         _state = newState
         CallbackDispatcher.dispatch { onStateChanged?.invoke(newState) }
     }
+
+    // MARK: - 连接超时
+
+    private fun startConnectionTimeout() {
+        cancelConnectionTimeout()
+        val runnable = Runnable {
+            if (_state == ConnectionState.CONNECTING) {
+                BlueLogger.warn("连接超时（${CONNECTION_TIMEOUT_MS}ms），断开连接")
+                connector.disconnect()
+                commandQueue.clear()
+                streamParser.reset()
+                transitionTo(ConnectionState.DISCONNECTED)
+                CallbackDispatcher.dispatch { onError?.invoke(BlueError.Timeout) }
+            }
+        }
+        connectionTimeoutRunnable = runnable
+        handler.postDelayed(runnable, CONNECTION_TIMEOUT_MS)
+    }
+
+    private fun cancelConnectionTimeout() {
+        connectionTimeoutRunnable?.let { handler.removeCallbacks(it) }
+        connectionTimeoutRunnable = null
+    }
+
+    // MARK: - 重连
 
     private fun startReconnect() {
         if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {

@@ -2,6 +2,7 @@
 // BlueSDK - LX-PD02 智能药盒蓝牙通信 SDK
 //
 // BLE 设备扫描器：过滤广播名前缀为 LX-PD02 的设备（FR01）
+// 使用 BLECentralManager 单例，确保与连接器共用同一个 CBCentralManager
 
 import Foundation
 import CoreBluetooth
@@ -25,8 +26,14 @@ import CoreBluetooth
     }
 }
 
+/// BLE 扫描器代理协议（供 BLECentralManager 回调转发）
+protocol BLEScannerDelegate: AnyObject {
+    func bleCentralManagerDidUpdateState(_ central: CBCentralManager)
+    func bleCentralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber)
+}
+
 /// BLE 设备扫描器
-final class BLEScanner: NSObject {
+final class BLEScanner: NSObject, BLEScannerDelegate {
 
     // MARK: - 常量
 
@@ -34,11 +41,11 @@ final class BLEScanner: NSObject {
 
     // MARK: - 状态
 
-    private var centralManager: CBCentralManager?
     private var isScanning = false
     private var onDeviceFound: ((ScannedDevice) -> Void)?
     private var onError: ((BlueError) -> Void)?
     private let logger = BlueLogger.shared
+    private let centralManager = BLECentralManager.shared
 
     // MARK: - 公开方法
 
@@ -58,17 +65,16 @@ final class BLEScanner: NSObject {
         self.onDeviceFound = onDeviceFound
         self.onError = onError
 
-        if centralManager == nil {
-            centralManager = CBCentralManager(delegate: self, queue: nil)
-        } else {
-            startScanIfReady()
-        }
+        // 注册为扫描代理
+        centralManager.scanDelegate = self
+
+        startScanIfReady()
     }
 
     /// 停止扫描
     func stopScan() {
         guard isScanning else { return }
-        centralManager?.stopScan()
+        centralManager.centralManager.stopScan()
         isScanning = false
         logger.info("BLE 扫描已停止")
     }
@@ -76,20 +82,17 @@ final class BLEScanner: NSObject {
     // MARK: - 私有方法
 
     private func startScanIfReady() {
-        guard centralManager?.state == .poweredOn else { return }
+        guard centralManager.state == .poweredOn else { return }
         isScanning = true
-        centralManager?.scanForPeripherals(withServices: nil, options: [
+        centralManager.centralManager.scanForPeripherals(withServices: nil, options: [
             CBCentralManagerScanOptionAllowDuplicatesKey: false
         ])
         logger.info("BLE 扫描已启动，过滤前缀：\(BLEScanner.deviceNamePrefix)")
     }
-}
 
-// MARK: - CBCentralManagerDelegate
+    // MARK: - BLEScannerDelegate
 
-extension BLEScanner: CBCentralManagerDelegate {
-
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
+    func bleCentralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
             logger.info("蓝牙已开启")
@@ -97,7 +100,7 @@ extension BLEScanner: CBCentralManagerDelegate {
         case .poweredOff:
             logger.warn("蓝牙已关闭")
             CallbackDispatcher.shared.dispatch { [weak self] in
-                self?.onError?(.bleError)
+                self?.onError?(.bleError(underlying: nil))
             }
         case .unauthorized:
             logger.warn("蓝牙权限未授权")
@@ -109,12 +112,7 @@ extension BLEScanner: CBCentralManagerDelegate {
         }
     }
 
-    func centralManager(
-        _ central: CBCentralManager,
-        didDiscover peripheral: CBPeripheral,
-        advertisementData: [String: Any],
-        rssi RSSI: NSNumber
-    ) {
+    func bleCentralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
         // 过滤广播名前缀
         guard let name = peripheral.name,
               name.hasPrefix(BLEScanner.deviceNamePrefix) else { return }

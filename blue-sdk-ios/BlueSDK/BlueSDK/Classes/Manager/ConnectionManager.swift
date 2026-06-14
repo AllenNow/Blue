@@ -3,6 +3,7 @@
 //
 // 连接状态机：管理 5 个连接状态的转换（ARCH-07）
 // 状态：DISCONNECTED → CONNECTING → CONNECTED → AUTHENTICATED → RECONNECTING
+// 使用 BLECentralManager 单例，无需外部传入 CBCentralManager
 
 import Foundation
 import CoreBluetooth
@@ -29,9 +30,7 @@ final class ConnectionManager {
     private var reconnectAttempts = 0
     private var reconnectTimer: Timer?
     private var targetPeripheral: CBPeripheral?
-    private var centralManager: CBCentralManager?
 
-    private let scanner = BLEScanner()
     private let connector = BLEConnector()
     private let commandQueue = CommandQueue()
     private let streamParser = StreamFrameParser()
@@ -57,26 +56,49 @@ final class ConnectionManager {
 
     // MARK: - 公开方法
 
-    /// 连接指定设备
-    func connect(peripheral: CBPeripheral, centralManager: CBCentralManager) {
+    /// 连接超时定时器
+    private var connectTimeoutTimer: Timer?
+    private static let connectTimeout: TimeInterval = 15
+
+    /// 连接指定设备（使用 BLECentralManager 单例）
+    func connect(peripheral: CBPeripheral) {
         guard state == .disconnected else {
             logger.warn("当前状态 \(state) 不允许发起连接")
             return
         }
         self.targetPeripheral = peripheral
-        self.centralManager = centralManager
         transitionTo(.connecting)
-        connector.connect(peripheral: peripheral, centralManager: centralManager)
+        connector.connect(peripheral: peripheral)
+        scheduleConnectTimeout()
     }
 
     /// 主动断开连接（不触发自动重连）
     func disconnect() {
+        cancelConnectTimeout()
         cancelReconnect()
         reconnectAttempts = 0
         connector.disconnect()
         commandQueue.clear()
         streamParser.reset()
         transitionTo(.disconnected)
+    }
+
+    private func scheduleConnectTimeout() {
+        cancelConnectTimeout()
+        connectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: ConnectionManager.connectTimeout, repeats: false) { [weak self] _ in
+            guard let self = self, self.state == .connecting else { return }
+            self.logger.error("连接超时（\(Int(ConnectionManager.connectTimeout))秒），中止连接")
+            self.connector.disconnect()
+            self.transitionTo(.disconnected)
+            CallbackDispatcher.shared.dispatch {
+                self.onError?(.timeout)
+            }
+        }
+    }
+
+    private func cancelConnectTimeout() {
+        connectTimeoutTimer?.invalidate()
+        connectTimeoutTimer = nil
     }
 
     /// 获取指令队列（供 Manager 层使用）
@@ -117,9 +139,8 @@ final class ConnectionManager {
 
         reconnectTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
             guard let self = self,
-                  let peripheral = self.targetPeripheral,
-                  let central = self.centralManager else { return }
-            self.connector.connect(peripheral: peripheral, centralManager: central)
+                  let peripheral = self.targetPeripheral else { return }
+            self.connector.connect(peripheral: peripheral)
         }
     }
 
@@ -134,6 +155,7 @@ final class ConnectionManager {
 extension ConnectionManager: BLEConnectorDelegate {
 
     func bleConnectorDidConnect() {
+        cancelConnectTimeout()
         reconnectAttempts = 0
         cancelReconnect()
         transitionTo(.connected)
@@ -161,15 +183,15 @@ extension ConnectionManager: BLEConnectorDelegate {
     // MARK: - 帧处理
 
     private func handleParsedFrame(_ frame: ParsedFrame) {
-        // 上报帧（CMD=0x07 或 0xE1）直接路由到事件分发器（ARCH-05）
-        if frame.cmd == CommandCode.deviceReport || frame.cmd == CommandCode.timeSync {
+        // 时间同步帧（CMD=0xE1）始终作为上报处理
+        if frame.cmd == CommandCode.timeSync {
             onDataReceived?(frame)
             return
         }
 
-        // 应答帧尝试匹配指令队列
+        // CMD=0x07 的帧可能是指令应答，也可能是设备主动上报
+        // 先尝试 CommandQueue 匹配，匹配成功说明是应答；匹配失败则作为上报处理
         if !commandQueue.handleResponse(frame) {
-            // 未匹配到指令，作为上报处理
             onDataReceived?(frame)
         }
     }

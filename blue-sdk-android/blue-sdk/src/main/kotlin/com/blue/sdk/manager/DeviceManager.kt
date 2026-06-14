@@ -9,6 +9,7 @@ import com.blue.sdk.model.DeviceInfo
 import com.blue.sdk.transport.CommandCode
 import com.blue.sdk.transport.FrameBuilder
 import java.util.Calendar
+import java.util.TimeZone
 
 internal class DeviceManager(private val commandQueue: CommandQueue) {
 
@@ -18,7 +19,7 @@ internal class DeviceManager(private val commandQueue: CommandQueue) {
             result.fold(
                 onSuccess = { response ->
                     val version = String(response.data, Charsets.US_ASCII).ifEmpty { "Unknown" }
-                    completion(Result.success(DeviceInfo(firmwareVersion = version, deviceId = "")))
+                    completion(Result.success(DeviceInfo(firmwareVersion = version, macAddress = "")))
                 },
                 onFailure = { completion(Result.failure(it as BlueError)) }
             )
@@ -27,44 +28,35 @@ internal class DeviceManager(private val commandQueue: CommandQueue) {
 
     /**
      * 向设备下发当前系统时间（FR14）
-     *
-     * ⚠️ TODO: 时间同步帧格式待硬件方确认
-     * 协议文档示例帧：55 AA 00 E1 00 0B 00 00 01 0C 1E 0F 34 1F 01 03 20 9C
-     * 疑点：年份字段、字节总数、时区编码均与预期不符，待确认后修复
+     * 使用 sendDirect 直接发送，不经过指令队列排队等待应答
      */
     fun syncTime(timeMs: Long = System.currentTimeMillis(), completion: (Result<Unit>) -> Unit) {
         val data = buildTimeSyncData(timeMs)
         val frame = FrameBuilder.build(CommandCode.TIME_SYNC, data)
-        commandQueue.enqueue(CommandCode.TIME_SYNC, frame) { result ->
-            result.fold(
-                onSuccess = { completion(Result.success(Unit)) },
-                onFailure = { completion(Result.failure(it as BlueError)) }
-            )
-        }
+        commandQueue.sendDirect(frame)
+        completion(Result.success(Unit))
     }
 
     private fun buildTimeSyncData(timeMs: Long): ByteArray {
-        val cal = Calendar.getInstance().apply { timeInMillis = timeMs }
-        val year    = cal.get(Calendar.YEAR)
-        val month   = cal.get(Calendar.MONTH) + 1
-        val day     = cal.get(Calendar.DAY_OF_MONTH)
-        val hour    = cal.get(Calendar.HOUR_OF_DAY)
-        val minute  = cal.get(Calendar.MINUTE)
-        val second  = cal.get(Calendar.SECOND)
-        // Calendar.DAY_OF_WEEK: 1=周日，协议 bit0=周日
-        val weekday = cal.get(Calendar.DAY_OF_WEEK) - 1
-        val tzOffsetMin = cal.timeZone.getOffset(timeMs) / 60000
-        return byteArrayOf(
-            ((year shr 8) and 0xFF).toByte(),
-            (year and 0xFF).toByte(),
-            month.toByte(),
-            day.toByte(),
-            hour.toByte(),
-            minute.toByte(),
-            second.toByte(),
-            weekday.toByte(),
-            ((tzOffsetMin shr 8) and 0xFF).toByte(),
-            (tzOffsetMin and 0xFF).toByte()
-        )
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = timeMs
+        
+        val year = calendar.get(Calendar.YEAR)
+        val yearOffset = (year - 2018).coerceIn(0, 255).toByte()
+        val month = (calendar.get(Calendar.MONTH) + 1).toByte()
+        val day = calendar.get(Calendar.DAY_OF_MONTH).toByte()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY).toByte()
+        val minute = calendar.get(Calendar.MINUTE).toByte()
+        val second = calendar.get(Calendar.SECOND).toByte()
+        // 星期：Calendar.SUNDAY=1...SATURDAY=7 → 协议 1=周一...7=周日
+        val calWeekday = calendar.get(Calendar.DAY_OF_WEEK)
+        val weekday = (if (calWeekday == Calendar.SUNDAY) 7 else calWeekday - 1).toByte()
+        
+        // 时区偏移（分钟）
+        val tzOffset = TimeZone.getDefault().getOffset(timeMs) / 60000
+        val tzHigh = ((tzOffset shr 8) and 0xFF).toByte()
+        val tzLow = (tzOffset and 0xFF).toByte()
+        
+        return byteArrayOf(0x00, 0x00, yearOffset, month, day, hour, minute, second, weekday, tzHigh, tzLow)
     }
 }

@@ -14,12 +14,22 @@ import com.blue.sdk.transport.FrameBuilder
 
 internal class AudioManager(private val commandQueue: CommandQueue) {
 
+    /**
+     * 设置音量等级
+     * 使用 DPID 0x6E（ALERT_DURATION），type=0x04
+     * 帧格式：6E 04 00 01 XX（01低/02中/03高）
+     */
     fun setVolume(level: VolumeLevel, completion: (Result<Unit>) -> Unit) {
-        sendCommand(byteArrayOf(DPIDConstants.VOLUME_LEVEL, 0x04, 0x00, 0x01, level.protocolValue), completion)
+        sendCommand(byteArrayOf(DPIDConstants.ALERT_DURATION, 0x04, 0x00, 0x01, level.protocolValue), completion)
     }
 
+    /**
+     * 设置铃声类型
+     * 使用 DPID 0x6F（NOTIFICATION_OF_RESULTS）
+     * 帧格式：6F 04 00 01 XX（01=A/02=B/03=C）
+     */
     fun setSoundType(type: SoundType, completion: (Result<Unit>) -> Unit) {
-        sendCommand(byteArrayOf(DPIDConstants.SOUND_TYPE_SETTING, 0x04, 0x00, 0x01, type.protocolValue), completion)
+        sendCommand(byteArrayOf(DPIDConstants.NOTIFICATION_OF_RESULTS, 0x04, 0x00, 0x01, type.protocolValue), completion)
     }
 
     fun setSilence(enabled: Boolean, completion: (Result<Unit>) -> Unit) {
@@ -27,8 +37,13 @@ internal class AudioManager(private val commandQueue: CommandQueue) {
         sendCommand(byteArrayOf(DPIDConstants.SILENCE, 0x04, 0x00, 0x01, value), completion)
     }
 
+    /**
+     * 设置提醒持续时间（分钟）
+     * 使用 DPID 0x70（EMPTY_ALL_ALARMS），type=0x02
+     * 帧格式：70 02 00 04 00 00 00 XX（分钟数）
+     */
     fun setAlertDuration(minutes: Int, completion: (Result<Unit>) -> Unit) {
-        sendCommand(byteArrayOf(DPIDConstants.ALERT_DURATION_SETTING, 0x02, 0x00, 0x04,
+        sendCommand(byteArrayOf(DPIDConstants.EMPTY_ALL_ALARMS, 0x02, 0x00, 0x04,
             0x00, 0x00, 0x00, minutes.toByte()), completion)
     }
 
