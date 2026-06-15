@@ -17,10 +17,11 @@ internal class AudioManager(private val commandQueue: CommandQueue) {
     /**
      * 设置音量等级
      * 使用 DPID 0x6E（ALERT_DURATION），type=0x04
-     * 帧格式：6E 04 00 01 XX（01低/02中/03高）
+     * 帧格式：78 04 00 01 XX（01低/02中/03高）
+     * 协议示例：55 AA 00 06 00 05 78 04 00 01 01 88
      */
     fun setVolume(level: VolumeLevel, completion: (Result<Unit>) -> Unit) {
-        sendCommand(byteArrayOf(DPIDConstants.ALERT_DURATION, 0x04, 0x00, 0x01, level.protocolValue), completion)
+        sendCommand(byteArrayOf(0x78.toByte(), 0x04, 0x00, 0x01, level.protocolValue), completion)
     }
 
     /**
@@ -32,18 +33,21 @@ internal class AudioManager(private val commandQueue: CommandQueue) {
         sendCommand(byteArrayOf(DPIDConstants.NOTIFICATION_OF_RESULTS, 0x04, 0x00, 0x01, type.protocolValue), completion)
     }
 
+    /** 设置静音（通过铃声类型=0x00实现，取消静音恢复为类型A）*/
     fun setSilence(enabled: Boolean, completion: (Result<Unit>) -> Unit) {
-        val value: Byte = if (enabled) 0x01 else 0x00
-        sendCommand(byteArrayOf(DPIDConstants.SILENCE, 0x04, 0x00, 0x01, value), completion)
+        if (enabled) setSoundType(SoundType.MUTE, completion)
+        else setSoundType(SoundType.TYPE_A, completion)
     }
 
     /**
      * 设置提醒持续时间（分钟）
      * 使用 DPID 0x70（EMPTY_ALL_ALARMS），type=0x02
-     * 帧格式：70 02 00 04 00 00 00 XX（分钟数）
+     * 帧格式：6E 02 00 04 00 00 00 XX
+     * 协议示例：55 AA 00 06 00 08 6E 02 00 04 00 00 00 05 86（2分钟，值=5）
      */
     fun setAlertDuration(minutes: Int, completion: (Result<Unit>) -> Unit) {
-        sendCommand(byteArrayOf(DPIDConstants.EMPTY_ALL_ALARMS, 0x02, 0x00, 0x04,
+        // DPID=0x6E, type=0x02（与音量共用DPID，通过type区分：音量type=04，持续时间type=02）
+        sendCommand(byteArrayOf(DPIDConstants.ALERT_DURATION, 0x02, 0x00, 0x04,
             0x00, 0x00, 0x00, minutes.toByte()), completion)
     }
 

@@ -69,6 +69,9 @@ interface BlueSDKListener {
     /** 设备低电量上报 */
     fun onLowBattery() {}
 
+    /** 设备端执行解绑操作上报（Story 9.3）*/
+    fun onDeviceUnbound() {}
+
     /** 连接错误（超时、断开等）*/
     fun onError(error: BlueError) {}
 

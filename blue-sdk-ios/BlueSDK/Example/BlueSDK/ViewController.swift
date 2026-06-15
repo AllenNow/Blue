@@ -90,6 +90,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         title = "BlueSDK"
         view.backgroundColor = .systemBackground
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "调试", style: .plain, target: self, action: #selector(openDebugPanel))
         buildUI()
         BlueSDK.shared.initialize()
         BlueSDK.shared.delegate = self
@@ -494,6 +495,11 @@ class ViewController: UIViewController {
     // MARK: - 日志
 
     @objc private func clearLog() { logTextView.text = "" }
+
+    @objc private func openDebugPanel() {
+        let debugVC = DebugViewController()
+        navigationController?.pushViewController(debugVC, animated: true)
+    }
 
     private func log(_ msg: String) {
         let ts = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)

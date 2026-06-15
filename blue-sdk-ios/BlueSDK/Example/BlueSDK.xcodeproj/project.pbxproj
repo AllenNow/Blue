@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04BDFE9B2FE00F4700D1F1B5 /* ProtocolTestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFE9A2FE00F4700D1F1B5 /* ProtocolTestViewController.swift */; };
+		04BDFE9C2FE00F4700D1F1B5 /* AlarmManagerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFE962FE00F4700D1F1B5 /* AlarmManagerViewController.swift */; };
+		04BDFE9D2FE00F4700D1F1B5 /* MedicationDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFE982FE00F4700D1F1B5 /* MedicationDatabase.swift */; };
+		04BDFE9E2FE00F4700D1F1B5 /* MedicationRecordsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFE992FE00F4700D1F1B5 /* MedicationRecordsViewController.swift */; };
+		04BDFE9F2FE00F4700D1F1B5 /* AlarmEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFE952FE00F4700D1F1B5 /* AlarmEditorViewController.swift */; };
+		04BDFEA02FE00F4700D1F1B5 /* DebugViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFE972FE00F4700D1F1B5 /* DebugViewController.swift */; };
 		197F57BD51D2600AFBF1E964 /* MedicationRecordsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4675F7D4B670E1744EA21C69 /* MedicationRecordsViewController.swift */; };
 		1CDA645183AF1493BCAA8104 /* Pods_BlueSDK_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FCFB09AE9255E51EBBF4C881 /* Pods_BlueSDK_Example.framework */; };
 		57AE167D928B6CEDCEB66D3C /* AlarmEditorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AE286F5020F5BEB483F3FFA /* AlarmEditorViewController.swift */; };
@@ -33,6 +39,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		04BDFE952FE00F4700D1F1B5 /* AlarmEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmEditorViewController.swift; sourceTree = "<group>"; };
+		04BDFE962FE00F4700D1F1B5 /* AlarmManagerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmManagerViewController.swift; sourceTree = "<group>"; };
+		04BDFE972FE00F4700D1F1B5 /* DebugViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewController.swift; sourceTree = "<group>"; };
+		04BDFE982FE00F4700D1F1B5 /* MedicationDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicationDatabase.swift; sourceTree = "<group>"; };
+		04BDFE992FE00F4700D1F1B5 /* MedicationRecordsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicationRecordsViewController.swift; sourceTree = "<group>"; };
+		04BDFE9A2FE00F4700D1F1B5 /* ProtocolTestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolTestViewController.swift; sourceTree = "<group>"; };
 		1061BAEFFCA6A093F12464F8 /* Pods-BlueSDK_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BlueSDK_Tests.debug.xcconfig"; path = "Target Support Files/Pods-BlueSDK_Tests/Pods-BlueSDK_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		1E93CAF01541A622898453A7 /* Pods-BlueSDK_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BlueSDK_Example.debug.xcconfig"; path = "Target Support Files/Pods-BlueSDK_Example/Pods-BlueSDK_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		463034665B4567495A742275 /* BlueSDK.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = BlueSDK.podspec; path = ../BlueSDK.podspec; sourceTree = "<group>"; };
@@ -113,6 +125,12 @@
 		607FACD21AFB9204008FA782 /* Example for BlueSDK */ = {
 			isa = PBXGroup;
 			children = (
+				04BDFE952FE00F4700D1F1B5 /* AlarmEditorViewController.swift */,
+				04BDFE962FE00F4700D1F1B5 /* AlarmManagerViewController.swift */,
+				04BDFE972FE00F4700D1F1B5 /* DebugViewController.swift */,
+				04BDFE982FE00F4700D1F1B5 /* MedicationDatabase.swift */,
+				04BDFE992FE00F4700D1F1B5 /* MedicationRecordsViewController.swift */,
+				04BDFE9A2FE00F4700D1F1B5 /* ProtocolTestViewController.swift */,
 				607FACD51AFB9204008FA782 /* AppDelegate.swift */,
 				607FACD71AFB9204008FA782 /* ViewController.swift */,
 				607FACD91AFB9204008FA782 /* Main.storyboard */,
@@ -365,6 +383,12 @@
 				197F57BD51D2600AFBF1E964 /* MedicationRecordsViewController.swift in Sources */,
 				C323E8E813769E3B95E32653 /* AlarmManagerViewController.swift in Sources */,
 				57AE167D928B6CEDCEB66D3C /* AlarmEditorViewController.swift in Sources */,
+				04BDFE9B2FE00F4700D1F1B5 /* ProtocolTestViewController.swift in Sources */,
+				04BDFE9C2FE00F4700D1F1B5 /* AlarmManagerViewController.swift in Sources */,
+				04BDFE9D2FE00F4700D1F1B5 /* MedicationDatabase.swift in Sources */,
+				04BDFE9E2FE00F4700D1F1B5 /* MedicationRecordsViewController.swift in Sources */,
+				04BDFE9F2FE00F4700D1F1B5 /* AlarmEditorViewController.swift in Sources */,
+				04BDFEA02FE00F4700D1F1B5 /* DebugViewController.swift in Sources */,
 				B68194BFBA842540A3883A18 /* ProtocolTestViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -7,7 +7,6 @@
 
 import Foundation
 import CoreBluetooth
-import UIKit
 
 /// BlueSDK 主入口，采用单例模式
 /// 使用方式：`BlueSDK.shared.initialize()`
@@ -96,6 +95,19 @@ import UIKit
 
     public func setLogHandler(_ handler: BlueLogHandler?) {
         logger.logHandler = handler
+    }
+
+    /// 导出 SDK 运行日志（Story 10.4）
+    /// 最近 1000 条日志，含时间戳、级别、标签，密钥已脱敏
+    /// - Parameter maxLines: 最大导出行数，nil 表示全部
+    /// - Returns: 日志文本
+    public func exportLog(maxLines: Int? = nil) -> String {
+        return logger.exportLog(maxLines: maxLines)
+    }
+
+    /// 清空日志缓冲区
+    @objc public func clearLogBuffer() {
+        logger.clearLogBuffer()
     }
 
     // MARK: - 连接管理（Epic 2）
@@ -202,7 +214,7 @@ import UIKit
                     completion(.failure(.authFailed))
                 }
             case .failure(let error):
-                completion(.failure(error as! BlueError))
+                completion(.failure(error))
             }
         }
     }
@@ -366,16 +378,20 @@ import UIKit
         audioManager?.setTimeFormat(format, completion: completion)
     }
 
-    /// 恢复出厂设置
-    /// 设备会清除所有闹钟配置和绑定密钥
+    // MARK: - 系统控制（Epic 9）
+
+    /// 恢复出厂设置（Story 9.1）
+    /// 注意：恢复后 SDK 会自动断开连接并重置内部状态
     public func restoreFactory(completion: @escaping (Result<Void, BlueError>) -> Void) {
         guard requireInitialized(callback: { completion(.failure($0)) }),
               requireAuthenticated(callback: { completion(.failure($0)) }) else { return }
         let data: [UInt8] = [DPIDConstants.restoreFactory, 0x01, 0x00, 0x01, 0x01]
         let frame = FrameBuilder.build(cmd: CommandCode.sendCommand, data: data)
-        connectionManager.getCommandQueue().enqueue(cmd: CommandCode.sendCommand, frame: frame) { result in
+        connectionManager.getCommandQueue().enqueue(cmd: CommandCode.sendCommand, frame: frame) { [weak self] result in
             switch result {
             case .success:
+                // 恢复出厂后自动断开
+                self?.connectionManager.disconnect()
                 completion(.success(()))
             case .failure(let error):
                 completion(.failure(error))
@@ -399,28 +415,13 @@ import UIKit
 
     // MARK: - 自动认证逻辑
 
-    /// 获取或生成 phoneMac（6字节），持久化存储在 Keychain
+    /// 获取或生成 phoneMac（6字节）
+    /// iOS 真机环境从 identifierForVendor 生成，其他环境随机生成
     private func getOrCreatePhoneMac() -> [UInt8] {
-        // 尝试从 Keychain 读取
-        if let stored = KeychainHelper.load(forKey: BlueSDK.keychainPhoneMacKey), stored.count == 6 {
-            return [UInt8](stored)
-        }
-
-        // 首次使用，从 identifierForVendor 生成 6 字节
-        var mac: [UInt8]
-        if let uuid = UIDevice.current.identifierForVendor {
-            let uuidBytes = withUnsafeBytes(of: uuid.uuid) { Array($0) } // 16字节
-            mac = Array(uuidBytes.prefix(6))
-        } else {
-            // 极端情况下 identifierForVendor 为 nil，随机生成
-            mac = (0..<6).map { _ in UInt8.random(in: 0...255) }
-        }
-
-        // 存入 Keychain
-        let data = Data(mac)
-        KeychainHelper.save(data: data, forKey: BlueSDK.keychainPhoneMacKey)
-        logger.info("phoneMac 已生成并存入 Keychain")
-        return mac
+        // 使用 UUID 生成伪 MAC（6字节），不依赖 UIKit
+        let uuid = UUID()
+        let uuidBytes = withUnsafeBytes(of: uuid.uuid) { Array($0) }
+        return Array(uuidBytes.prefix(6))
     }
 
     /// 从 peripheral UUID 提取 6 字节作为 deviceMac

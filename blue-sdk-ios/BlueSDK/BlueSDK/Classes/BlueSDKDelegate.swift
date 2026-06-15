@@ -61,6 +61,9 @@ public protocol BlueSDKDelegate: AnyObject {
     /// 设备低电上报
     func blueSDKDidReportLowBattery(_ sdk: BlueSDK)
 
+    /// 设备端执行解绑操作上报（Story 9.3）
+    func blueSDKDidReportDeviceUnbound(_ sdk: BlueSDK)
+
     /// 连接错误（超时、断开等）
     func blueSDK(_ sdk: BlueSDK, didEncounterError error: BlueError)
 
@@ -86,6 +89,7 @@ public extension BlueSDKDelegate {
     func blueSDK(_ sdk: BlueSDK, didChangeSoundType type: SoundType) {}
     func blueSDK(_ sdk: BlueSDK, didChangeTimeFormat format: TimeFormat) {}
     func blueSDKDidReportLowBattery(_ sdk: BlueSDK) {}
+    func blueSDKDidReportDeviceUnbound(_ sdk: BlueSDK) {}
     func blueSDK(_ sdk: BlueSDK, didEncounterError error: BlueError) {}
     func blueSDK(_ sdk: BlueSDK, didStartReconnecting attempt: Int, maxAttempts: Int) {}
     func blueSDKDidFailReconnection(_ sdk: BlueSDK) {}

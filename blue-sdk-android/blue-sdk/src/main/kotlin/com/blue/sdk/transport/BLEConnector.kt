@@ -79,6 +79,7 @@ internal class BLEConnector {
         }
 
         @Suppress("DEPRECATION")
+        @Deprecated("Use onCharacteristicChanged(gatt, characteristic, value) for API 33+")
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
             // API 33 以下的旧回调
             val data = characteristic.value ?: return

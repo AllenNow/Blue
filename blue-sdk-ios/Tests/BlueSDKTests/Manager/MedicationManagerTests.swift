@@ -52,12 +52,13 @@ final class MedicationManagerTests: XCTestCase {
     /// data[4]=0x68(alarm3), data[5-6]=0x07E9(2025年), data[7]=0x0B(11月), data[8]=0x01(1日)
     /// data[9]=0x00(0时), data[10]=0x12(18分), data[11]=0x01(taken)
     func testParseMedicationRecord() {
-        let data: [UInt8] = [0x65, 0x00, 0x00, 0x0B, 0x68, 0x07, 0xE9, 0x0B, 0x01, 0x00, 0x12, 0x01, 0x00]
+        // 15字节：[DPID][type/len x3][alarmDPID][yearH][yearL][month][day][alarmH][alarmM][ringH][ringM][status][advance]
+        let data: [UInt8] = [0x65, 0x00, 0x00, 0x0B, 0x68, 0x07, 0xE9, 0x0B, 0x01, 0x00, 0x12, 0x00, 0x12, 0x01, 0x00]
         let record = MedicationManager.parseMedicationRecord(from: data)
         XCTAssertNotNil(record)
         XCTAssertEqual(record?.alarmIndex, 3)
         XCTAssertEqual(record?.status, .taken)
-        XCTAssertGreaterThan(record?.timestamp ?? 0, 0) // 时间戳为毫秒，应大于0
+        XCTAssertTrue((record?.timestamp ?? 0) > 0)
     }
 
     /// 验证：数据不足时返回 nil

@@ -33,10 +33,12 @@ final class AudioManager {
     // MARK: - 提醒持续时间设置（DPID=0x70）
 
     /// 设置提醒持续时长（分钟）
-    /// 帧格式：70 02 00 04 00 00 00 [分钟数]
+    /// 设置提醒持续时长
+    /// 帧格式：6E 02 00 04 00 00 00 [值]
+    /// 协议示例：55 AA 00 06 00 08 6E 02 00 04 00 00 00 05 86（设置2分钟，值=5）
     func setAlertDuration(_ minutes: Int, completion: @escaping (Result<Void, BlueError>) -> Void) {
         let data: [UInt8] = [
-            DPIDConstants.emptyAllAlarms, // 0x70 实际是提醒持续时间（协议文档 DPID 名称有歧义）
+            DPIDConstants.alertDuration, // 0x6E — 提醒持续时间（与音量共用 DPID，通过 type 字段 02 vs 04 区分）
             0x02, 0x00, 0x04,
             0x00, 0x00, 0x00,
             UInt8(min(minutes, 255))
@@ -47,19 +49,23 @@ final class AudioManager {
     // MARK: - 音量设置
 
     /// 设置设备提醒音量
-    /// 注意：协议文档中音量设置使用 DPID=0x6E 的示例帧格式 6E 04 00 01 XX
-    /// 与提醒持续时间 DPID 相同但 type 字段不同（04 vs 02），通过 type 区分
+    /// 协议示例：55 AA 00 06 00 05 78 04 00 01 01 88（低音量）
+    /// DPID=0x78, type=0x04, len=0x01, value: 01=低 02=中 03=高
     func setVolume(_ level: VolumeLevel, completion: @escaping (Result<Void, BlueError>) -> Void) {
-        let data: [UInt8] = [DPIDConstants.alertDuration, 0x04, 0x00, 0x01, level.protocolValue]
+        let data: [UInt8] = [0x78, 0x04, 0x00, 0x01, level.protocolValue]
         sendCommand(data: data, completion: completion)
     }
 
-    // MARK: - 静音设置（DPID=0x74）
+    // MARK: - 静音设置
 
+    /// 设置静音（实际通过铃声类型=0x00实现）
+    /// enabled=true 时设置铃声类型为静音，enabled=false 时恢复为类型A
     func setSilence(_ enabled: Bool, completion: @escaping (Result<Void, BlueError>) -> Void) {
-        let value: UInt8 = enabled ? 0x01 : 0x00
-        let data: [UInt8] = [DPIDConstants.silence, 0x04, 0x00, 0x01, value]
-        sendCommand(data: data, completion: completion)
+        if enabled {
+            setSoundType(.mute, completion: completion)
+        } else {
+            setSoundType(.typeA, completion: completion)
+        }
     }
 
     // MARK: - 时间格式设置（DPID=0x73）
