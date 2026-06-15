@@ -63,6 +63,12 @@ public protocol BlueSDKDelegate: AnyObject {
 
     /// 连接错误（超时、断开等）
     func blueSDK(_ sdk: BlueSDK, didEncounterError error: BlueError)
+
+    /// 正在自动重连
+    func blueSDK(_ sdk: BlueSDK, didStartReconnecting attempt: Int, maxAttempts: Int)
+
+    /// 自动重连失败，已达最大尝试次数
+    func blueSDKDidFailReconnection(_ sdk: BlueSDK)
 }
 
 // MARK: - 默认空实现（所有方法可选）
@@ -81,4 +87,6 @@ public extension BlueSDKDelegate {
     func blueSDK(_ sdk: BlueSDK, didChangeTimeFormat format: TimeFormat) {}
     func blueSDKDidReportLowBattery(_ sdk: BlueSDK) {}
     func blueSDK(_ sdk: BlueSDK, didEncounterError error: BlueError) {}
+    func blueSDK(_ sdk: BlueSDK, didStartReconnecting attempt: Int, maxAttempts: Int) {}
+    func blueSDKDidFailReconnection(_ sdk: BlueSDK) {}
 }

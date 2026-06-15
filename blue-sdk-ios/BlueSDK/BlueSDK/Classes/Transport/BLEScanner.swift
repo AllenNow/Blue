@@ -41,7 +41,7 @@ final class BLEScanner: NSObject, BLEScannerDelegate {
 
     // MARK: - 状态
 
-    private var isScanning = false
+    private(set) var isScanning = false
     private var onDeviceFound: ((ScannedDevice) -> Void)?
     private var onError: ((BlueError) -> Void)?
     private let logger = BlueLogger.shared

@@ -28,6 +28,7 @@ import com.blue.sdk.manager.ConnectionManager
 import com.blue.sdk.manager.DeviceManager
 import com.blue.sdk.manager.MedicationManager
 import com.blue.sdk.model.AlarmInfo
+import com.blue.sdk.model.AlarmConfig
 import com.blue.sdk.transport.CommandCode
 import com.blue.sdk.transport.DPIDConstants
 import com.blue.sdk.transport.FrameBuilder
@@ -121,10 +122,10 @@ class BlueSDK private constructor(private val context: Context) {
     val connectionState: ConnectionState get() = connectionManager.state
 
     /**
-     * 开始扫描 LX-PD02 设备（FR01）
-     * @param onDeviceFound 发现设备回调（主线程），返回 ScannedDevice
-     * @param onError 错误回调（主线程）
+     * 开始扫描 LX-PD02 设备（旧版双回调，已废弃）
+     * @deprecated 使用 startScan(timeoutMs, callback) 替代
      */
+    @Deprecated("使用 startScan(timeoutMs, callback) 替代", ReplaceWith("startScan(callback = { event -> })"))
     fun startScan(
         onDeviceFound: (com.blue.sdk.model.ScannedDevice) -> Unit,
         onError: (BlueError) -> Unit
@@ -136,6 +137,37 @@ class BlueSDK private constructor(private val context: Context) {
             return
         }
         scanner.startScan(adapter, onDeviceFound, onError)
+    }
+
+    /**
+     * 开始扫描 LX-PD02 设备（FR01）
+     * 使用统一的 ScanEvent 回调模式
+     * @param timeoutMs 扫描超时时间（毫秒），0 表示不超时
+     * @param callback 扫描事件回调（主线程），包含 DeviceFound / Error / Stopped 三种事件
+     */
+    fun startScan(
+        timeoutMs: Long = 10_000L,
+        callback: (com.blue.sdk.model.ScanEvent) -> Unit
+    ) {
+        if (!requireInitialized { }) return
+        val btManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+        val adapter = btManager?.adapter ?: run {
+            callback(com.blue.sdk.model.ScanEvent.Error(BlueError.BleError(Exception("BluetoothAdapter unavailable"))))
+            return
+        }
+        scanner.startScan(adapter,
+            { device -> callback(com.blue.sdk.model.ScanEvent.DeviceFound(device)) },
+            { error -> callback(com.blue.sdk.model.ScanEvent.Error(error)) }
+        )
+        // 超时自动停止
+        if (timeoutMs > 0) {
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                if (scanner.isScanning) {
+                    stopScan()
+                    callback(com.blue.sdk.model.ScanEvent.Stopped)
+                }
+            }, timeoutMs)
+        }
     }
 
     /** 停止扫描（FR01）*/
@@ -163,15 +195,21 @@ class BlueSDK private constructor(private val context: Context) {
         connectionManager.disconnect()
     }
 
+    /** 取消正在进行的自动重连 */
+    fun cancelReconnection() {
+        if (!requireInitialized { }) return
+        connectionManager.cancelReconnection()
+    }
+
     // MARK: - 认证（Epic 3）
 
     /**
-     * 发送密钥包完成设备认证（FR08）
+     * 发送密钥包完成设备认证（FR08）— 内部使用
      * @param phoneMac 手机 MAC 地址（6字节）
      * @param deviceMac 设备 MAC 地址（6字节）
      * @param completion 认证结果回调（主线程）
      */
-    fun authenticate(
+    internal fun authenticate(
         phoneMac: ByteArray,
         deviceMac: ByteArray,
         completion: (Result<Unit>) -> Unit
@@ -233,10 +271,12 @@ class BlueSDK private constructor(private val context: Context) {
     /**
      * 清除本地绑定（删除 SharedPreferences 中的 phoneMac）
      * 对应 iOS 版本的 clearBinding()
+     * @param completion 操作完成回调（默认空回调，向后兼容）
      */
-    fun clearBinding() {
+    fun clearBinding(completion: (Result<Unit>) -> Unit = {}) {
         KeyStorage.clear(context)
         BlueLogger.info("已清除本地绑定")
+        completion(Result.success(Unit))
     }
 
     /**
@@ -269,9 +309,23 @@ class BlueSDK private constructor(private val context: Context) {
 
     // MARK: - 闹钟管理（Epic 5）
 
+    @Deprecated("使用 setAlarm(index, hour, minute, days) 替代", ReplaceWith("setAlarm(index, hour, minute, WeekDay.fromMask(weekMask).toSet(), completion)"))
     fun setAlarm(index: Int, hour: Int, minute: Int, weekMask: Int = 0x7F, completion: (Result<AlarmInfo>) -> Unit) {
         if (!requireInitialized(completion) || !requireAuthenticated(completion)) return
         alarmManager.setAlarm(index, hour, minute, weekMask, completion)
+    }
+
+    /**
+     * 设置闹钟（类型安全版本）
+     * @param index 闹钟槽位（1~7）
+     * @param hour 小时（0~23）
+     * @param minute 分钟（0~59）
+     * @param days 重复星期，默认每天
+     * @param completion 结果回调
+     */
+    fun setAlarm(index: Int, hour: Int, minute: Int, days: Set<com.blue.sdk.enums.WeekDay>, completion: (Result<AlarmInfo>) -> Unit) {
+        if (!requireInitialized(completion) || !requireAuthenticated(completion)) return
+        alarmManager.setAlarm(index, hour, minute, com.blue.sdk.enums.WeekDay.toMask(days), completion)
     }
 
     fun deleteAlarm(index: Int, completion: (Result<Unit>) -> Unit) {
@@ -282,6 +336,35 @@ class BlueSDK private constructor(private val context: Context) {
     fun clearAllAlarms(completion: (Result<Unit>) -> Unit) {
         if (!requireInitialized(completion) || !requireAuthenticated(completion)) return
         alarmManager.clearAllAlarms(completion)
+    }
+
+    /**
+     * 批量设置闹钟（便利方法）
+     * 内部串行发送，全部成功后回调 success，任一失败即回调 failure
+     * @param alarms 闹钟配置列表
+     * @param completion 全部完成后回调，成功返回设置好的 AlarmInfo 列表
+     */
+    fun setAlarms(alarms: List<AlarmConfig>, completion: (Result<List<AlarmInfo>>) -> Unit) {
+        if (!requireInitialized(completion) || !requireAuthenticated(completion)) return
+        if (alarms.isEmpty()) { completion(Result.success(emptyList())); return }
+        val results = mutableListOf<AlarmInfo>()
+        fun setNext(index: Int) {
+            if (index >= alarms.size) {
+                completion(Result.success(results))
+                return
+            }
+            val alarm = alarms[index]
+            alarmManager.setAlarm(alarm.index, alarm.hour, alarm.minute, alarm.resolvedWeekMask()) { result ->
+                result.fold(
+                    onSuccess = { info ->
+                        results.add(info)
+                        setNext(index + 1)
+                    },
+                    onFailure = { completion(Result.failure(it as BlueError)) }
+                )
+            }
+        }
+        setNext(0)
     }
 
     // MARK: - 用药事件（Epic 6）
@@ -458,6 +541,12 @@ class BlueSDK private constructor(private val context: Context) {
         connectionManager.onError = { error ->
             BlueLogger.error("连接错误：${error.message}")
             CallbackDispatcher.dispatch { listener?.onError(error) }
+        }
+        connectionManager.onReconnecting = { attempt, max ->
+            CallbackDispatcher.dispatch { listener?.onReconnecting(attempt, max) }
+        }
+        connectionManager.onReconnectFailed = {
+            CallbackDispatcher.dispatch { listener?.onReconnectFailed() }
         }
         connectionManager.onDataReceived = { frame ->
             handleIncomingFrame(frame)

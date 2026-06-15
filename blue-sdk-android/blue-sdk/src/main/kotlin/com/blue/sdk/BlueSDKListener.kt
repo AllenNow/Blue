@@ -71,4 +71,10 @@ interface BlueSDKListener {
 
     /** 连接错误（超时、断开等）*/
     fun onError(error: BlueError) {}
+
+    /** 正在自动重连（FR: 重连透明度）*/
+    fun onReconnecting(attempt: Int, maxAttempts: Int) {}
+
+    /** 自动重连失败，已达最大尝试次数 */
+    fun onReconnectFailed() {}
 }

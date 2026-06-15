@@ -68,6 +68,31 @@ public enum BlueError: Error, Equatable {
         if case .bleError(let err) = self { return err }
         return nil
     }
+
+    /// 错误恢复建议
+    /// 向集成方提供明确的下一步操作指引
+    public var recoverySuggestion: String {
+        switch self {
+        case .notInitialized:
+            return "请在调用任何 SDK 方法前先执行 BlueSDK.shared.initialize()"
+        case .notAuthenticated:
+            return "请等待连接成功后 SDK 自动认证完成，或检查 fixedAuthKey 配置是否正确"
+        case .authFailed:
+            return "请检查 fixedAuthKey 是否与设备端匹配。如设备已被其他手机绑定，需先对设备执行恢复出厂设置"
+        case .timeout:
+            return "请确认设备在蓝牙有效范围内（≤3米）且电量充足。可尝试重新连接"
+        case .permissionDenied:
+            return "请在系统设置中授予应用蓝牙权限。iOS 13+ 需要在 Info.plist 中声明 NSBluetoothAlwaysUsageDescription"
+        case .invalidParameter:
+            return "请检查参数范围：闹钟索引 1~7，小时 0~23，分钟 0~59"
+        case .protocolError:
+            return "通信帧校验失败，可能是蓝牙干扰导致。建议断开重连后重试"
+        case .bleError:
+            return "系统蓝牙异常，请确认蓝牙已开启。如问题持续，尝试重启手机蓝牙"
+        case .disconnected:
+            return "设备连接已断开。SDK 会自动尝试重连，也可手动调用 connect() 重新连接"
+        }
+    }
 }
 
 extension BlueError: LocalizedError {

@@ -39,7 +39,15 @@ import UIKit
     /// 推荐通过 BlueSDKConfig 初始化时设置。运行时修改此值是线程安全的。
     public var fixedAuthKey: String? {
         get { config.fixedAuthKey }
-        set { config = BlueSDKConfig(fixedAuthKey: newValue, logLevel: config.logLevel, autoAuthEnabled: config.autoAuthEnabled) }
+        set {
+            config = BlueSDKConfig(
+                fixedAuthKey: newValue,
+                logLevel: config.logLevel,
+                autoAuthEnabled: config.autoAuthEnabled,
+                autoReconnect: config.autoReconnect,
+                maxReconnectAttempts: config.maxReconnectAttempts
+            )
+        }
     }
 
     /// SDK 配置（通过 initialize 时传入）
@@ -102,13 +110,38 @@ import UIKit
         return connectionManager.state
     }
 
-    /// 开始扫描 LX-PD02 设备（FR01）
+    /// 开始扫描 LX-PD02 设备（旧版双回调，已废弃）
+    @available(*, deprecated, message: "使用 startScan(timeout:callback:) 替代")
     public func startScan(
         onDeviceFound: @escaping (ScannedDevice) -> Void,
         onError: @escaping (BlueError) -> Void
     ) {
         guard requireInitialized(callback: onError) else { return }
         scanner.startScan(onDeviceFound: onDeviceFound, onError: onError)
+    }
+
+    /// 开始扫描 LX-PD02 设备（FR01）
+    /// 使用统一的 ScanEvent 回调模式
+    /// - Parameters:
+    ///   - timeout: 扫描超时时间（秒），0 表示不超时。默认 10 秒
+    ///   - callback: 扫描事件回调（主线程），包含 .deviceFound / .error / .stopped 三种事件
+    public func startScan(
+        timeout: TimeInterval = 10,
+        callback: @escaping (ScanEvent) -> Void
+    ) {
+        guard requireInitialized(callback: { error in callback(.error(error)) }) else { return }
+        scanner.startScan(
+            onDeviceFound: { device in callback(.deviceFound(device)) },
+            onError: { error in callback(.error(error)) }
+        )
+        // 超时自动停止
+        if timeout > 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + timeout) { [weak self] in
+                guard let self = self, self.scanner.isScanning else { return }
+                self.stopScan()
+                callback(.stopped)
+            }
+        }
     }
 
     /// 停止扫描（FR01）
@@ -126,9 +159,11 @@ import UIKit
 
     /// 清除本地绑定密钥（用于重新配对）
     /// 清除后下次连接会生成新的 phoneMac，需配合设备恢复出厂使用
-    @objc public func clearBinding() {
+    /// - Parameter completion: 操作完成回调（默认空回调，向后兼容）
+    public func clearBinding(completion: @escaping (Result<Void, BlueError>) -> Void = { _ in }) {
         KeychainHelper.delete(forKey: BlueSDK.keychainPhoneMacKey)
         logger.info("本地绑定密钥已清除")
+        completion(.success(()))
     }
 
     /// 断开连接（FR03）
@@ -136,6 +171,11 @@ import UIKit
         requireInitialized { _ in }
         connectedPeripheral = nil
         connectionManager.disconnect()
+    }
+
+    /// 取消正在进行的自动重连
+    public func cancelReconnection() {
+        connectionManager.cancelReconnection()
     }
 
     // MARK: - 认证（Epic 3）
@@ -167,9 +207,9 @@ import UIKit
         }
     }
 
-    /// 手动发送密钥包完成设备认证（FR08）
-    /// 通常不需要手动调用，SDK 会在连接成功后自动认证
-    public func authenticate(
+    /// 发送密钥包完成设备认证（FR08）— 内部使用
+    /// SDK 内置自动认证，如需指定密钥请使用 BlueSDKConfig.fixedAuthKey 或 authenticateWithKey()
+    internal func authenticate(
         phoneMac: [UInt8],
         deviceMac: [UInt8],
         completion: @escaping (Result<Void, BlueError>) -> Void
@@ -197,6 +237,8 @@ import UIKit
     // MARK: - 闹钟管理（Epic 5）
 
     /// 设置闹钟（FR15）
+    /// - Note: 推荐使用 `setAlarm(index:hour:minute:days:completion:)` 类型安全版本
+    @available(*, deprecated, message: "使用 setAlarm(index:hour:minute:days:completion:) 替代")
     public func setAlarm(
         index: Int,
         hour: Int,
@@ -207,6 +249,25 @@ import UIKit
         guard requireInitialized(callback: { completion(.failure($0)) }),
               requireAuthenticated(callback: { completion(.failure($0)) }) else { return }
         alarmManager?.setAlarm(index: index, hour: hour, minute: minute, weekMask: weekMask, completion: completion)
+    }
+
+    /// 设置闹钟（类型安全版本）
+    /// - Parameters:
+    ///   - index: 闹钟槽位（1~7）
+    ///   - hour: 小时（0~23）
+    ///   - minute: 分钟（0~59）
+    ///   - days: 重复星期，默认每天
+    ///   - completion: 结果回调
+    public func setAlarm(
+        index: Int,
+        hour: Int,
+        minute: Int,
+        days: WeekDays = .all,
+        completion: @escaping (Result<AlarmInfo, BlueError>) -> Void
+    ) {
+        guard requireInitialized(callback: { completion(.failure($0)) }),
+              requireAuthenticated(callback: { completion(.failure($0)) }) else { return }
+        alarmManager?.setAlarm(index: index, hour: hour, minute: minute, weekMask: days.rawValue, completion: completion)
     }
 
     /// 删除闹钟（FR16）
@@ -221,6 +282,39 @@ import UIKit
         guard requireInitialized(callback: { completion(.failure($0)) }),
               requireAuthenticated(callback: { completion(.failure($0)) }) else { return }
         alarmManager?.clearAllAlarms(completion: completion)
+    }
+
+    /// 批量设置闹钟（便利方法）
+    /// 内部串行发送，全部成功后回调 success，任一失败即回调 failure
+    /// - Parameters:
+    ///   - alarms: 闹钟配置列表
+    ///   - completion: 全部完成后回调，成功返回设置好的 AlarmInfo 列表
+    public func setAlarms(
+        _ alarms: [AlarmConfig],
+        completion: @escaping (Result<[AlarmInfo], BlueError>) -> Void
+    ) {
+        guard requireInitialized(callback: { completion(.failure($0)) }),
+              requireAuthenticated(callback: { completion(.failure($0)) }) else { return }
+        guard !alarms.isEmpty else { completion(.success([])); return }
+
+        var results: [AlarmInfo] = []
+        func setNext(index: Int) {
+            if index >= alarms.count {
+                completion(.success(results))
+                return
+            }
+            let alarm = alarms[index]
+            alarmManager?.setAlarm(index: alarm.index, hour: alarm.hour, minute: alarm.minute, weekMask: alarm.weekMask) { result in
+                switch result {
+                case .success(let info):
+                    results.append(info)
+                    setNext(index: index + 1)
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+        }
+        setNext(index: 0)
     }
 
     // MARK: - 用药事件（Epic 6）
@@ -445,6 +539,20 @@ import UIKit
             self.logger.error("连接错误：\(error.localizedDescription)")
             CallbackDispatcher.shared.dispatch {
                 self.delegate?.blueSDK(self, didEncounterError: error)
+            }
+        }
+
+        connectionManager.onReconnecting = { [weak self] attempt, maxAttempts in
+            guard let self = self else { return }
+            CallbackDispatcher.shared.dispatch {
+                self.delegate?.blueSDK(self, didStartReconnecting: attempt, maxAttempts: maxAttempts)
+            }
+        }
+
+        connectionManager.onReconnectFailed = { [weak self] in
+            guard let self = self else { return }
+            CallbackDispatcher.shared.dispatch {
+                self.delegate?.blueSDKDidFailReconnection(self)
             }
         }
 

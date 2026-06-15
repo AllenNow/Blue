@@ -44,6 +44,8 @@ internal class ConnectionManager(private val context: Context) {
     var onStateChanged: ((ConnectionState) -> Unit)? = null
     var onError: ((BlueError) -> Unit)? = null
     var onDataReceived: ((ParsedFrame) -> Unit)? = null
+    var onReconnecting: ((attempt: Int, maxAttempts: Int) -> Unit)? = null
+    var onReconnectFailed: (() -> Unit)? = null
 
     init {
         // 流式解析器回调
@@ -140,6 +142,7 @@ internal class ConnectionManager(private val context: Context) {
         if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
             BlueLogger.warn("重连次数已达上限，停止重连")
             transitionTo(ConnectionState.DISCONNECTED)
+            CallbackDispatcher.dispatch { onReconnectFailed?.invoke() }
             CallbackDispatcher.dispatch { onError?.invoke(BlueError.Disconnected) }
             return
         }
@@ -148,12 +151,23 @@ internal class ConnectionManager(private val context: Context) {
         reconnectAttempts++
         BlueLogger.info("第 $reconnectAttempts 次重连，${delay}ms 后尝试")
         transitionTo(ConnectionState.RECONNECTING)
+        CallbackDispatcher.dispatch { onReconnecting?.invoke(reconnectAttempts, MAX_RECONNECT_ATTEMPTS) }
         reconnectTimer = Timer()
         reconnectTimer?.schedule(object : TimerTask() {
             override fun run() {
                 targetDevice?.let { connector.connect(context, it) }
             }
         }, delay)
+    }
+
+    /** 取消正在进行的自动重连 */
+    fun cancelReconnection() {
+        if (_state == ConnectionState.RECONNECTING) {
+            BlueLogger.info("手动取消重连")
+            cancelReconnect()
+            reconnectAttempts = 0
+            transitionTo(ConnectionState.DISCONNECTED)
+        }
     }
 
     private fun cancelReconnect() {

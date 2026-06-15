@@ -41,6 +41,8 @@ final class ConnectionManager {
     var onStateChanged: ((ConnectionState) -> Void)?
     var onError: ((BlueError) -> Void)?
     var onDataReceived: ((ParsedFrame) -> Void)?
+    var onReconnecting: ((_ attempt: Int, _ maxAttempts: Int) -> Void)?
+    var onReconnectFailed: (() -> Void)?
 
     // MARK: - 初始化
 
@@ -125,6 +127,7 @@ final class ConnectionManager {
             logger.warn("重连次数已达上限（\(ConnectionManager.maxReconnectAttempts)次），停止重连")
             transitionTo(.disconnected)
             CallbackDispatcher.shared.dispatch { [weak self] in
+                self?.onReconnectFailed?()
                 self?.onError?(.disconnected)
             }
             return
@@ -136,12 +139,24 @@ final class ConnectionManager {
 
         logger.info("第 \(reconnectAttempts) 次重连，\(delay) 秒后尝试")
         transitionTo(.reconnecting)
+        CallbackDispatcher.shared.dispatch { [weak self] in
+            self?.onReconnecting?(self?.reconnectAttempts ?? 0, ConnectionManager.maxReconnectAttempts)
+        }
 
         reconnectTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
             guard let self = self,
                   let peripheral = self.targetPeripheral else { return }
             self.connector.connect(peripheral: peripheral)
         }
+    }
+
+    /// 取消正在进行的自动重连
+    func cancelReconnection() {
+        guard state == .reconnecting else { return }
+        logger.info("手动取消重连")
+        cancelReconnect()
+        reconnectAttempts = 0
+        transitionTo(.disconnected)
     }
 
     private func cancelReconnect() {

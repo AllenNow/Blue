@@ -18,7 +18,7 @@ internal class BLEScanner {
         private const val DEVICE_NAME_PREFIX = "LX-PD02"
     }
 
-    private var isScanning = false
+    @Volatile internal var isScanning = false
     private var onDeviceFound: ((ScannedDevice) -> Unit)? = null
     private var onError: ((BlueError) -> Unit)? = null
 
