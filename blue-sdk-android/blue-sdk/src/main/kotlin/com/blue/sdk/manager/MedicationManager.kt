@@ -29,24 +29,38 @@ internal class MedicationManager(private val commandQueue: CommandQueue) {
     companion object {
         fun parseMedicationEvent(data: ByteArray): Pair<Int, MedicationStatus>? {
             if (data.size < 11) return null
-            // alarmIndex 直接从 DPID（data[0]）推导
             val alarmIndex = DPIDConstants.alarmIndex(data[0]) ?: return null
             val status = MedicationStatus.fromByte(data[10]) ?: return null
             return Pair(alarmIndex, status)
         }
 
+        /**
+         * 解析用药记录上报帧（DPID=0x65）
+         * 数据格式（15字节）：
+         *   [0]=DPID(0x65) [1-3]=type/len(00 00 0B)
+         *   [4]=闹钟DP点 [5-6]=年(高低) [7]=月 [8]=日
+         *   [9]=闹钟小时 [10]=闹钟分钟 [11]=响铃小时 [12]=响铃分钟
+         *   [13]=状态(01取药/02超时/03漏服/04提前) [14]=提前标志
+         */
         fun parseMedicationRecord(data: ByteArray): MedicationRecord? {
-            // data[4] 是关联的闹钟 DPID
-            if (data.size < 13) return null
-            val alarmIndex = DPIDConstants.alarmIndex(data[4]) ?: return null
-            val year   = ((data[5].toInt() and 0xFF) shl 8) or (data[6].toInt() and 0xFF)
-            val month  = data[7].toInt() and 0xFF
-            val day    = data[8].toInt() and 0xFF
-            val hour   = data[9].toInt() and 0xFF
-            val minute = data[10].toInt() and 0xFF
-            val status = MedicationStatus.fromByte(data[11]) ?: return null
+            if (data.size < 14) return null
+
+            val alarmDPID = data[4]
+            val alarmIndex = DPIDConstants.alarmIndex(alarmDPID) ?: return null
+
+            val yearHigh = data[5].toInt() and 0xFF
+            val yearLow = data[6].toInt() and 0xFF
+            val year = (yearHigh shl 8) or yearLow
+            val month = data[7].toInt() and 0xFF
+            val day = data[8].toInt() and 0xFF
+            val ringHour = data[11].toInt() and 0xFF
+            val ringMinute = data[12].toInt() and 0xFF
+            val statusByte = data[13]
+
+            val status = MedicationStatus.fromByte(statusByte) ?: return null
+
             val cal = Calendar.getInstance().apply {
-                set(year, month - 1, day, hour, minute, 0)
+                set(year, month - 1, day, ringHour, ringMinute, 0)
                 set(Calendar.MILLISECOND, 0)
             }
             return MedicationRecord(

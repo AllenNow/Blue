@@ -5,6 +5,50 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-16
+
+### Added — iOS 功能对齐
+
+**配置与生命周期**
+- `BlueSDKConfig` 配置类：支持 fixedAuthKey、logLevel、autoAuthEnabled、autoReconnect、maxReconnectAttempts
+- `initialize(config)` 接受配置参数（向后兼容无参调用）
+- `fixedAuthKey` 运行时可修改属性
+
+**自动认证（连接后自动完成密钥认证）**
+- 连接成功后 SDK 自动发起密钥认证（固定密钥模式 / phoneMac+deviceMac 自动计算模式）
+- `KeystoreHelper`：phoneMac 持久化存储（SharedPreferences，零第三方依赖）
+- `authenticateWithKey(keyHigh, keyLow)`：直接使用指定密钥认证
+- `clearBinding()`：清除本地绑定密钥
+
+**扫描增强**
+- `startScan(timeoutMs, callback)`：统一 ScanEvent 回调模式（DeviceFound / Error / Stopped）
+- `ScanEvent` sealed class 模型
+- 扫描超时自动停止
+
+**闹钟增强**
+- `WeekDays` value class（OptionSet 语义，类型安全的星期配置）
+- `AlarmConfig` 数据模型（批量设置用）
+- `setAlarm(index, hour, minute, days)` 类型安全版本
+- `setAlarms(List<AlarmConfig>)` 批量设置便利方法
+
+**日志导出**
+- `BlueLogger` 环形缓冲区（最近 1000 条）
+- `exportLog(maxLines)` / `clearLogBuffer()` 公开 API
+
+**连接管理**
+- `cancelReconnection()` 公开 API
+- 时间同步自动响应 + 30秒节流
+
+**用药通知类型安全**
+- `sendMedicationNotification(status: MedicationStatus)` 使用枚举参数
+
+### Fixed
+
+- `DeviceInfo` 解析：正确提取前 6 字节 MAC 地址 + 正则提取版本号（原实现仅做 ASCII 转换）
+- `MedicationManager.parseMedicationRecord`：字段偏移修正（与 iOS 协议对齐，data[11-12] 为响铃时间，data[13] 为状态）
+- `handleDeviceReport`：所有闹钟槽位（1~7）均正确处理响铃/超时/取药事件（原仅处理 ALARM_3）
+- 时间同步帧自动响应（原仅回调 listener，不自动下发）
+
 ## [0.1.0] - 2026-05-07
 
 ### Added

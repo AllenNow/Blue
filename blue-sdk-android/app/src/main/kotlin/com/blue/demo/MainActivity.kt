@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         val funcRow = row()
         funcRow.addView(pillBtn("设备信息", accentPink) { queryDeviceInfo() })
         funcRow.addView(pillBtn("同步时间", accentPurple) { syncTime() })
-        funcRow.addView(pillBtn("闹钟管理", accentPurple) { setAlarm1() })
+        funcRow.addView(pillBtn("闹钟管理", accentPurple) { startActivity(android.content.Intent(this, AlarmManagerActivity::class.java)) })
         root.addView(funcRow)
         root.addView(gap(16))
 
@@ -156,13 +156,13 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         // 系统操作
         val sysRow = row()
         sysRow.addView(pillBtn("恢复出厂", accentOrange) { sdk.restoreFactory { logR("恢复出厂", it) } })
-        sysRow.addView(pillBtn("清除绑定", accentOrange) { sdk.disconnect(); log("已清除绑定（断开连接）") })
+        sysRow.addView(pillBtn("清除绑定", accentOrange) { sdk.clearBinding { logR("清除绑定", it) } })
         root.addView(sysRow)
         root.addView(gap(8))
 
         // 用药记录 / 指令验证
         val toolRow = row()
-        toolRow.addView(pillBtn("用药记录", accentPink) { log("📋 用药记录功能：通过回调自动接收") })
+        toolRow.addView(pillBtn("用药记录", accentPink) { startActivity(android.content.Intent(this, MedicationRecordsActivity::class.java)) })
         toolRow.addView(pillBtn("指令验证", accentViolet) { openDebugPanel() })
         root.addView(toolRow)
         root.addView(gap(8))
@@ -211,10 +211,17 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
 
     private fun startScan() {
         log("扫描中...")
-        sdk.startScan(
-            onDeviceFound = { d -> log("📡 ${d.deviceName} RSSI:${d.rssi}"); sdk.connect(d); sdk.stopScan() },
-            onError = { log("❌ ${it.message}") }
-        )
+        sdk.startScan(timeoutMs = 10000L) { event ->
+            when (event) {
+                is com.blue.sdk.model.ScanEvent.DeviceFound -> {
+                    log("📡 ${event.device.deviceName} RSSI:${event.device.rssi}")
+                    sdk.connect(event.device)
+                    sdk.stopScan()
+                }
+                is com.blue.sdk.model.ScanEvent.Error -> log("❌ ${event.error.message}")
+                is com.blue.sdk.model.ScanEvent.Stopped -> log("⏹ 扫描已停止")
+            }
+        }
     }
 
     private fun authenticate() {
@@ -231,16 +238,8 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         sdk.syncTime { it.fold({ log("✅ 时间已同步") }, { log("❌ ${(it as BlueError).message}") }) }
     }
 
-    private fun setAlarm1() {
-        sdk.setAlarm(1, 8, 0, 0x7F) { it.fold(
-            { log("✅ 闹钟${it.index}：${"%02d:%02d".format(it.hour, it.minute)}") },
-            { log("❌ ${(it as BlueError).message}") }
-        )}
-    }
-
     private fun openDebugPanel() {
-        log("🔧 调试模式：所有帧收发已记录在日志中（setLogLevel=DEBUG）")
-        sdk.setLogLevel(LogLevel.DEBUG)
+        startActivity(android.content.Intent(this, ProtocolTestActivity::class.java))
     }
 
     private fun <T> logR(a: String, r: Result<T>) {
@@ -266,8 +265,22 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     override fun onAlarmUpdated(alarm: AlarmInfo) { log("⏰ 闹钟${alarm.index}变更") }
     override fun onAlarmRinging(alarmIndex: Int, alarmInfo: AlarmInfo) { log("🔔 响铃！") }
     override fun onAlarmTimeout(alarmIndex: Int, alarmInfo: AlarmInfo) { log("⚠️ 超时！") }
-    override fun onMedicationResult(alarmIndex: Int, status: MedicationStatus) { log("💊 $status") }
-    override fun onMedicationRecordReported(record: MedicationRecord) { log("📋 ${record.status}") }
+    override fun onMedicationResult(alarmIndex: Int, status: MedicationStatus) {
+        log("💊 $status")
+        val statusInt = when (status) {
+            MedicationStatus.TAKEN -> 1; MedicationStatus.TIMEOUT -> 2
+            MedicationStatus.MISSED -> 3; MedicationStatus.EARLY -> 4
+        }
+        MedicationDatabase.getInstance(this).insert(System.currentTimeMillis(), alarmIndex, statusInt)
+    }
+    override fun onMedicationRecordReported(record: MedicationRecord) {
+        log("📋 ${record.status}")
+        val statusInt = when (record.status) {
+            MedicationStatus.TAKEN -> 1; MedicationStatus.TIMEOUT -> 2
+            MedicationStatus.MISSED -> 3; MedicationStatus.EARLY -> 4
+        }
+        MedicationDatabase.getInstance(this).insert(record.timestamp, record.alarmIndex, statusInt)
+    }
     override fun onSoundTypeChanged(type: SoundType) { log("🔊 $type") }
     override fun onTimeFormatChanged(format: TimeFormat) { log("🕐 $format") }
     override fun onLowBattery() { log("🪫 低电量") }
