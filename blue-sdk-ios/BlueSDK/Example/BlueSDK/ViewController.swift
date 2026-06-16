@@ -71,7 +71,6 @@ class ViewController: UIViewController {
 
     // MARK: - 功能控件
 
-    private let authKeyField = UITextField()
     private let soundTypeSegment = UISegmentedControl(items: ["A", "B", "C"])
     private let volumeSegment = UISegmentedControl(items: ["低", "中", "高"])
     private let timeFormatSegment = UISegmentedControl(items: ["12H", "24H"])
@@ -83,6 +82,7 @@ class ViewController: UIViewController {
 
     private var scannedDevices: [ScannedDevice] = []
     private var previousConnectionState: ConnectionState = .disconnected
+    private var isAuthFailed = false
 
     // MARK: - 生命周期
 
@@ -92,8 +92,16 @@ class ViewController: UIViewController {
         view.backgroundColor = .systemBackground
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "调试", style: .plain, target: self, action: #selector(openDebugPanel))
         buildUI()
+        
+        scanButton.isHidden = false
+        disconnectButton.isHidden = true
+        
         BlueSDK.shared.initialize()
         BlueSDK.shared.delegate = self
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
         // 将 SDK 内部所有日志（含收发数据）转发到界面日志窗口，同时保留终端输出
         BlueSDK.shared.setLogHandler { [weak self] level, tag, message in
             // 保留终端打印
@@ -115,22 +123,17 @@ class ViewController: UIViewController {
     // MARK: - UI 构建
 
     private func buildUI() {
-        let scroll = UIScrollView()
-        view.addSubview(scroll)
-        scroll.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide) }
-
-        let content = UIStackView()
-        content.axis = .vertical
-        content.spacing = 10
-        scroll.addSubview(content)
-        content.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(12)
-            $0.width.equalToSuperview().offset(-24)
+        let mainStack = UIStackView()
+        mainStack.axis = .vertical
+        mainStack.spacing = 10
+        view.addSubview(mainStack)
+        mainStack.snp.makeConstraints {
+            $0.edges.equalTo(view.safeAreaLayoutGuide).inset(12)
         }
 
         // 1. 连接状态卡片
         let connCard = makeCard()
-        content.addArrangedSubview(connCard)
+        mainStack.addArrangedSubview(connCard)
 
         let connStack = UIStackView()
         connStack.spacing = 8
@@ -139,6 +142,7 @@ class ViewController: UIViewController {
         connStack.snp.makeConstraints {
             $0.top.equalToSuperview().inset(10)
             $0.leading.trailing.equalToSuperview().inset(14)
+            $0.bottom.equalToSuperview().inset(10)
         }
 
         statusDot.backgroundColor = .systemGray
@@ -162,28 +166,8 @@ class ViewController: UIViewController {
         connStack.addArrangedSubview(scanButton)
         connStack.addArrangedSubview(disconnectButton)
 
-        // 密钥输入框（连接卡片下方）
-        let keyRow = UIStackView()
-        keyRow.spacing = 8
-        keyRow.alignment = .center
-        let keyLabel = makeSmallLabel("密钥")
-        keyLabel.snp.makeConstraints { $0.width.equalTo(36) }
-        authKeyField.placeholder = "如05FA，留空自动"
-        authKeyField.font = .monospacedSystemFont(ofSize: 14, weight: .regular)
-        authKeyField.borderStyle = .roundedRect
-        authKeyField.autocapitalizationType = .allCharacters
-        authKeyField.autocorrectionType = .no
-        keyRow.addArrangedSubview(keyLabel)
-        keyRow.addArrangedSubview(authKeyField)
-        connCard.addSubview(keyRow)
-        keyRow.snp.makeConstraints {
-            $0.top.equalTo(connStack.snp.bottom).offset(6)
-            $0.leading.trailing.equalToSuperview().inset(14)
-            $0.bottom.equalToSuperview().offset(-10)
-        }
-
         // 2. 快捷操作
-        content.addArrangedSubview(makeButtonRow([
+        mainStack.addArrangedSubview(makeButtonRow([
             ("设备信息", .systemIndigo, #selector(queryDeviceInfo)),
             ("同步时间", .systemIndigo, #selector(syncTime)),
             ("闹钟管理", .systemIndigo, #selector(showAlarmManager)),
@@ -191,7 +175,7 @@ class ViewController: UIViewController {
 
         // 3. 音频设置卡片
         let audioCard = makeCard()
-        content.addArrangedSubview(audioCard)
+        mainStack.addArrangedSubview(audioCard)
 
         let audioStack = UIStackView()
         audioStack.axis = .vertical
@@ -231,37 +215,35 @@ class ViewController: UIViewController {
         audioStack.addArrangedSubview(durRow)
 
         // 4. 工具 & 系统
-        content.addArrangedSubview(makeButtonRow([
+        mainStack.addArrangedSubview(makeButtonRow([
             ("用药记录", .systemOrange, #selector(showRecords)),
             ("指令验证", .systemPurple, #selector(showProtocolTest)),
+            ("清空闹钟", .systemTeal, #selector(clearAllAlarms)),
         ]))
 
-        content.addArrangedSubview(makeButtonRow([
+        mainStack.addArrangedSubview(makeButtonRow([
             ("恢复出厂", .systemRed, #selector(restoreFactory)),
             ("清除绑定", .systemRed, #selector(clearLocalBinding)),
         ]))
 
-        // 临时：用旧密钥恢复设备
-        content.addArrangedSubview(makeButtonRow([
-            ("旧密钥认证(05FA)", .systemBrown, #selector(authWithOldKey)),
-        ]))
-
-        // 5. 日志
+        // 5. 日志（填充剩余空间）
         let logHeader = UIStackView(arrangedSubviews: [makeSmallLabel("日志"), makeSpacer()])
         let clearBtn = UIButton(type: .system)
         configureCompactButton(clearBtn, title: "清空", color: .systemGray)
         clearBtn.addTarget(self, action: #selector(clearLog), for: .touchUpInside)
         logHeader.addArrangedSubview(clearBtn)
         logHeader.spacing = 8
-        content.addArrangedSubview(logHeader)
+        mainStack.addArrangedSubview(logHeader)
 
         logTextView.isEditable = false
         logTextView.font = .monospacedSystemFont(ofSize: 10, weight: .regular)
         logTextView.backgroundColor = .secondarySystemBackground
         logTextView.textColor = .label
         logTextView.layer.cornerRadius = 8
-        content.addArrangedSubview(logTextView)
-        logTextView.snp.makeConstraints { $0.height.equalTo(150) }
+        logTextView.setContentHuggingPriority(.defaultLow, for: .vertical)
+        logTextView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        mainStack.addArrangedSubview(logTextView)
+        logTextView.snp.makeConstraints { $0.height.greaterThanOrEqualTo(150) }
 
         // 全屏 Loading 遮罩（最后添加，确保在最上层）
         view.addSubview(loadingOverlay)
@@ -336,6 +318,10 @@ class ViewController: UIViewController {
         previousConnectionState = .disconnected
         log("用户取消连接")
     }
+    
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
 
     private func showLoading(_ text: String = "连接认证中...") {
         loadingLabel?.text = text
@@ -349,13 +335,10 @@ class ViewController: UIViewController {
     // MARK: - 扫描连接
 
     @objc private func startScan() {
-        guard scannedDevices.isEmpty else { return } // 防止重复扫描
         scanButton.isEnabled = false
         showLoading("扫描连接中...")
-        // 读取密钥输入框
-        let keyText = authKeyField.text?.trimmingCharacters(in: .whitespaces) ?? ""
-        BlueSDK.shared.fixedAuthKey = keyText.isEmpty ? nil : keyText
-        log("扫描中...\(keyText.isEmpty ? "（自动密钥）" : "（固定密钥：\(keyText)）")")
+        BlueSDK.shared.fixedAuthKey = nil
+        log("扫描中...（自动密钥）")
         updateStatus("扫描中...", color: .systemOrange)
         scannedDevices.removeAll()
         BlueSDK.shared.startScan(
@@ -405,6 +388,15 @@ class ViewController: UIViewController {
             vc.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "返回", style: .plain, target: vc, action: #selector(AlarmManagerViewController.dismissSelf))
             nav.modalPresentationStyle = .fullScreen
             present(nav, animated: true)
+        }
+    }
+
+    @objc private func clearAllAlarms() {
+        confirm("清空闹钟", msg: "确定清空所有闹钟？") {
+            BlueSDK.shared.clearAllAlarms { [weak self] r in
+                if case .success = r { self?.log("⏰ 所有闹钟已清空") }
+                else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
+            }
         }
     }
 
@@ -470,20 +462,6 @@ class ViewController: UIViewController {
         }
     }
 
-    @objc private func authWithOldKey() {
-        log("尝试用旧密钥 05FA 认证...")
-        BlueSDK.shared.authenticateWithKey(keyHigh: 0x05, keyLow: 0xFA) { [weak self] result in
-            switch result {
-            case .success:
-                self?.log("✅ 旧密钥认证成功！现在可以发送恢复出厂指令")
-                self?.updateStatus("已连接(旧密钥)", color: .systemGreen)
-                self?.hideLoading()
-            case .failure(let e):
-                self?.log("❌ 旧密钥认证也失败：\(e.localizedDescription)")
-            }
-        }
-    }
-
     @objc private func showRecords() {
         pushOrPresent(MedicationRecordsViewController())
     }
@@ -520,7 +498,7 @@ class ViewController: UIViewController {
     // MARK: - 辅助
 
     @objc private func handleAuthFailed() {
-        // 立即同步隐藏 loading
+        isAuthFailed = true
         loadingOverlay.isHidden = true
         loadingIndicator.stopAnimating()
         scanButton.isEnabled = true
@@ -529,7 +507,6 @@ class ViewController: UIViewController {
         statusDot.backgroundColor = .systemRed
         previousConnectionState = .disconnected
 
-        // 防止重复弹窗
         guard presentedViewController == nil else { return }
         log("🔐 认证失败")
         let a = UIAlertController(title: "认证失败", message: "密钥不一致，请对设备长按按键恢复出厂设置后重试。", preferredStyle: .alert)
@@ -571,34 +548,52 @@ extension ViewController: BlueSDKDelegate {
             guard let self = self else { return }
             switch state {
             case .disconnected:
-                self.updateStatus("未连接", color: .systemGray)
-                self.loadingIndicator.stopAnimating()
-                self.scanButton.isEnabled = true
-                self.hideLoading()
+                self.scanButton.isHidden = false
+                self.disconnectButton.isHidden = true
+                if self.isAuthFailed {
+                    self.isAuthFailed = false
+                } else {
+                    self.updateStatus("未连接", color: .systemGray)
+                    self.loadingIndicator.stopAnimating()
+                    self.scanButton.isEnabled = true
+                    self.hideLoading()
+                }
             case .connecting:
+                self.scanButton.isHidden = true
+                self.disconnectButton.isHidden = true
                 self.updateStatus("连接中...", color: .systemOrange)
                 self.loadingIndicator.startAnimating()
             case .connected:
+                self.scanButton.isHidden = true
+                self.disconnectButton.isHidden = true
                 self.updateStatus("认证中...", color: .systemYellow)
                 self.loadingIndicator.startAnimating()
             case .authenticated:
+                self.scanButton.isHidden = true
+                self.disconnectButton.isHidden = false
                 self.updateStatus("已连接", color: .systemGreen)
                 self.loadingIndicator.stopAnimating()
                 self.hideLoading()
             case .reconnecting:
+                self.scanButton.isHidden = true
+                self.disconnectButton.isHidden = true
                 self.updateStatus("重连中...", color: .systemOrange)
                 self.loadingIndicator.startAnimating()
             @unknown default: break
             }
 
-            if state == .disconnected && self.previousConnectionState == .connected {
-                self.handleAuthFailed()
-            }
             if state == .disconnected { self.scannedDevices.removeAll() }
             self.previousConnectionState = state
         }
     }
 
+    func blueSDK(_ sdk: BlueSDK, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
+        if !success {
+            log("🔐 认证失败")
+            handleAuthFailed()
+        }
+    }
+    
     func blueSDKDidRequestTimeSync(_ sdk: BlueSDK) { log("⏰ 时间同步（已自动处理）") }
     func blueSDK(_ sdk: BlueSDK, didUpdateAlarm alarm: AlarmInfo) { log("⏰ 闹钟\(alarm.index) \(String(format: "%02d:%02d", alarm.hour, alarm.minute))") }
     func blueSDK(_ sdk: BlueSDK, didAlarmRinging alarmIndex: Int, alarmInfo: AlarmInfo) { log("🔔 闹钟\(alarmIndex)响铃") }

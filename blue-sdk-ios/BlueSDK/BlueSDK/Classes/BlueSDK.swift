@@ -387,15 +387,10 @@ import CoreBluetooth
               requireAuthenticated(callback: { completion(.failure($0)) }) else { return }
         let data: [UInt8] = [DPIDConstants.restoreFactory, 0x01, 0x00, 0x01, 0x01]
         let frame = FrameBuilder.build(cmd: CommandCode.sendCommand, data: data)
-        connectionManager.getCommandQueue().enqueue(cmd: CommandCode.sendCommand, frame: frame) { [weak self] result in
-            switch result {
-            case .success:
-                // 恢复出厂后自动断开
-                self?.connectionManager.disconnect()
-                completion(.success(()))
-            case .failure(let error):
-                completion(.failure(error))
-            }
+        connectionManager.getCommandQueue().sendDirect(frame: frame)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.connectionManager.disconnect()
+            completion(.success(()))
         }
     }
 
@@ -416,12 +411,22 @@ import CoreBluetooth
     // MARK: - 自动认证逻辑
 
     /// 获取或生成 phoneMac（6字节）
-    /// iOS 真机环境从 identifierForVendor 生成，其他环境随机生成
+    /// 优先从 Keychain 读取，不存在则生成新的并持久化存储
     private func getOrCreatePhoneMac() -> [UInt8] {
-        // 使用 UUID 生成伪 MAC（6字节），不依赖 UIKit
+        // 先尝试从 Keychain 读取已存储的 phoneMac
+        if let storedData = KeychainHelper.load(forKey: BlueSDK.keychainPhoneMacKey), storedData.count == 6 {
+            return Array(storedData)
+        }
+        
+        // 生成新的伪 MAC（6字节），使用 UUID 生成，不依赖 UIKit
         let uuid = UUID()
         let uuidBytes = withUnsafeBytes(of: uuid.uuid) { Array($0) }
-        return Array(uuidBytes.prefix(6))
+        let phoneMac = Array(uuidBytes.prefix(6))
+        
+        // 持久化到 Keychain
+        KeychainHelper.save(data: Data(phoneMac), forKey: BlueSDK.keychainPhoneMacKey)
+        
+        return phoneMac
     }
 
     /// 从 peripheral UUID 提取 6 字节作为 deviceMac
@@ -508,12 +513,13 @@ import CoreBluetooth
             case .failure(let error):
                 self.logger.error("performAuth 失败：\(error.localizedDescription)")
                 if error == .authFailed {
-                    // 认证失败，停止自动重连，保持断开状态
                     self.connectedPeripheral = nil
-                    self.connectionManager.disconnect()
                 }
                 CallbackDispatcher.shared.dispatch {
                     self.delegate?.blueSDK(self, didAuthenticateWithSuccess: false, error: error)
+                }
+                if error == .authFailed {
+                    self.connectionManager.disconnect()
                 }
                 completion(.failure(error))
             }

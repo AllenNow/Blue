@@ -48,9 +48,17 @@ final class BLEConnector: NSObject {
     /// 断开连接
     func disconnect() {
         guard let peripheral = peripheral else { return }
+        
+        if let notifyChar = notifyCharacteristic {
+            peripheral.setNotifyValue(false, for: notifyChar)
+        }
+        
         bleCentral.centralManager.cancelPeripheralConnection(peripheral)
+        
         writeCharacteristic = nil
         notifyCharacteristic = nil
+        self.peripheral = nil
+        
         logger.info("主动断开连接")
     }
 

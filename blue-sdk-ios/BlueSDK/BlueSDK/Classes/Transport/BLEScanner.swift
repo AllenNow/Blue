@@ -38,6 +38,7 @@ final class BLEScanner: NSObject, BLEScannerDelegate {
     // MARK: - 常量
 
     private static let deviceNamePrefix = "LX-PD02"
+    private static let scanDelayAfterDisconnect: TimeInterval = 0.5
 
     // MARK: - 状态
 
@@ -46,6 +47,7 @@ final class BLEScanner: NSObject, BLEScannerDelegate {
     private var onError: ((BlueError) -> Void)?
     private let logger = BlueLogger.shared
     private let centralManager = BLECentralManager.shared
+    private var pendingScanTimer: Timer?
 
     // MARK: - 公开方法
 
@@ -57,37 +59,55 @@ final class BLEScanner: NSObject, BLEScannerDelegate {
         onDeviceFound: @escaping (ScannedDevice) -> Void,
         onError: @escaping (BlueError) -> Void
     ) {
-        guard !isScanning else {
-            logger.warn("扫描已在进行中，忽略重复调用")
-            return
+        pendingScanTimer?.invalidate()
+        pendingScanTimer = nil
+
+        if isScanning {
+            centralManager.centralManager.stopScan()
+            isScanning = false
         }
 
         self.onDeviceFound = onDeviceFound
         self.onError = onError
 
-        // 注册为扫描代理
         centralManager.scanDelegate = self
 
-        startScanIfReady()
+        if centralManager.state == .poweredOn {
+            pendingScanTimer = Timer.scheduledTimer(withTimeInterval: BLEScanner.scanDelayAfterDisconnect, repeats: false) { [weak self] _ in
+                self?.startScanImmediately()
+            }
+        } else {
+            logger.debug("蓝牙未就绪，等待状态变更")
+        }
+    }
+
+    private func startScanImmediately() {
+        guard !isScanning else { return }
+        isScanning = true
+        centralManager.centralManager.scanForPeripherals(withServices: nil, options: [
+            CBCentralManagerScanOptionAllowDuplicatesKey: false
+        ])
+        logger.info("BLE 扫描已启动，过滤前缀：\(BLEScanner.deviceNamePrefix)")
     }
 
     /// 停止扫描
     func stopScan() {
+        pendingScanTimer?.invalidate()
+        pendingScanTimer = nil
+
         guard isScanning else { return }
         centralManager.centralManager.stopScan()
         isScanning = false
+        onDeviceFound = nil
+        onError = nil
         logger.info("BLE 扫描已停止")
     }
 
     // MARK: - 私有方法
 
     private func startScanIfReady() {
-        guard centralManager.state == .poweredOn else { return }
-        isScanning = true
-        centralManager.centralManager.scanForPeripherals(withServices: nil, options: [
-            CBCentralManagerScanOptionAllowDuplicatesKey: false
-        ])
-        logger.info("BLE 扫描已启动，过滤前缀：\(BLEScanner.deviceNamePrefix)")
+        guard centralManager.state == .poweredOn, onDeviceFound != nil else { return }
+        startScanImmediately()
     }
 
     // MARK: - BLEScannerDelegate
