@@ -20,7 +20,6 @@ import com.blue.sdk.enums.TimeFormat
 import com.blue.sdk.enums.VolumeLevel
 import com.blue.sdk.enums.WeekDays
 import com.blue.sdk.error.BlueError
-import com.blue.sdk.internal.BlueLogHandler
 import com.blue.sdk.internal.BlueLogger
 import com.blue.sdk.internal.CallbackDispatcher
 import com.blue.sdk.internal.KeystoreHelper
@@ -39,6 +38,8 @@ import com.blue.sdk.transport.CommandCode
 import com.blue.sdk.transport.DPIDConstants
 import com.blue.sdk.transport.FrameBuilder
 import java.util.UUID
+
+typealias BlueLogHandler = (level: com.blue.sdk.enums.LogLevel, tag: String, message: String) -> Unit
 
 /**
  * BlueSDK 主入口，采用单例模式
@@ -208,6 +209,18 @@ class BlueSDK private constructor(private val context: Context) {
         connectionManager.disconnect()
     }
 
+    /** 发送原始指令数据（调试用）*/
+    fun sendRawData(data: ByteArray, completion: (Result<Unit>) -> Unit) {
+        if (!requireInitR(completion) || !requireAuthR(completion)) return
+        val frame = FrameBuilder.build(CommandCode.SEND_COMMAND, data)
+        connectionManager.commandQueue.enqueue(CommandCode.SEND_COMMAND, frame) { result ->
+            result.fold(
+                onSuccess = { completion(Result.success(Unit)) },
+                onFailure = { completion(Result.failure(it as BlueError)) }
+            )
+        }
+    }
+
     /** 取消正在进行的自动重连 */
     fun cancelReconnection() {
         connectionManager.cancelReconnection()
@@ -282,6 +295,25 @@ class BlueSDK private constructor(private val context: Context) {
     fun setAlarm(index: Int, hour: Int, minute: Int, days: WeekDays = WeekDays.ALL, completion: (Result<AlarmInfo>) -> Unit) {
         if (!requireInitR(completion) || !requireAuthR(completion)) return
         alarmManager.setAlarm(index, hour, minute, days.rawValue, completion)
+    }
+
+    /**
+     * 设置闹钟（FR15）— weekMask 版本
+     * @param index 闹钟槽位（1~7）
+     * @param hour 小时（0~23）
+     * @param minute 分钟（0~59）
+     * @param weekMask 星期掩码（bit0=周一...bit6=周日，0x7F=每天）
+     * @param completion 结果回调
+     */
+    fun setAlarm(index: Int, hour: Int, minute: Int, weekMask: Int, completion: (Result<AlarmInfo>) -> Unit) {
+        if (!requireInitR(completion) || !requireAuthR(completion)) return
+        alarmManager.setAlarm(index, hour, minute, weekMask, completion)
+    }
+
+    /** 查询闹钟（FR15）*/
+    fun queryAlarm(index: Int, completion: (Result<AlarmInfo>) -> Unit) {
+        if (!requireInitR(completion) || !requireAuthR(completion)) return
+        alarmManager.queryAlarm(index, completion)
     }
 
     /** 删除闹钟（FR16）*/
@@ -376,15 +408,11 @@ class BlueSDK private constructor(private val context: Context) {
         if (!requireInitR(completion) || !requireAuthR(completion)) return
         val data = byteArrayOf(DPIDConstants.RESTORE_FACTORY, 0x01, 0x00, 0x01, 0x01)
         val frame = FrameBuilder.build(CommandCode.SEND_COMMAND, data)
-        connectionManager.commandQueue.enqueue(CommandCode.SEND_COMMAND, frame) { result ->
-            result.fold(
-                onSuccess = {
-                    connectionManager.disconnect()
-                    completion(Result.success(Unit))
-                },
-                onFailure = { completion(Result.failure(it as BlueError)) }
-            )
-        }
+        connectionManager.commandQueue.sendDirect(frame)
+        handler.postDelayed({
+            connectionManager.disconnect()
+            completion(Result.success(Unit))
+        }, 500)
     }
 
     // MARK: - 内部工具
@@ -480,10 +508,10 @@ class BlueSDK private constructor(private val context: Context) {
                             } else {
                                 BlueLogger.error("固定密钥认证失败")
                                 connectedDevice = null
-                                connectionManager.disconnect()
                                 CallbackDispatcher.dispatch {
                                     listener?.onAuthResult(false, BlueError.AuthFailed)
                                 }
+                                connectionManager.disconnect()
                             }
                         },
                         onFailure = { error ->
@@ -520,9 +548,11 @@ class BlueSDK private constructor(private val context: Context) {
                     BlueLogger.error("performAuth 失败：${blueError.message}")
                     if (blueError == BlueError.AuthFailed) {
                         connectedDevice = null
-                        connectionManager.disconnect()
                     }
                     CallbackDispatcher.dispatch { listener?.onAuthResult(false, blueError) }
+                    if (blueError == BlueError.AuthFailed) {
+                        connectionManager.disconnect()
+                    }
                     completion(Result.failure(blueError))
                 }
             )

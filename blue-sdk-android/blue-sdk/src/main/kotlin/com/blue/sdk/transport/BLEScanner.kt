@@ -7,6 +7,8 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.os.Handler
+import android.os.Looper
 import com.blue.sdk.error.BlueError
 import com.blue.sdk.internal.BlueLogger
 import com.blue.sdk.internal.CallbackDispatcher
@@ -16,11 +18,14 @@ internal class BLEScanner {
 
     companion object {
         private const val DEVICE_NAME_PREFIX = "LX-PD02"
+        private const val SCAN_DELAY_AFTER_DISCONNECT_MS = 500L
     }
 
     @Volatile internal var isScanning = false
     private var onDeviceFound: ((ScannedDevice) -> Unit)? = null
     private var onError: ((BlueError) -> Unit)? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private var pendingScanRunnable: Runnable? = null
 
     private val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -46,24 +51,38 @@ internal class BLEScanner {
         onDeviceFound: (ScannedDevice) -> Unit,
         onError: (BlueError) -> Unit
     ) {
+        pendingScanRunnable?.let { handler.removeCallbacks(it) }
+        pendingScanRunnable = null
+
         if (isScanning) {
-            BlueLogger.warn("扫描已在进行中，忽略重复调用")
-            return
+            adapter.bluetoothLeScanner?.stopScan(scanCallback)
+            isScanning = false
         }
+
         this.onDeviceFound = onDeviceFound
         this.onError = onError
-        isScanning = true
-        val settings = ScanSettings.Builder()
-            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-            .build()
-        adapter.bluetoothLeScanner?.startScan(null, settings, scanCallback)
-        BlueLogger.info("BLE 扫描已启动，过滤前缀：$DEVICE_NAME_PREFIX")
+
+        val runnable = Runnable {
+            isScanning = true
+            val settings = ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .build()
+            adapter.bluetoothLeScanner?.startScan(null, settings, scanCallback)
+            BlueLogger.info("BLE 扫描已启动，过滤前缀：$DEVICE_NAME_PREFIX")
+        }
+        pendingScanRunnable = runnable
+        handler.postDelayed(runnable, SCAN_DELAY_AFTER_DISCONNECT_MS)
     }
 
     fun stopScan(adapter: BluetoothAdapter) {
+        pendingScanRunnable?.let { handler.removeCallbacks(it) }
+        pendingScanRunnable = null
+
         if (!isScanning) return
         adapter.bluetoothLeScanner?.stopScan(scanCallback)
         isScanning = false
+        onDeviceFound = null
+        onError = null
         BlueLogger.info("BLE 扫描已停止")
     }
 }

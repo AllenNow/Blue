@@ -49,6 +49,24 @@ internal class AlarmManager(private val commandQueue: CommandQueue) {
         }
     }
 
+    fun queryAlarm(index: Int, completion: (Result<AlarmInfo>) -> Unit) {
+        val dpid = DPIDConstants.alarmDPID(index) ?: run {
+            completion(Result.failure(BlueError.InvalidParameter)); return
+        }
+        val data = byteArrayOf(dpid)
+        val frame = FrameBuilder.build(CommandCode.SEND_COMMAND, data)
+        commandQueue.enqueue(CommandCode.SEND_COMMAND, frame) { result ->
+            result.fold(
+                onSuccess = { response ->
+                    parseAlarmInfo(response.data, index)?.let {
+                        completion(Result.success(it))
+                    } ?: completion(Result.failure(BlueError.ProtocolError))
+                },
+                onFailure = { completion(Result.failure(it as BlueError)) }
+            )
+        }
+    }
+
     fun clearAllAlarms(completion: (Result<Unit>) -> Unit) {
         // DPID 0x70, type=0x01, len=00 01, value=0x01
         val data = byteArrayOf(DPIDConstants.EMPTY_ALL_ALARMS, 0x01, 0x00, 0x01, 0x01)

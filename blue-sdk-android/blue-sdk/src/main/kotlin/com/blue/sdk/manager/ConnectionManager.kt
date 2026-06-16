@@ -49,7 +49,7 @@ internal class ConnectionManager(private val context: Context) {
 
     init {
         // 流式解析器回调
-        streamParser.onFrameParsed = { frame -> handleParsedFrame(frame) }
+        streamParser.setOnFrameParsed { frame -> handleParsedFrame(frame) }
 
         connector.delegate = object : BLEConnectorDelegate {
             override fun onConnected() {
