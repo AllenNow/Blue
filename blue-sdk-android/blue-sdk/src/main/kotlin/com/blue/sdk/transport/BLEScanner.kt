@@ -34,7 +34,8 @@ internal class BLEScanner {
             val device = ScannedDevice(
                 deviceId = result.device.address,
                 deviceName = name,
-                rssi = result.rssi
+                rssi = result.rssi,
+                bluetoothDevice = result.device
             )
             BlueLogger.debug("发现设备：$name，RSSI：${result.rssi}")
             CallbackDispatcher.dispatch { onDeviceFound?.invoke(device) }

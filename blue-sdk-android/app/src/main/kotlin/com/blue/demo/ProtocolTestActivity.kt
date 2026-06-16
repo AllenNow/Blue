@@ -119,8 +119,10 @@ class ProtocolTestActivity : AppCompatActivity() {
     private fun appendLog(msg: String) {
         Handler(Looper.getMainLooper()).post {
             logTextView.append("$msg\n")
-            val scrollAmount = logTextView.layout.getLineTop(logTextView.lineCount) - logTextView.height
-            if (scrollAmount > 0) logTextView.scrollTo(0, scrollAmount)
+            logTextView.layout?.let { layout ->
+                val scrollAmount = layout.getLineTop(logTextView.lineCount) - logTextView.height
+                if (scrollAmount > 0) logTextView.scrollTo(0, scrollAmount)
+            }
         }
     }
 

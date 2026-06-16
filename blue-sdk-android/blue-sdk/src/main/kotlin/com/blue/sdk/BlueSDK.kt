@@ -186,10 +186,7 @@ class BlueSDK private constructor(private val context: Context) {
     fun connect(device: ScannedDevice) {
         if (!requireInit { }) return
         connectedDevice = device
-        val btManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
-        val adapter = btManager?.adapter ?: return
-        val peripheral = adapter.getRemoteDevice(device.deviceId) ?: return
-        connectionManager.connect(peripheral)
+        connectionManager.connect(device.bluetoothDevice)
     }
 
     /**

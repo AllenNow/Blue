@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -56,9 +58,19 @@ class AlarmEditorActivity : AppCompatActivity() {
     }
 
     private fun buildRoot(): View {
-        val root = androidx.constraintlayout.widget.ConstraintLayout(this).apply {
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             setBackgroundColor(Color.parseColor("#1C1C1E"))
             layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        }
+
+        val scrollView = ScrollView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f)
+        }
+
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(16), dp(20), dp(32))
         }
 
         val timePicker = android.widget.TimePicker(this).apply {
@@ -69,38 +81,26 @@ class AlarmEditorActivity : AppCompatActivity() {
                 this@AlarmEditorActivity.hour = h
                 this@AlarmEditorActivity.minute = m
             }
-            layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(MATCH_PARENT, dp(200)).apply {
-                topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                leftToLeft = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                rightToRight = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                topMargin = dp(16)
-            }
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(400))
             setBackgroundColor(Color.parseColor("#2C2C2E"))
         }
-        root.addView(timePicker)
+        content.addView(timePicker)
+
+        content.addView(gap(24))
 
         val repeatLabel = TextView(this).apply {
             text = "重复"
             textSize = 15f
             setTextColor(Color.WHITE)
-            layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                topToBottom = timePicker.id
-                leftToLeft = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                topMargin = dp(24)
-                marginStart = dp(20)
-            }
+            layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
         }
-        root.addView(repeatLabel)
+        content.addView(repeatLabel)
 
-        val weekRow = androidx.constraintlayout.widget.ConstraintLayout(this).apply {
-            layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(MATCH_PARENT, dp(36)).apply {
-                topToBottom = repeatLabel.id
-                leftToLeft = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                rightToRight = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                topMargin = dp(12)
-                marginStart = dp(20)
-                marginEnd = dp(20)
-            }
+        content.addView(gap(12))
+
+        val weekRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(36))
         }
 
         val days = listOf("一", "二", "三", "四", "五", "六", "日")
@@ -108,22 +108,11 @@ class AlarmEditorActivity : AppCompatActivity() {
 
         days.forEachIndexed { i, day ->
             val btn = Button(this).apply {
-                id = View.generateViewId()
                 text = day
                 textSize = 14f
                 isAllCaps = false
-                layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(0, dp(36)).apply {
-                    topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                    bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                    if (i == 0) {
-                        leftToLeft = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                    } else {
-                        leftToRight = weekButtons[i - 1].id
-                        marginStart = dp(6)
-                    }
-                    if (i == days.size - 1) {
-                        rightToRight = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                    }
+                layoutParams = LinearLayout.LayoutParams(0, dp(36), 1f).apply {
+                    if (i > 0) marginStart = dp(6)
                 }
                 background = android.graphics.drawable.GradientDrawable().apply {
                     shape = android.graphics.drawable.GradientDrawable.RECTANGLE
@@ -134,21 +123,16 @@ class AlarmEditorActivity : AppCompatActivity() {
             weekButtons.add(btn)
             weekRow.addView(btn)
         }
-        root.addView(weekRow)
+        content.addView(weekRow)
+
+        content.addView(gap(40))
 
         val saveBtn = Button(this).apply {
             text = "保存闹钟"
             setTextColor(Color.WHITE)
             isAllCaps = false
             textSize = 17f
-            layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(MATCH_PARENT, dp(50)).apply {
-                topToBottom = weekRow.id
-                leftToLeft = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                rightToRight = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                topMargin = dp(40)
-                marginStart = dp(20)
-                marginEnd = dp(20)
-            }
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(50))
             background = android.graphics.drawable.GradientDrawable().apply {
                 shape = android.graphics.drawable.GradientDrawable.RECTANGLE
                 cornerRadius = 12f
@@ -156,24 +140,25 @@ class AlarmEditorActivity : AppCompatActivity() {
             }
             setOnClickListener { saveAlarm() }
         }
-        root.addView(saveBtn)
+        content.addView(saveBtn)
+
+        content.addView(gap(16))
 
         val deleteBtn = Button(this).apply {
             text = "删除闹钟"
             setTextColor(Color.parseColor("#FF3B30"))
             isAllCaps = false
             textSize = 15f
-            layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
-                topToBottom = saveBtn.id
-                leftToLeft = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                rightToRight = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                topMargin = dp(16)
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
                 gravity = Gravity.CENTER
             }
             visibility = if (isSet) View.VISIBLE else View.GONE
             setOnClickListener { deleteAlarm() }
         }
-        root.addView(deleteBtn)
+        content.addView(deleteBtn)
+
+        scrollView.addView(content)
+        root.addView(scrollView)
 
         return root
     }
@@ -244,4 +229,8 @@ class AlarmEditorActivity : AppCompatActivity() {
     }
 
     private fun dp(v: Int) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), resources.displayMetrics).toInt()
+
+    private fun gap(dpVal: Int) = View(this).apply {
+        layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(dpVal))
+    }
 }

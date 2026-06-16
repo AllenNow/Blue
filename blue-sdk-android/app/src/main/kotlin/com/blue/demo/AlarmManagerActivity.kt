@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -73,7 +74,8 @@ class AlarmManagerActivity : AppCompatActivity() {
     }
 
     private fun buildRoot(): View {
-        val root = androidx.constraintlayout.widget.ConstraintLayout(this).apply {
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             setBackgroundColor(Color.parseColor("#1C1C1E"))
             layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         }
@@ -83,12 +85,7 @@ class AlarmManagerActivity : AppCompatActivity() {
             adapter = AlarmSlotAdapter(alarms) { slot ->
                 showEditor(slot)
             }.also { this@AlarmManagerActivity.adapter = it }
-            layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(MATCH_PARENT, 0).apply {
-                topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                leftToLeft = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                rightToRight = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-            }
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f)
         }
         root.addView(recyclerView)
 
@@ -191,13 +188,16 @@ class AlarmManagerActivity : AppCompatActivity() {
         private val onItemClick: (AlarmSlot) -> Unit
     ) : RecyclerView.Adapter<AlarmSlotAdapter.ViewHolder>() {
 
+        private fun dp(v: Int, ctx: android.content.Context) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), ctx.resources.displayMetrics).toInt()
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val ctx = parent.context
             val dp80 = dp(80, ctx)
             val dp16 = dp(16, ctx)
             val dp8 = dp(8, ctx)
             val dp12 = dp(12, ctx)
-            return ViewHolder(androidx.constraintlayout.widget.ConstraintLayout(ctx).apply {
+            return ViewHolder(LinearLayout(ctx).apply {
+                orientation = LinearLayout.HORIZONTAL
                 layoutParams = RecyclerView.LayoutParams(MATCH_PARENT, dp80).apply {
                     setMargins(dp16, dp8, dp16, dp8)
                 }
@@ -206,6 +206,7 @@ class AlarmManagerActivity : AppCompatActivity() {
                     cornerRadius = dp12.toFloat()
                     setColor(Color.parseColor("#2C2C2E"))
                 }
+                setPadding(dp16, dp12, dp16, dp12)
             })
         }
 
@@ -216,44 +217,42 @@ class AlarmManagerActivity : AppCompatActivity() {
         override fun getItemCount() = items.size
 
         class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            private val leftColumn = LinearLayout(itemView.context).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply {
+                    gravity = Gravity.CENTER_VERTICAL
+                }
+            }
+            private val rightColumn = LinearLayout(itemView.context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                    gravity = Gravity.CENTER_VERTICAL
+                }
+            }
             private val indexLabel = TextView(itemView.context).apply {
                 textSize = 13f
                 setTextColor(Color.parseColor("#8E8E93"))
-                layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                    startToStart = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                    topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                    marginStart = dp(16, itemView.context)
-                    topMargin = dp(12, itemView.context)
-                }
+                layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
             }
             private val timeLabel = TextView(itemView.context).apply {
                 textSize = 32f
                 typeface = android.graphics.Typeface.MONOSPACE
-                layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                    startToStart = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                    topToBottom = indexLabel.id
-                    marginStart = dp(16, itemView.context)
+                layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                     topMargin = dp(4, itemView.context)
                 }
             }
             private val weekLabel = TextView(itemView.context).apply {
                 textSize = 13f
                 setTextColor(Color.parseColor("#8E8E93"))
-                layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                    startToEnd = timeLabel.id
-                    topToBottom = indexLabel.id
-                    marginStart = dp(12, itemView.context)
-                    topMargin = dp(10, itemView.context)
+                layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                    topMargin = dp(4, itemView.context)
                 }
             }
             private val statusBadge = TextView(itemView.context).apply {
                 textSize = 12f
                 gravity = Gravity.CENTER
-                layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(WRAP_CONTENT, dp(22, itemView.context)).apply {
-                    endToStart = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                    topToBottom = indexLabel.id
-                    marginEnd = dp(40, itemView.context)
-                    topMargin = dp(6, itemView.context)
+                layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, dp(22, itemView.context)).apply {
+                    marginEnd = dp(12, itemView.context)
                 }
                 background = android.graphics.drawable.GradientDrawable().apply {
                     shape = android.graphics.drawable.GradientDrawable.RECTANGLE
@@ -261,23 +260,18 @@ class AlarmManagerActivity : AppCompatActivity() {
                 }
             }
             private val arrow = android.widget.ImageView(itemView.context).apply {
-                setImageDrawable(itemView.context.getDrawable(android.R.drawable.arrow_right))
-                layoutParams = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams(dp(24, itemView.context), dp(24, itemView.context)).apply {
-                    endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                    topToBottom = indexLabel.id
-                    marginEnd = dp(16, itemView.context)
-                    topMargin = dp(2, itemView.context)
-                }
+                setImageDrawable(itemView.context.getDrawable(android.R.drawable.ic_media_next))
+                layoutParams = LinearLayout.LayoutParams(dp(24, itemView.context), dp(24, itemView.context))
             }
 
             init {
-                val container = itemView as androidx.constraintlayout.widget.ConstraintLayout
-                indexLabel.id = View.generateViewId()
-                container.addView(indexLabel)
-                container.addView(timeLabel)
-                container.addView(weekLabel)
-                container.addView(statusBadge)
-                container.addView(arrow)
+                leftColumn.addView(indexLabel)
+                leftColumn.addView(timeLabel)
+                leftColumn.addView(weekLabel)
+                rightColumn.addView(statusBadge)
+                rightColumn.addView(arrow)
+                (itemView as LinearLayout).addView(leftColumn)
+                (itemView as LinearLayout).addView(rightColumn)
             }
 
             fun bind(slot: AlarmSlot, onClick: (AlarmSlot) -> Unit) {

@@ -37,5 +37,9 @@
             android:name=".AlarmManagerActivity"
             android:exported="false"
             android:label="闹钟管理"/>
+        <activity
+            android:name=".AlarmEditorActivity"
+            android:exported="false"
+            android:label="闹钟编辑"/>
     </application>
 </manifest>
