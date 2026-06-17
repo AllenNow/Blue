@@ -241,17 +241,24 @@ class MedicationRecordCell: UITableViewCell {
 
     func configure(with record: MedicationEntry, dateFormatter: DateFormatter, showDate: Bool) {
         emojiLabel.text = record.statusEmoji
-        titleLabel.text = "闹钟\(record.alarmIndex) · \(record.statusText)"
+        titleLabel.text = SDKLocale.isZh
+            ? "闹钟\(record.alarmIndex) · \(record.statusText)"
+            : "Alarm \(record.alarmIndex) · \(record.statusText)"
 
-        if showDate {
+        let eventTime = dateFormatter.string(from: record.date)
+        if record.alarmHour > 0 || record.alarmMinute > 0 {
+            detailLabel.text = SDKLocale.isZh
+                ? "设定 \(record.alarmTimeString) → 实际 \(eventTime)"
+                : "Scheduled \(record.alarmTimeString) → Actual \(eventTime)"
+        } else if showDate {
             let df = DateFormatter()
             df.dateFormat = "M/d HH:mm"
             detailLabel.text = df.string(from: record.date)
         } else {
-            detailLabel.text = dateFormatter.string(from: record.date)
+            detailLabel.text = eventTime
         }
 
-        timeLabel.text = dateFormatter.string(from: record.date)
+        timeLabel.text = eventTime
         timeLabel.isHidden = showDate
     }
 }

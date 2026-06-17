@@ -53,19 +53,23 @@ internal class MedicationManager(private val commandQueue: CommandQueue) {
             val year = (yearHigh shl 8) or yearLow
             val month = data[7].toInt() and 0xFF
             val day = data[8].toInt() and 0xFF
-            val ringHour = data[11].toInt() and 0xFF
-            val ringMinute = data[12].toInt() and 0xFF
+            val alarmHour = data[9].toInt() and 0xFF
+            val alarmMinute = data[10].toInt() and 0xFF
+            val eventHour = data[11].toInt() and 0xFF
+            val eventMinute = data[12].toInt() and 0xFF
             val statusByte = data[13]
 
             val status = MedicationStatus.fromByte(statusByte) ?: return null
 
             val cal = Calendar.getInstance().apply {
-                set(year, month - 1, day, ringHour, ringMinute, 0)
+                set(year, month - 1, day, eventHour, eventMinute, 0)
                 set(Calendar.MILLISECOND, 0)
             }
             return MedicationRecord(
                 timestamp = cal.timeInMillis,
                 alarmIndex = alarmIndex,
+                alarmHour = alarmHour,
+                alarmMinute = alarmMinute,
                 status = status
             )
         }

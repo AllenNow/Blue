@@ -60,6 +60,8 @@ class MedicationManagerTest {
         val record = MedicationManager.parseMedicationRecord(data)
         assertNotNull(record)
         assertEquals(3, record!!.alarmIndex)
+        assertEquals(8, record.alarmHour)
+        assertEquals(0, record.alarmMinute)
         assertEquals(MedicationStatus.TAKEN, record.status)
         assert(record.timestamp > 0)
     }

@@ -76,6 +76,7 @@ import CoreBluetooth
         medicationManager = MedicationManager(commandQueue: queue)
         audioManager      = AudioManager(commandQueue: queue)
         logger.logLevel = config.logLevel
+        SDKLocale.setLanguage(config.language)
         logger.info("BlueSDK 初始化完成")
     }
 
@@ -83,6 +84,8 @@ import CoreBluetooth
     @objc public func destroy() {
         guard isInitialized else { return }
         connectionManager.disconnect()
+        connectedPeripheral = nil
+        lastTimeSyncDate = nil
         isInitialized = false
         logger.info("BlueSDK 已销毁")
     }
@@ -95,6 +98,11 @@ import CoreBluetooth
 
     public func setLogHandler(_ handler: BlueLogHandler?) {
         logger.logHandler = handler
+    }
+
+    /// 运行时切换 SDK 语言（影响错误描述和恢复建议）
+    public func setLanguage(_ language: BlueSDKLanguage) {
+        SDKLocale.setLanguage(language)
     }
 
     /// 导出 SDK 运行日志（Story 10.4）

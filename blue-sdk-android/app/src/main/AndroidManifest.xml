@@ -41,5 +41,13 @@
             android:name=".AlarmEditorActivity"
             android:exported="false"
             android:label="闹钟编辑"/>
+        <activity
+            android:name=".FAQActivity"
+            android:exported="false"
+            android:label="常见问题"/>
+        <activity
+            android:name=".FAQDetailActivity"
+            android:exported="false"
+            android:label="解答"/>
     </application>
 </manifest>

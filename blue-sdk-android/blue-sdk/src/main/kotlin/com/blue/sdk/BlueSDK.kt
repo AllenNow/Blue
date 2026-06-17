@@ -20,9 +20,11 @@ import com.blue.sdk.enums.TimeFormat
 import com.blue.sdk.enums.VolumeLevel
 import com.blue.sdk.enums.WeekDays
 import com.blue.sdk.error.BlueError
+import com.blue.sdk.internal.BlueLogHandler
 import com.blue.sdk.internal.BlueLogger
 import com.blue.sdk.internal.CallbackDispatcher
 import com.blue.sdk.internal.KeystoreHelper
+import com.blue.sdk.internal.SDKLocale
 import com.blue.sdk.manager.AlarmManager
 import com.blue.sdk.manager.AudioManager
 import com.blue.sdk.manager.AuthManager
@@ -38,8 +40,6 @@ import com.blue.sdk.transport.CommandCode
 import com.blue.sdk.transport.DPIDConstants
 import com.blue.sdk.transport.FrameBuilder
 import java.util.UUID
-
-typealias BlueLogHandler = (level: com.blue.sdk.enums.LogLevel, tag: String, message: String) -> Unit
 
 /**
  * BlueSDK 主入口，采用单例模式
@@ -107,6 +107,7 @@ class BlueSDK private constructor(private val context: Context) {
         audioManager      = AudioManager(queue)
         setupConnectionManager()
         BlueLogger.logLevel = config.logLevel
+        SDKLocale.setLanguage(config.language)
         isInitialized = true
         BlueLogger.info("BlueSDK 初始化完成")
     }
@@ -116,6 +117,7 @@ class BlueSDK private constructor(private val context: Context) {
         if (!isInitialized) return
         connectionManager.disconnect()
         connectedDevice = null
+        lastTimeSyncMs = 0L
         isInitialized = false
         BlueLogger.info("BlueSDK 已销毁")
     }
@@ -124,6 +126,12 @@ class BlueSDK private constructor(private val context: Context) {
 
     fun setLogLevel(level: LogLevel) { BlueLogger.logLevel = level }
     fun setLogHandler(handler: BlueLogHandler?) { BlueLogger.logHandler = handler }
+
+    /** 运行时切换 SDK 语言（影响错误描述和恢复建议） */
+    fun setLanguage(language: BlueSDKLanguage) { SDKLocale.setLanguage(language) }
+
+    /** 查询当前 SDK 是否使用中文 */
+    val isZh: Boolean get() = SDKLocale.isZh
 
     /**
      * 导出 SDK 运行日志（Story 10.4）

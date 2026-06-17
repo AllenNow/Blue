@@ -90,7 +90,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         title = "BlueSDK"
         view.backgroundColor = .systemBackground
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "调试", style: .plain, target: self, action: #selector(openDebugPanel))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: S.debug, style: .plain, target: self, action: #selector(openDebugPanel))
         buildUI()
         
         scanButton.isHidden = false
@@ -117,7 +117,7 @@ class ViewController: UIViewController {
             }
             self?.log("\(prefix) \(message)")
         }
-        log("SDK 已启动")
+        log(S.sdkStarted)
     }
 
     // MARK: - UI 构建
@@ -149,14 +149,14 @@ class ViewController: UIViewController {
         statusDot.layer.cornerRadius = 5
         statusDot.snp.makeConstraints { $0.size.equalTo(10) }
 
-        statusLabel.text = "未连接"
+        statusLabel.text = S.notConnected
         statusLabel.font = .systemFont(ofSize: 14, weight: .medium)
         statusLabel.textColor = .label
 
-        configureCompactButton(scanButton, title: "扫描", color: .systemBlue)
+        configureCompactButton(scanButton, title: S.scan, color: .systemBlue)
         scanButton.addTarget(self, action: #selector(startScan), for: .touchUpInside)
 
-        configureCompactButton(disconnectButton, title: "断开", color: .systemRed)
+        configureCompactButton(disconnectButton, title: S.disconnect, color: .systemRed)
         disconnectButton.addTarget(self, action: #selector(disconnect), for: .touchUpInside)
 
         connStack.addArrangedSubview(statusDot)
@@ -168,9 +168,9 @@ class ViewController: UIViewController {
 
         // 2. 快捷操作
         mainStack.addArrangedSubview(makeButtonRow([
-            ("设备信息", .systemIndigo, #selector(queryDeviceInfo)),
-            ("同步时间", .systemIndigo, #selector(syncTime)),
-            ("闹钟管理", .systemIndigo, #selector(showAlarmManager)),
+            (S.deviceInfo, .systemIndigo, #selector(queryDeviceInfo)),
+            (S.syncTime, .systemIndigo, #selector(syncTime)),
+            (S.alarmManager, .systemIndigo, #selector(showAlarmManager)),
         ]))
 
         // 3. 音频设置卡片
@@ -185,18 +185,18 @@ class ViewController: UIViewController {
 
         soundTypeSegment.selectedSegmentIndex = 0
         soundTypeSegment.addTarget(self, action: #selector(soundTypeChanged), for: .valueChanged)
-        audioStack.addArrangedSubview(makeLabeledRow("铃声", soundTypeSegment))
+        audioStack.addArrangedSubview(makeLabeledRow(S.soundType, soundTypeSegment))
 
         volumeSegment.selectedSegmentIndex = 1
         volumeSegment.addTarget(self, action: #selector(volumeChanged), for: .valueChanged)
-        audioStack.addArrangedSubview(makeLabeledRow("音量", volumeSegment))
+        audioStack.addArrangedSubview(makeLabeledRow(S.volume, volumeSegment))
 
         timeFormatSegment.selectedSegmentIndex = 1
         timeFormatSegment.addTarget(self, action: #selector(timeFormatChanged), for: .valueChanged)
-        audioStack.addArrangedSubview(makeLabeledRow("时制", timeFormatSegment))
+        audioStack.addArrangedSubview(makeLabeledRow(S.timeFormat, timeFormatSegment))
 
         silenceSwitch.addTarget(self, action: #selector(silenceChanged), for: .valueChanged)
-        audioStack.addArrangedSubview(makeLabeledRow("静音", silenceSwitch))
+        audioStack.addArrangedSubview(makeLabeledRow(S.silence, silenceSwitch))
 
         durationField.text = "5"
         durationField.font = .systemFont(ofSize: 14)
@@ -209,27 +209,28 @@ class ViewController: UIViewController {
         configureCompactButton(durBtn, title: "设置", color: .systemTeal)
         durBtn.addTarget(self, action: #selector(setDuration), for: .touchUpInside)
 
-        let durRow = UIStackView(arrangedSubviews: [makeSmallLabel("持续"), durationField, makeSmallLabel("分"), durBtn])
+        let durRow = UIStackView(arrangedSubviews: [makeSmallLabel(S.duration), durationField, makeSmallLabel(S.minutes), durBtn])
         durRow.spacing = 6
         durRow.alignment = .center
         audioStack.addArrangedSubview(durRow)
 
         // 4. 工具 & 系统
         mainStack.addArrangedSubview(makeButtonRow([
-            ("用药记录", .systemOrange, #selector(showRecords)),
-            ("指令验证", .systemPurple, #selector(showProtocolTest)),
-            ("清空闹钟", .systemTeal, #selector(clearAllAlarms)),
+            (S.medicationRecords, .systemOrange, #selector(showRecords)),
+            (S.protocolTest, .systemPurple, #selector(showProtocolTest)),
+            (S.faq, .systemGreen, #selector(showFAQ)),
         ]))
 
         mainStack.addArrangedSubview(makeButtonRow([
-            ("恢复出厂", .systemRed, #selector(restoreFactory)),
-            ("清除绑定", .systemRed, #selector(clearLocalBinding)),
+            (S.clearAlarms, .systemTeal, #selector(clearAllAlarms)),
+            (S.restoreFactory, .systemRed, #selector(restoreFactory)),
+            (S.clearBinding, .systemRed, #selector(clearLocalBinding)),
         ]))
 
         // 5. 日志（填充剩余空间）
-        let logHeader = UIStackView(arrangedSubviews: [makeSmallLabel("日志"), makeSpacer()])
+        let logHeader = UIStackView(arrangedSubviews: [makeSmallLabel(S.log), makeSpacer()])
         let clearBtn = UIButton(type: .system)
-        configureCompactButton(clearBtn, title: "清空", color: .systemGray)
+        configureCompactButton(clearBtn, title: S.clear, color: .systemGray)
         clearBtn.addTarget(self, action: #selector(clearLog), for: .touchUpInside)
         logHeader.addArrangedSubview(clearBtn)
         logHeader.spacing = 8
@@ -313,7 +314,7 @@ class ViewController: UIViewController {
         loadingIndicator.stopAnimating()
         scannedDevices.removeAll()
         scanButton.isEnabled = true
-        statusLabel.text = "未连接"
+        statusLabel.text = S.notConnected
         statusDot.backgroundColor = .systemGray
         previousConnectionState = .disconnected
         log("用户取消连接")
@@ -352,7 +353,7 @@ class ViewController: UIViewController {
             },
             onError: { [weak self] error in
                 self?.log("❌ \(error.localizedDescription)")
-                self?.updateStatus("扫描失败", color: .systemRed)
+                self?.updateStatus(S.scanFailed, color: .systemRed)
                 self?.hideLoading()
                 DispatchQueue.main.async { self?.scanButton.isEnabled = true }
             }
@@ -392,7 +393,7 @@ class ViewController: UIViewController {
     }
 
     @objc private func clearAllAlarms() {
-        confirm("清空闹钟", msg: "确定清空所有闹钟？") {
+        confirm(S.clearAlarmsTitle, msg: S.clearAlarmsMsg) {
             BlueSDK.shared.clearAllAlarms { [weak self] r in
                 if case .success = r { self?.log("⏰ 所有闹钟已清空") }
                 else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
@@ -447,7 +448,7 @@ class ViewController: UIViewController {
     // MARK: - 系统
 
     @objc private func restoreFactory() {
-        confirm("恢复出厂", msg: "确定恢复出厂设置？") {
+        confirm(S.restoreFactoryTitle, msg: S.restoreFactoryMsg) {
             BlueSDK.shared.restoreFactory { [weak self] r in
                 if case .success = r { self?.log("✅ 已恢复出厂") }
                 else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
@@ -456,7 +457,7 @@ class ViewController: UIViewController {
     }
 
     @objc private func clearLocalBinding() {
-        confirm("清除绑定", msg: "清除本地密钥，设备也需恢复出厂。") {
+        confirm(S.clearBindingTitle, msg: S.clearBindingMsg) {
             BlueSDK.shared.clearBinding()
             self.log("✅ 本地绑定已清除")
         }
@@ -468,6 +469,10 @@ class ViewController: UIViewController {
 
     @objc private func showProtocolTest() {
         pushOrPresent(ProtocolTestViewController())
+    }
+
+    @objc private func showFAQ() {
+        pushOrPresent(FAQViewController())
     }
 
     // MARK: - 日志
@@ -553,7 +558,7 @@ extension ViewController: BlueSDKDelegate {
                 if self.isAuthFailed {
                     self.isAuthFailed = false
                 } else {
-                    self.updateStatus("未连接", color: .systemGray)
+                    self.updateStatus(S.notConnected, color: .systemGray)
                     self.loadingIndicator.stopAnimating()
                     self.scanButton.isEnabled = true
                     self.hideLoading()
@@ -571,7 +576,7 @@ extension ViewController: BlueSDKDelegate {
             case .authenticated:
                 self.scanButton.isHidden = true
                 self.disconnectButton.isHidden = false
-                self.updateStatus("已连接", color: .systemGreen)
+                self.updateStatus(S.connected, color: .systemGreen)
                 self.loadingIndicator.stopAnimating()
                 self.hideLoading()
             case .reconnecting:
@@ -601,11 +606,11 @@ extension ViewController: BlueSDKDelegate {
 
     func blueSDK(_ sdk: BlueSDK, didReceiveMedicationResult alarmIndex: Int, status: MedicationStatus) {
         log("💊 闹钟\(alarmIndex) \(status)")
-        MedicationDatabase.shared.insert(timestamp: Int64(Date().timeIntervalSince1970 * 1000), alarmIndex: alarmIndex, status: status.rawValue)
+        MedicationDatabase.shared.insert(timestamp: Int64(Date().timeIntervalSince1970 * 1000), alarmIndex: alarmIndex, alarmHour: 0, alarmMinute: 0, status: status.rawValue)
     }
 
     func blueSDK(_ sdk: BlueSDK, didReceiveMedicationRecord record: MedicationRecord) {
-        MedicationDatabase.shared.insert(timestamp: record.timestamp, alarmIndex: record.alarmIndex, status: record.status.rawValue)
+        MedicationDatabase.shared.insert(timestamp: record.timestamp, alarmIndex: record.alarmIndex, alarmHour: record.alarmHour, alarmMinute: record.alarmMinute, status: record.status.rawValue)
         log("📋 用药记录已保存")
     }
 

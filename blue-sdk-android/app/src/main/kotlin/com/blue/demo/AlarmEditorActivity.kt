@@ -181,27 +181,29 @@ class AlarmEditorActivity : AppCompatActivity() {
 
     private fun saveAlarm() {
         sdk.setAlarm(index, hour, minute, weekMask) { result ->
-            result.fold(
-                onSuccess = {
-                    val intent = android.content.Intent().apply {
-                        putExtra("index", index)
-                        putExtra("hour", hour)
-                        putExtra("minute", minute)
-                        putExtra("weekMask", weekMask)
-                        putExtra("isEnabled", true)
-                        putExtra("isSet", true)
+            runOnUiThread {
+                result.fold(
+                    onSuccess = {
+                        val intent = android.content.Intent().apply {
+                            putExtra("index", index)
+                            putExtra("hour", hour)
+                            putExtra("minute", minute)
+                            putExtra("weekMask", weekMask)
+                            putExtra("isEnabled", true)
+                            putExtra("isSet", true)
+                        }
+                        setResult(RESULT_OK, intent)
+                        finish()
+                    },
+                    onFailure = {
+                        AlertDialog.Builder(this)
+                            .setTitle(if (S.isZh) "设置失败" else "Failed")
+                            .setMessage((it as BlueError).message)
+                            .setPositiveButton(S.confirm, null)
+                            .show()
                     }
-                    setResult(RESULT_OK, intent)
-                    finish()
-                },
-                onFailure = {
-                    AlertDialog.Builder(this)
-                        .setTitle("设置失败")
-                        .setMessage((it as BlueError).message)
-                        .setPositiveButton("确定", null)
-                        .show()
-                }
-            )
+                )
+            }
         }
     }
 

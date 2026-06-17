@@ -7,8 +7,10 @@ import SQLite3
 /// 用药记录数据库条目
 struct MedicationEntry {
     let id: Int64
-    let timestamp: Int64        // 毫秒时间戳
+    let timestamp: Int64        // 毫秒时间戳（实际事件时间）
     let alarmIndex: Int
+    let alarmHour: Int          // 闹钟设定小时
+    let alarmMinute: Int        // 闹钟设定分钟
     let status: Int             // 1=取药 2=超时 3=漏服 4=提前
     let createdAt: Date
 
@@ -16,13 +18,18 @@ struct MedicationEntry {
         return Date(timeIntervalSince1970: TimeInterval(timestamp) / 1000.0)
     }
 
+    var alarmTimeString: String {
+        return String(format: "%02d:%02d", alarmHour, alarmMinute)
+    }
+
     var statusText: String {
+        let zh = SDKLocale.isZh
         switch status {
-        case 1: return "按时取药"
-        case 2: return "超时取药"
-        case 3: return "漏服"
-        case 4: return "提前取药"
-        default: return "未知"
+        case 1: return zh ? "按时取药" : "Taken"
+        case 2: return zh ? "超时取药" : "Timeout"
+        case 3: return zh ? "漏服" : "Missed"
+        case 4: return zh ? "提前取药" : "Early"
+        default: return zh ? "未知" : "Unknown"
         }
     }
 
@@ -71,6 +78,8 @@ final class MedicationDatabase {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp INTEGER NOT NULL,
             alarm_index INTEGER NOT NULL,
+            alarm_hour INTEGER NOT NULL DEFAULT 0,
+            alarm_minute INTEGER NOT NULL DEFAULT 0,
             status INTEGER NOT NULL,
             created_at REAL NOT NULL
         );
@@ -82,20 +91,25 @@ final class MedicationDatabase {
             print("[MedicationDB] 建表失败：\(err)")
             sqlite3_free(errMsg)
         }
+        // 升级旧表（添加新列，忽略已存在的错误）
+        sqlite3_exec(db, "ALTER TABLE medication_records ADD COLUMN alarm_hour INTEGER NOT NULL DEFAULT 0", nil, nil, nil)
+        sqlite3_exec(db, "ALTER TABLE medication_records ADD COLUMN alarm_minute INTEGER NOT NULL DEFAULT 0", nil, nil, nil)
     }
 
     /// 插入一条用药记录
     @discardableResult
-    func insert(timestamp: Int64, alarmIndex: Int, status: Int) -> Bool {
-        let sql = "INSERT INTO medication_records (timestamp, alarm_index, status, created_at) VALUES (?, ?, ?, ?)"
+    func insert(timestamp: Int64, alarmIndex: Int, alarmHour: Int = 0, alarmMinute: Int = 0, status: Int) -> Bool {
+        let sql = "INSERT INTO medication_records (timestamp, alarm_index, alarm_hour, alarm_minute, status, created_at) VALUES (?, ?, ?, ?, ?, ?)"
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return false }
         defer { sqlite3_finalize(stmt) }
 
         sqlite3_bind_int64(stmt, 1, timestamp)
         sqlite3_bind_int(stmt, 2, Int32(alarmIndex))
-        sqlite3_bind_int(stmt, 3, Int32(status))
-        sqlite3_bind_double(stmt, 4, Date().timeIntervalSince1970)
+        sqlite3_bind_int(stmt, 3, Int32(alarmHour))
+        sqlite3_bind_int(stmt, 4, Int32(alarmMinute))
+        sqlite3_bind_int(stmt, 5, Int32(status))
+        sqlite3_bind_double(stmt, 6, Date().timeIntervalSince1970)
 
         return sqlite3_step(stmt) == SQLITE_DONE
     }
@@ -114,7 +128,7 @@ final class MedicationDatabase {
 
     /// 查询时间范围内的记录
     func query(fromTimestamp: Int64, toTimestamp: Int64) -> [MedicationEntry] {
-        let sql = "SELECT id, timestamp, alarm_index, status, created_at FROM medication_records WHERE timestamp >= ? AND timestamp < ? ORDER BY timestamp DESC"
+        let sql = "SELECT id, timestamp, alarm_index, alarm_hour, alarm_minute, status, created_at FROM medication_records WHERE timestamp >= ? AND timestamp < ? ORDER BY timestamp DESC"
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
         defer { sqlite3_finalize(stmt) }
@@ -128,8 +142,10 @@ final class MedicationDatabase {
                 id: sqlite3_column_int64(stmt, 0),
                 timestamp: sqlite3_column_int64(stmt, 1),
                 alarmIndex: Int(sqlite3_column_int(stmt, 2)),
-                status: Int(sqlite3_column_int(stmt, 3)),
-                createdAt: Date(timeIntervalSince1970: sqlite3_column_double(stmt, 4))
+                alarmHour: Int(sqlite3_column_int(stmt, 3)),
+                alarmMinute: Int(sqlite3_column_int(stmt, 4)),
+                status: Int(sqlite3_column_int(stmt, 5)),
+                createdAt: Date(timeIntervalSince1970: sqlite3_column_double(stmt, 6))
             )
             results.append(entry)
         }
@@ -138,7 +154,7 @@ final class MedicationDatabase {
 
     /// 查询所有记录
     func queryAll() -> [MedicationEntry] {
-        let sql = "SELECT id, timestamp, alarm_index, status, created_at FROM medication_records ORDER BY timestamp DESC"
+        let sql = "SELECT id, timestamp, alarm_index, alarm_hour, alarm_minute, status, created_at FROM medication_records ORDER BY timestamp DESC"
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
         defer { sqlite3_finalize(stmt) }
@@ -149,8 +165,10 @@ final class MedicationDatabase {
                 id: sqlite3_column_int64(stmt, 0),
                 timestamp: sqlite3_column_int64(stmt, 1),
                 alarmIndex: Int(sqlite3_column_int(stmt, 2)),
-                status: Int(sqlite3_column_int(stmt, 3)),
-                createdAt: Date(timeIntervalSince1970: sqlite3_column_double(stmt, 4))
+                alarmHour: Int(sqlite3_column_int(stmt, 3)),
+                alarmMinute: Int(sqlite3_column_int(stmt, 4)),
+                status: Int(sqlite3_column_int(stmt, 5)),
+                createdAt: Date(timeIntervalSince1970: sqlite3_column_double(stmt, 6))
             )
             results.append(entry)
         }

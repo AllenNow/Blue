@@ -74,8 +74,8 @@ final class MedicationManager {
         let day      = Int(data[8])
         let alarmHour   = Int(data[9])
         let alarmMinute = Int(data[10])
-        let ringHour    = Int(data[11])
-        let ringMinute  = Int(data[12])
+        let eventHour   = Int(data[11])
+        let eventMinute = Int(data[12])
         let statusByte  = data[13]
 
         guard let status = MedicationStatus.from(byte: statusByte) else { return nil }
@@ -84,13 +84,15 @@ final class MedicationManager {
         components.year   = year
         components.month  = month
         components.day    = day
-        components.hour   = ringHour
-        components.minute = ringMinute
+        components.hour   = eventHour
+        components.minute = eventMinute
         let date = Calendar.current.date(from: components) ?? Date()
 
         return MedicationRecord(
             timestamp: Int64(date.timeIntervalSince1970 * 1000),
             alarmIndex: alarmIndex,
+            alarmHour: alarmHour,
+            alarmMinute: alarmMinute,
             status: status
         )
     }

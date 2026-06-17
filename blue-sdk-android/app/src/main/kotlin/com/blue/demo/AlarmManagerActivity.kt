@@ -149,33 +149,37 @@ class AlarmManagerActivity : AppCompatActivity() {
     private fun deleteAlarmAt(position: Int) {
         val slot = alarms[position]
         sdk.deleteAlarm(slot.index) { result ->
-            result.fold(
-                onSuccess = {
-                    alarms[position] = AlarmSlot(slot.index, false, 0, 0, 0x7F, false)
-                    adapter.notifyItemChanged(position)
-                },
-                onFailure = {
-                    adapter.notifyItemChanged(position)
-                    android.widget.Toast.makeText(this, (it as BlueError).message, android.widget.Toast.LENGTH_SHORT).show()
-                }
-            )
+            runOnUiThread {
+                result.fold(
+                    onSuccess = {
+                        alarms[position] = AlarmSlot(slot.index, false, 0, 0, 0x7F, false)
+                        adapter.notifyItemChanged(position)
+                    },
+                    onFailure = {
+                        adapter.notifyItemChanged(position)
+                        android.widget.Toast.makeText(this, (it as BlueError).message, android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
         }
     }
 
     fun clearAllAlarms() {
         AlertDialog.Builder(this)
-            .setTitle("清空闹钟")
-            .setMessage("确定清空所有闹钟设置？")
-            .setNegativeButton("取消", null)
-            .setPositiveButton("清空") { _, _ ->
+            .setTitle(S.clearAlarmsTitle)
+            .setMessage(S.clearAlarmsMsg)
+            .setNegativeButton(S.cancel, null)
+            .setPositiveButton(S.confirm) { _, _ ->
                 sdk.clearAllAlarms { result ->
-                    result.fold(
-                        onSuccess = {
-                            alarms = (1..7).map { AlarmSlot(it, false, 0, 0, 0x7F, false) }.toMutableList()
-                            adapter.notifyDataSetChanged()
-                        },
-                        onFailure = { android.widget.Toast.makeText(this, (it as BlueError).message, android.widget.Toast.LENGTH_SHORT).show() }
-                    )
+                    runOnUiThread {
+                        result.fold(
+                            onSuccess = {
+                                alarms = (1..7).map { AlarmSlot(it, false, 0, 0, 0x7F, false) }.toMutableList()
+                                adapter.notifyDataSetChanged()
+                            },
+                            onFailure = { android.widget.Toast.makeText(this, (it as BlueError).message, android.widget.Toast.LENGTH_SHORT).show() }
+                        )
+                    }
                 }
             }
             .show()

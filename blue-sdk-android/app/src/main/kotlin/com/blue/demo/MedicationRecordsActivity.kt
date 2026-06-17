@@ -264,9 +264,19 @@ class MedicationRecordsActivity : AppCompatActivity() {
 
             fun bind(entry: MedicationEntry) {
                 emojiLabel.text = entry.statusEmoji
-                titleLabel.text = "闹钟${entry.alarmIndex} · ${entry.statusText}"
-                detailLabel.text = SimpleDateFormat("M/d HH:mm", Locale.getDefault()).format(Date(entry.timestamp))
-                timeLabel.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(entry.timestamp))
+                titleLabel.text = if (S.isZh)
+                    "闹钟${entry.alarmIndex} · ${entry.statusText}"
+                else "Alarm ${entry.alarmIndex} · ${entry.statusText}"
+                // 显示：设定时间 → 实际时间
+                val eventTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(entry.timestamp))
+                if (entry.alarmHour > 0 || entry.alarmMinute > 0) {
+                    detailLabel.text = if (S.isZh)
+                        "设定 ${entry.alarmTimeString} → 实际 $eventTime"
+                    else "Scheduled ${entry.alarmTimeString} → Actual $eventTime"
+                } else {
+                    detailLabel.text = SimpleDateFormat("M/d HH:mm", Locale.getDefault()).format(Date(entry.timestamp))
+                }
+                timeLabel.text = eventTime
             }
 
             private fun dp(v: Int, ctx: android.content.Context) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), ctx.resources.displayMetrics).toInt()

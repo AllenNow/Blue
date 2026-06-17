@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     private lateinit var durationInput: EditText
     private lateinit var scanButton: Button
     private lateinit var disconnectButton: Button
+    private lateinit var loadingOverlay: FrameLayout
 
     private var isScanning = false
 
@@ -113,20 +114,20 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
 
         statusLabel = TextView(this).apply {
-            text = "未连接"
+            text = S.notConnected
             setTextColor(textWhite)
             textSize = 16f
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
         }
 
-        scanButton = pillBtn("扫描", accentBlue) {
+        scanButton = pillBtn(S.scan, accentBlue) {
             if (isScanning) {
                 stopScan()
             } else {
                 requestPermsAndScan()
             }
         }
-        disconnectButton = pillBtn("断开", accentRed) { sdk.disconnect(); log("已断开") }.apply { visibility = View.GONE }
+        disconnectButton = pillBtn(S.disconnect, accentRed) { sdk.disconnect(); log(S.disconnected) }.apply { visibility = View.GONE }
 
         connCard.addView(statusDot)
         connCard.addView(statusLabel)
@@ -140,9 +141,9 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
-        funcRow.addView(pillBtn("设备信息", accentPink) { queryDeviceInfo() })
-        funcRow.addView(pillBtn("同步时间", accentPurple) { syncTime() })
-        funcRow.addView(pillBtn("闹钟管理", accentPurple) { startActivity(android.content.Intent(this, AlarmManagerActivity::class.java)) })
+        funcRow.addView(pillBtn(S.deviceInfo, accentPink) { queryDeviceInfo() })
+        funcRow.addView(pillBtn(S.syncTime, accentPurple) { syncTime() })
+        funcRow.addView(pillBtn(S.alarmManager, accentPurple) { startActivity(android.content.Intent(this, AlarmManagerActivity::class.java)) })
         content.addView(funcRow)
 
         content.addView(gap(16))
@@ -204,7 +205,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
         durRow.addView(durationInput)
         durRow.addView(TextView(this).apply {
-            text = "分"
+            text = S.minutes
             setTextColor(textGray)
             textSize = 14f
             layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply { marginEnd = dp(12) }
@@ -222,20 +223,21 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
-        toolRow.addView(pillBtn("用药记录", accentPink) { startActivity(android.content.Intent(this, MedicationRecordsActivity::class.java)) })
-        toolRow.addView(pillBtn("指令验证", accentViolet) { openDebugPanel() })
-        toolRow.addView(pillBtn("清空闹钟", accentCyan) { clearAllAlarms() })
+        toolRow.addView(pillBtn(S.medicationRecords, accentPink) { startActivity(android.content.Intent(this, MedicationRecordsActivity::class.java)) })
+        toolRow.addView(pillBtn(S.protocolTest, accentViolet) { openDebugPanel() })
+        toolRow.addView(pillBtn(S.faq, Color.parseColor("#30D158")) { startActivity(android.content.Intent(this, FAQActivity::class.java)) })
         content.addView(toolRow)
 
         content.addView(gap(8))
 
-        val sysRow = LinearLayout(this).apply {
+        val sysRow2 = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
-        sysRow.addView(pillBtn("恢复出厂", accentOrange) { restoreFactory() })
-        sysRow.addView(pillBtn("清除绑定", accentOrange) { clearLocalBinding() })
-        content.addView(sysRow)
+        sysRow2.addView(pillBtn(S.clearAlarms, accentCyan) { clearAllAlarms() })
+        sysRow2.addView(pillBtn(S.restoreFactory, accentOrange) { restoreFactory() })
+        sysRow2.addView(pillBtn(S.clearBinding, accentOrange) { clearLocalBinding() })
+        content.addView(sysRow2)
 
         content.addView(gap(16))
 
@@ -252,12 +254,12 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             setPadding(dp(12), dp(12), dp(12), dp(8))
         }
         logHead.addView(TextView(this).apply {
-            text = "日志"
+            text = S.log
             setTextColor(textWhite)
             textSize = 14f
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
         })
-        logHead.addView(pillBtn("清空", bgSegment) { logTextView.text = "" })
+        logHead.addView(pillBtn(S.clear, bgSegment) { logTextView.text = "" })
         logCard.addView(logHead)
 
         logTextView = TextView(this).apply {
@@ -276,7 +278,47 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         scrollView.addView(content)
         root.addView(scrollView)
 
-        return root
+        // Loading 遮罩（连接认证中显示）
+        loadingOverlay = FrameLayout(this).apply {
+            setBackgroundColor(Color.parseColor("#66000000"))
+            visibility = View.GONE
+            layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            setOnClickListener { /* 拦截点击 */ }
+
+            val card = LinearLayout(this@MainActivity).apply {
+                orientation = LinearLayout.VERTICAL
+                gravity = Gravity.CENTER
+                background = roundDrawable(bgCard, dp(12))
+                setPadding(dp(24), dp(20), dp(24), dp(20))
+                layoutParams = FrameLayout.LayoutParams(dp(200), WRAP_CONTENT).apply {
+                    gravity = Gravity.CENTER
+                }
+            }
+            card.addView(ProgressBar(this@MainActivity).apply {
+                layoutParams = LinearLayout.LayoutParams(dp(36), dp(36)).apply { bottomMargin = dp(12) }
+            })
+            card.addView(TextView(this@MainActivity).apply {
+                text = S.connectingAuth
+                setTextColor(textWhite); textSize = 15f; gravity = Gravity.CENTER
+                tag = "loading_label"
+            })
+            card.addView(Button(this@MainActivity).apply {
+                text = S.cancel; setTextColor(accentRed); isAllCaps = false; textSize = 14f
+                background = null
+                layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply { topMargin = dp(8) }
+                setOnClickListener { cancelConnection() }
+            })
+            addView(card)
+        }
+
+        // 包裹为 FrameLayout 以叠加 loading
+        val frame = FrameLayout(this).apply {
+            layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        }
+        frame.addView(root)
+        frame.addView(loadingOverlay)
+
+        return frame
     }
 
     private fun requestPermsAndScan() {
@@ -301,27 +343,32 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
 
     private fun startScan() {
         isScanning = true
-        scanButton.text = "停止扫描"
+        isAuthFailed = false
+        scanButton.text = S.stopScan
         scanButton.isEnabled = true
-        log("扫描中...（自动密钥）")
-        updateStatus("扫描中...", Color.parseColor("#FF9500"))
+        log(S.scanningAuto)
+        showLoading(S.scanConnecting)
+        updateStatus(S.scanning, Color.parseColor("#FF9500"))
 
         sdk.startScan(timeoutMs = 10000L) { event ->
             when (event) {
                 is com.blue.sdk.model.ScanEvent.DeviceFound -> {
-                    log("发现 ${event.device.deviceName}")
-                    updateStatus("连接认证中...", Color.YELLOW)
+                    log("${S.found} ${event.device.deviceName}")
+                    showLoading(S.connectingAuth)
+                    updateStatus(S.connectingAuth, Color.YELLOW)
                     sdk.connect(event.device)
                     sdk.stopScan()
                     resetScanButton()
                 }
                 is com.blue.sdk.model.ScanEvent.Error -> {
                     log("❌ ${event.error.message}")
-                    updateStatus("扫描失败", Color.RED)
+                    updateStatus(S.scanFailed, Color.RED)
+                    hideLoading()
                     resetScanButton()
                 }
                 is com.blue.sdk.model.ScanEvent.Stopped -> {
-                    log("⏹ 扫描已停止")
+                    log("⏹ ${S.scanStopped}")
+                    hideLoading()
                     resetScanButton()
                 }
             }
@@ -334,16 +381,15 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
 
     private fun resetScanButton() {
         isScanning = false
-        scanButton.text = "扫描"
+        scanButton.text = S.scan
     }
 
     private fun queryDeviceInfo() {
-        if (sdk.connectionState != ConnectionState.AUTHENTICATED) {
-            log("❌ 请先连接设备")
-            return
-        }
         log("📱 查询设备信息...")
-        sdk.queryDeviceInfo { it.fold({ log("📱 v${it.firmwareVersion}") }, { log("❌ ${(it as BlueError).message}") }) }
+        sdk.queryDeviceInfo { it.fold(
+            { log("📱 MAC:${it.macAddress} v${it.firmwareVersion}") },
+            { log("❌ ${(it as BlueError).message}") }
+        )}
     }
 
     private fun syncTime() {
@@ -360,8 +406,8 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             log("❌ 请先连接设备")
             return
         }
-        confirm("清空闹钟", "确定清空所有闹钟？") {
-            sdk.clearAllAlarms { it.fold({ log("⏰ 所有闹钟已清空") }, { log("❌ ${(it as BlueError).message}") }) }
+        confirm(S.clearAlarmsTitle, S.clearAlarmsMsg) {
+            sdk.clearAllAlarms { it.fold({ log("⏰ ${S.alarmsCleared}") }, { log("❌ ${(it as BlueError).message}") }) }
         }
     }
 
@@ -370,16 +416,16 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             log("❌ 请先连接设备")
             return
         }
-        confirm("恢复出厂", "确定恢复出厂设置？") {
-            log("🔄 恢复出厂中...")
-            sdk.restoreFactory { it.fold({ log("✅ 已恢复出厂") }, { log("❌ ${(it as BlueError).message}") }) }
+        confirm(S.restoreFactoryTitle, S.restoreFactoryMsg) {
+            log("🔄 ${S.restoringFactory}")
+            sdk.restoreFactory { it.fold({ log("✅ ${S.factoryRestored}") }, { log("❌ ${(it as BlueError).message}") }) }
         }
     }
 
     private fun clearLocalBinding() {
-        confirm("清除绑定", "清除本地密钥，设备也需恢复出厂。") {
+        confirm(S.clearBindingTitle, S.clearBindingMsg) {
             sdk.clearBinding()
-            log("✅ 本地绑定已清除")
+            log("✅ ${S.bindingCleared}")
         }
     }
 
@@ -407,13 +453,37 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
     }
 
+    private fun showLoading(text: String = "连接认证中...") {
+        runOnUiThread {
+            loadingOverlay.findViewWithTag<TextView>("loading_label")?.text = text
+            loadingOverlay.visibility = View.VISIBLE
+        }
+    }
+
+    private fun hideLoading() {
+        runOnUiThread { loadingOverlay.visibility = View.GONE }
+    }
+
+    private fun cancelConnection() {
+        sdk.stopScan()
+        sdk.disconnect()
+        hideLoading()
+        resetScanButton()
+        updateStatus(S.notConnected, Color.GRAY)
+        runOnUiThread {
+            scanButton.visibility = View.VISIBLE
+            scanButton.isEnabled = true
+        }
+        log("用户取消连接")
+    }
+
     override fun onConnectionStateChanged(state: ConnectionState) {
         val (text, color) = when (state) {
-            ConnectionState.DISCONNECTED -> "未连接" to Color.GRAY
-            ConnectionState.CONNECTING -> "连接中..." to Color.parseColor("#FF9500")
-            ConnectionState.CONNECTED -> "认证中..." to Color.YELLOW
-            ConnectionState.AUTHENTICATED -> "已连接" to Color.GREEN
-            ConnectionState.RECONNECTING -> "重连中..." to Color.parseColor("#FF9500")
+            ConnectionState.DISCONNECTED -> S.notConnected to Color.GRAY
+            ConnectionState.CONNECTING -> S.connecting to Color.parseColor("#FF9500")
+            ConnectionState.CONNECTED -> S.authenticating to Color.YELLOW
+            ConnectionState.AUTHENTICATED -> S.connected to Color.GREEN
+            ConnectionState.RECONNECTING -> S.reconnecting to Color.parseColor("#FF9500")
         }
         runOnUiThread {
             when (state) {
@@ -439,6 +509,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                     scanButton.visibility = View.GONE
                     disconnectButton.visibility = View.VISIBLE
                     updateStatus(text, color)
+                    hideLoading()
                 }
                 ConnectionState.RECONNECTING -> {
                     scanButton.visibility = View.GONE
@@ -454,16 +525,17 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         if (!success) {
             isAuthFailed = true
             log("🔐 认证失败")
+            hideLoading()
             runOnUiThread {
-                statusLabel.text = "认证失败"
+                statusLabel.text = if (S.isZh) "认证失败" else "Auth Failed"
                 statusDot.background = roundDrawable(Color.RED, dp(6))
                 scanButton.visibility = View.VISIBLE
                 disconnectButton.visibility = View.GONE
                 scanButton.isEnabled = true
                 AlertDialog.Builder(this)
-                    .setTitle("认证失败")
-                    .setMessage("密钥不一致，请对设备长按按键恢复出厂设置后重试。")
-                    .setPositiveButton("确定", null)
+                    .setTitle(S.authFailedTitle)
+                    .setMessage(S.authFailedMsg)
+                    .setPositiveButton(S.confirm, null)
                     .show()
             }
         }
@@ -480,7 +552,8 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             MedicationStatus.TAKEN -> 1; MedicationStatus.TIMEOUT -> 2
             MedicationStatus.MISSED -> 3; MedicationStatus.EARLY -> 4
         }
-        MedicationDatabase.getInstance(this).insert(System.currentTimeMillis(), alarmIndex, statusInt)
+        // onMedicationResult 不携带闹钟设定时间，用 0 填充
+        MedicationDatabase.getInstance(this).insert(System.currentTimeMillis(), alarmIndex, 0, 0, statusInt)
     }
 
     override fun onMedicationRecordReported(record: MedicationRecord) {
@@ -489,7 +562,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             MedicationStatus.TAKEN -> 1; MedicationStatus.TIMEOUT -> 2
             MedicationStatus.MISSED -> 3; MedicationStatus.EARLY -> 4
         }
-        MedicationDatabase.getInstance(this).insert(record.timestamp, record.alarmIndex, statusInt)
+        MedicationDatabase.getInstance(this).insert(record.timestamp, record.alarmIndex, record.alarmHour, record.alarmMinute, statusInt)
     }
 
     override fun onSoundTypeChanged(type: SoundType) { log("🔊 铃声变更") }
