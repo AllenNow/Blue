@@ -26,11 +26,11 @@ internal class AudioManager(private val commandQueue: CommandQueue) {
 
     /**
      * 设置铃声类型
-     * 使用 DPID 0x6F（NOTIFICATION_OF_RESULTS）
-     * 帧格式：6F 04 00 01 XX（01=A/02=B/03=C）
+     * 使用 DPID 0x6D（TYPE_OF_SOUND）
+     * 帧格式：6D 04 00 01 XX（00=静音/01=A/02=B/03=C）
      */
     fun setSoundType(type: SoundType, completion: (Result<Unit>) -> Unit) {
-        sendCommand(byteArrayOf(DPIDConstants.NOTIFICATION_OF_RESULTS, 0x04, 0x00, 0x01, type.protocolValue), completion)
+        sendCommand(byteArrayOf(DPIDConstants.TYPE_OF_SOUND, 0x04, 0x00, 0x01, type.protocolValue), completion)
     }
 
     /** 设置静音（通过铃声类型=0x00实现，取消静音恢复为类型A）*/

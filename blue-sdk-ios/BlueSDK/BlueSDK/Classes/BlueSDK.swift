@@ -394,6 +394,31 @@ import CoreBluetooth
         }
     }
 
+    /// 发送原始指令数据（调试用）
+    /// - Parameters:
+    ///   - data: 原始数据字节（不含帧头/CRC，SDK 自动封装为 CMD=0x06 帧）
+    ///   - completion: 结果回调
+    public func sendRawData(data: [UInt8], completion: @escaping (Result<Void, BlueError>) -> Void) {
+        guard requireInitialized(callback: { completion(.failure($0)) }),
+              requireAuthenticated(callback: { completion(.failure($0)) }) else { return }
+        let frame = FrameBuilder.build(cmd: CommandCode.sendCommand, data: data)
+        connectionManager.getCommandQueue().enqueue(cmd: CommandCode.sendCommand, frame: frame) { result in
+            switch result {
+            case .success:
+                completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    /// 查询指定闹钟槽位当前配置（FR15）
+    public func queryAlarm(index: Int, completion: @escaping (Result<AlarmInfo, BlueError>) -> Void) {
+        guard requireInitialized(callback: { completion(.failure($0)) }),
+              requireAuthenticated(callback: { completion(.failure($0)) }) else { return }
+        alarmManager?.queryAlarm(index: index, completion: completion)
+    }
+
     // MARK: - 内部工具
 
     @discardableResult

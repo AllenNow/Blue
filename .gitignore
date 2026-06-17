@@ -78,7 +78,8 @@ captures/
 *.ap_
 
 # Kotlin 增量编译缓存
-kotlin/
+**/kotlin-classes/
+**/kotlin-incremental/
 
 # ============================================================
 # 项目特定忽略

@@ -3,9 +3,9 @@
 //
 // 音频与系统设置管理器（FR25~FR31）
 // 协议 DPID 对应关系：
-//   0x6D - 声音类型（1-静音 2-声音A 3-声音B）
-//   0x6E - 提醒持续时间
-//   0x6F - 用药结果通知
+//   0x6D - 声音类型（0-静音 1-声音A 2-声音B 3-声音C）— APP 下发 & 设备上报
+//   0x6E - 提醒持续时间 / 音量设置（通过 type 字段区分）
+//   0x6F - 用药结果通知（APP→设备）
 //   0x73 - 时制（0-12H 1-24H）
 //   0x74 - 当前闹钟静音（0-关 1-开）
 
@@ -21,12 +21,12 @@ final class AudioManager {
         self.commandQueue = commandQueue
     }
 
-    // MARK: - 声音类型设置（DPID=0x6F）
+    // MARK: - 声音类型设置（DPID=0x6D）
 
     /// 设置设备铃声类型
-    /// APP 下发用 DPID=0x6F，值：01=类型A 02=类型B 03=类型C
+    /// APP 下发用 DPID=0x6D（TYPEOFSOUND），值：00=静音 01=类型A 02=类型B 03=类型C
     func setSoundType(_ type: SoundType, completion: @escaping (Result<Void, BlueError>) -> Void) {
-        let data: [UInt8] = [DPIDConstants.notificationOfResults, 0x04, 0x00, 0x01, type.protocolValue]
+        let data: [UInt8] = [DPIDConstants.typeOfSound, 0x04, 0x00, 0x01, type.protocolValue]
         sendCommand(data: data, completion: completion)
     }
 

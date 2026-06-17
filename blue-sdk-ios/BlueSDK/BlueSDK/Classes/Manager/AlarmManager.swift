@@ -108,6 +108,35 @@ final class AlarmManager {
         }
     }
 
+    // MARK: - 查询闹钟（FR15）
+
+    /// 查询指定槽位的闹钟当前配置
+    /// - Parameters:
+    ///   - index: 闹钟槽位（1~7）
+    ///   - completion: 结果回调
+    func queryAlarm(index: Int, completion: @escaping (Result<AlarmInfo, BlueError>) -> Void) {
+        guard let dpid = DPIDConstants.alarmDPID(for: index) else {
+            completion(.failure(.invalidParameter))
+            return
+        }
+
+        let data: [UInt8] = [dpid]
+        let frame = FrameBuilder.build(cmd: CommandCode.sendCommand, data: data)
+
+        commandQueue.enqueue(cmd: CommandCode.sendCommand, frame: frame) { result in
+            switch result {
+            case .success(let response):
+                if let alarm = AlarmManager.parseAlarmInfo(from: response.data, index: index) {
+                    completion(.success(alarm))
+                } else {
+                    completion(.failure(.protocolError))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
     // MARK: - 解析设备上报的闹钟数据（FR18、FR19）
 
     /// 从上报帧数据解析 AlarmInfo
