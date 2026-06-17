@@ -199,11 +199,16 @@ class BlueSDK private constructor(private val context: Context) {
 
     /**
      * 清除本地绑定密钥（用于重新配对）
-     * 清除后下次连接会生成新的 phoneMac，需配合设备恢复出厂使用
+     * 清除后自动断开当前连接，下次连接会生成新的 phoneMac
+     * 需配合设备恢复出厂使用
      */
     fun clearBinding(completion: (Result<Unit>) -> Unit = {}) {
         KeystoreHelper.delete(KEYSTORE_PHONE_MAC_KEY)
-        BlueLogger.info("本地绑定密钥已清除")
+        connectedDevice = null
+        if (isInitialized && connectionManager.state != ConnectionState.DISCONNECTED) {
+            connectionManager.disconnect()
+        }
+        BlueLogger.info("本地绑定密钥已清除，连接已断开")
         completion(Result.success(Unit))
     }
 

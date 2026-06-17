@@ -178,11 +178,14 @@ import CoreBluetooth
     }
 
     /// 清除本地绑定密钥（用于重新配对）
-    /// 清除后下次连接会生成新的 phoneMac，需配合设备恢复出厂使用
+    /// 清除后自动断开当前连接，下次连接会生成新的 phoneMac
+    /// 需配合设备恢复出厂使用
     /// - Parameter completion: 操作完成回调（默认空回调，向后兼容）
     public func clearBinding(completion: @escaping (Result<Void, BlueError>) -> Void = { _ in }) {
         KeychainHelper.delete(forKey: BlueSDK.keychainPhoneMacKey)
-        logger.info("本地绑定密钥已清除")
+        connectedPeripheral = nil
+        connectionManager.disconnect()
+        logger.info("本地绑定密钥已清除，连接已断开")
         completion(.success(()))
     }
 
