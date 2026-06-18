@@ -167,7 +167,7 @@ class AlarmEditorViewController: UIViewController {
         let minute = comps.minute ?? 0
 
         saveButton.isEnabled = false
-        BlueSDK.shared.setAlarm(index: slot.index, hour: hour, minute: minute, weekMask: selectedWeekMask) { [weak self] result in
+        BlueSDK.shared.setAlarm(index: slot.index, hour: hour, minute: minute, days: WeekDays(rawValue: selectedWeekMask)) { [weak self] result in
             DispatchQueue.main.async {
                 self?.saveButton.isEnabled = true
                 switch result {

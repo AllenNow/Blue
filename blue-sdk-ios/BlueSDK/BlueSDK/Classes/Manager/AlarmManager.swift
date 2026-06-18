@@ -145,18 +145,20 @@ final class AlarmManager {
     ///   - index: 闹钟槽位索引
     /// - Returns: 解析后的 AlarmInfo，格式错误返回 nil
     static func parseAlarmInfo(from data: [UInt8], index: Int) -> AlarmInfo? {
-        // 数据格式：[DPID][0x00][0x00][0x07][0x01][hour][minute][weekMask][advHigh][advLow][advStatus]
+        // 数据格式：[DPID][0x00][0x00][0x07][enabled][hour][minute][weekMask][ringingState][???][eventStatus]
         guard data.count >= 11 else { return nil }
         let hour         = Int(data[5])
         let minute       = Int(data[6])
         let weekMask     = Int(data[7])
-        let advanceStatus = Int(data[10])
+        let ringingState = Int(data[9])
+        let eventStatus  = Int(data[10])
         return AlarmInfo(
             index: index,
             hour: hour,
             minute: minute,
             weekMask: weekMask,
-            advanceStatus: advanceStatus
+            ringingState: ringingState,
+            eventStatus: eventStatus
         )
     }
 }

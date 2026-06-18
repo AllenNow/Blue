@@ -294,7 +294,7 @@ class FAQViewController: UIViewController {
         tv.dataSource = self
         tv.delegate = self
         tv.register(UITableViewCell.self, forCellReuseIdentifier: "FAQCell")
-        tv.rowHeight = UITableView.automaticDimension
+        tv.rowHeight = UITableViewAutomaticDimension
         tv.estimatedRowHeight = 56
         return tv
     }()

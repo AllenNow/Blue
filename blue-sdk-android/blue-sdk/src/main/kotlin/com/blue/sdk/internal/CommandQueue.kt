@@ -103,7 +103,15 @@ internal class CommandQueue {
 
     private fun send(command: PendingCommand) {
         BlueLogger.debug("发送指令: 0x${"%02X".format(command.cmd.toInt() and 0xFF)} (重试${command.retryCount})")
-        sendBlock?.invoke(command.frame)
+        val block = sendBlock
+        if (block == null) {
+            // 没有连接，立即回调 Disconnected 错误
+            pendingCommand = null
+            command.completion(Result.failure(BlueError.Disconnected))
+            sendNext()
+            return
+        }
+        block.invoke(command.frame)
         scheduleTimeout(command)
     }
 

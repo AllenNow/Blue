@@ -20,4 +20,6 @@ internal object CommandCode {
     const val DEVICE_REPORT: Byte = 0x07
     /** 时间同步（双向）设备请求：55 AA 00 E1 00 01 00 E1 */
     const val TIME_SYNC: Byte = 0xE1.toByte()
+    /** 解绑设备（下行）55 AA 00 A1 00 00 A0 */
+    const val UNBIND: Byte = 0xA1.toByte()
 }

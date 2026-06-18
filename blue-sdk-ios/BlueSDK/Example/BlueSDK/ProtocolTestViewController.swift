@@ -169,7 +169,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 3. 设置闹钟1
             TestCase(name: "设置闹钟1 08:00 (DPID=0x66)") { completion in
-                BlueSDK.shared.setAlarm(index: 1, hour: 8, minute: 0, weekMask: 0x7F) { result in
+                BlueSDK.shared.setAlarm(index: 1, hour: 8, minute: 0, days: .all) { result in
                     switch result {
                     case .success(let a): completion(.success("\(String(format: "%02d:%02d", a.hour, a.minute)) 每天"))
                     case .failure(let e): completion(.failure(e))
@@ -179,7 +179,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 4. 设置闹钟2
             TestCase(name: "设置闹钟2 12:30 (DPID=0x67)") { completion in
-                BlueSDK.shared.setAlarm(index: 2, hour: 12, minute: 30, weekMask: 0x1F) { result in
+                BlueSDK.shared.setAlarm(index: 2, hour: 12, minute: 30, days: .weekdays) { result in
                     switch result {
                     case .success(let a): completion(.success("\(String(format: "%02d:%02d", a.hour, a.minute)) 工作日"))
                     case .failure(let e): completion(.failure(e))

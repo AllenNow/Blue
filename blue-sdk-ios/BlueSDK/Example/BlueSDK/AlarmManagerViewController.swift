@@ -13,6 +13,7 @@ struct AlarmSlot {
     var minute: Int
     var weekMask: Int       // bit0=周一...bit6=周日
     var isSet: Bool         // 是否已设置（未设置时 hour=0xFF）
+    var runState: AlarmRunState = .idle  // 运行状态：空闲/响铃中/已结束
 
     var timeString: String {
         guard isSet else { return "--:--" }
@@ -21,10 +22,12 @@ struct AlarmSlot {
 
     var weekDescription: String {
         guard isSet else { return "" }
-        if weekMask == 0x7F { return "每天" }
-        if weekMask == 0x1F { return "工作日" }
-        if weekMask == 0x60 { return "周末" }
-        let days = ["一", "二", "三", "四", "五", "六", "日"]
+        if weekMask == 0x7F { return SDKLocale.s("每天", "Daily") }
+        if weekMask == 0x1F { return SDKLocale.s("工作日", "Weekdays") }
+        if weekMask == 0x60 { return SDKLocale.s("周末", "Weekend") }
+        let days = SDKLocale.isZh
+            ? ["一", "二", "三", "四", "五", "六", "日"]
+            : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         var result: [String] = []
         for i in 0..<7 {
             if weekMask & (1 << i) != 0 {
@@ -32,6 +35,14 @@ struct AlarmSlot {
             }
         }
         return result.joined(separator: " ")
+    }
+
+    var runStateText: String {
+        switch runState {
+        case .idle: return ""
+        case .ringing: return SDKLocale.s("🔔 响铃中", "🔔 Ringing")
+        case .ended: return SDKLocale.s("✅ 已完成", "✅ Done")
+        }
     }
 }
 
@@ -55,9 +66,7 @@ class AlarmManagerViewController: UIViewController {
 
     // MARK: - 状态
 
-    private var alarms: [AlarmSlot] = (1...7).map {
-        AlarmSlot(index: $0, isEnabled: false, hour: 0, minute: 0, weekMask: 0x7F, isSet: false)
-    }
+    private var alarms: [AlarmSlot] = AlarmStorage.shared.loadAll()
 
     // MARK: - 生命周期
 
@@ -67,12 +76,15 @@ class AlarmManagerViewController: UIViewController {
         view.backgroundColor = .systemBackground
         navigationItem.rightBarButtonItem = clearButton
         setupUI()
+        // 注册为 SDK 事件观察者，实时接收设备上报的闹钟变更
+        BlueSDK.shared.addObserver(self)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // 查询设备信息后设备会自动上报所有闹钟配置
-        // 这里暂时不主动查询，靠连接时设备上报
+        // 从本地存储刷新（可能在其他页面有更新）
+        alarms = AlarmStorage.shared.loadAll()
+        tableView.reloadData()
     }
 
     private func setupUI() {
@@ -87,10 +99,10 @@ class AlarmManagerViewController: UIViewController {
 
     // MARK: - 更新闹钟显示
 
-    func updateAlarm(index: Int, hour: Int, minute: Int, weekMask: Int, enabled: Bool) {
+    func updateAlarm(index: Int, hour: Int, minute: Int, weekMask: Int, enabled: Bool, runState: AlarmRunState = .idle) {
         guard index >= 1, index <= 7 else { return }
         let isSet = hour != 0xFF && minute != 0xFF
-        alarms[index - 1] = AlarmSlot(
+        var slot = AlarmSlot(
             index: index,
             isEnabled: enabled && isSet,
             hour: isSet ? hour : 0,
@@ -98,6 +110,9 @@ class AlarmManagerViewController: UIViewController {
             weekMask: weekMask,
             isSet: isSet
         )
+        slot.runState = runState
+        alarms[index - 1] = slot
+        AlarmStorage.shared.save(slot: slot)
         tableView.reloadRows(at: [IndexPath(row: index - 1, section: 0)], with: .automatic)
     }
 
@@ -117,6 +132,7 @@ class AlarmManagerViewController: UIViewController {
                         self?.alarms = (1...7).map {
                             AlarmSlot(index: $0, isEnabled: false, hour: 0, minute: 0, weekMask: 0x7F, isSet: false)
                         }
+                        AlarmStorage.shared.clearAll()
                         self?.tableView.reloadData()
                     }
                 }
@@ -147,6 +163,7 @@ class AlarmManagerViewController: UIViewController {
                     self?.alarms[index - 1] = AlarmSlot(
                         index: index, isEnabled: false, hour: 0, minute: 0, weekMask: 0x7F, isSet: false
                     )
+                    AlarmStorage.shared.clear(index: index)
                     self?.tableView.reloadRows(at: [IndexPath(row: index - 1, section: 0)], with: .automatic)
                 }
             }
@@ -179,6 +196,23 @@ extension AlarmManagerViewController: UITableViewDataSource, UITableViewDelegate
             completion(true)
         }
         return UISwipeActionsConfiguration(actions: [delete])
+    }
+}
+
+// MARK: - BlueSDKDelegate（实时接收设备上报闹钟变更）
+
+extension AlarmManagerViewController: BlueSDKDelegate {
+    func blueSDK(_ sdk: BlueSDK, didUpdateAlarm alarm: AlarmInfo) {
+        DispatchQueue.main.async { [weak self] in
+            self?.updateAlarm(
+                index: alarm.index,
+                hour: alarm.hour,
+                minute: alarm.minute,
+                weekMask: alarm.weekMask,
+                enabled: true,
+                runState: alarm.runState
+            )
+        }
     }
 }
 
@@ -243,12 +277,25 @@ class AlarmSlotCell: UITableViewCell {
 
         if slot.isSet {
             timeLabel.textColor = .label
-            statusBadge.text = slot.isEnabled ? " 已开启 " : " 已关闭 "
-            statusBadge.textColor = slot.isEnabled ? .systemGreen : .systemGray
-            statusBadge.backgroundColor = (slot.isEnabled ? UIColor.systemGreen : UIColor.systemGray).withAlphaComponent(0.1)
+            // 根据运行状态显示不同标签
+            switch slot.runState {
+            case .ringing:
+                statusBadge.text = SDKLocale.s(" 🔔 响铃中 ", " 🔔 Ringing ")
+                statusBadge.textColor = .systemOrange
+                statusBadge.backgroundColor = UIColor.systemOrange.withAlphaComponent(0.1)
+            case .ended:
+                statusBadge.text = SDKLocale.s(" ✅ 已完成 ", " ✅ Done ")
+                statusBadge.textColor = .systemBlue
+                statusBadge.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
+            case .idle:
+                statusBadge.text = slot.isEnabled ? SDKLocale.s(" 已开启 ", " On ") : SDKLocale.s(" 已关闭 ", " Off ")
+                statusBadge.textColor = slot.isEnabled ? .systemGreen : .systemGray
+                statusBadge.backgroundColor = (slot.isEnabled ? UIColor.systemGreen : UIColor.systemGray).withAlphaComponent(0.1)
+            @unknown default: break
+            }
         } else {
             timeLabel.textColor = .tertiaryLabel
-            statusBadge.text = " 未设置 "
+            statusBadge.text = SDKLocale.s(" 未设置 ", " Empty ")
             statusBadge.textColor = .tertiaryLabel
             statusBadge.backgroundColor = UIColor.systemGray.withAlphaComponent(0.05)
         }

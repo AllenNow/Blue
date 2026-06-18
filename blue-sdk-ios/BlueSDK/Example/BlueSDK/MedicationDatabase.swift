@@ -3,6 +3,7 @@
 
 import Foundation
 import SQLite3
+import BlueSDK
 
 /// 用药记录数据库条目
 struct MedicationEntry {
@@ -25,10 +26,10 @@ struct MedicationEntry {
     var statusText: String {
         let zh = SDKLocale.isZh
         switch status {
-        case 1: return zh ? "按时取药" : "Taken"
-        case 2: return zh ? "超时取药" : "Timeout"
+        case 1: return zh ? "按时取药" : "Taken on time"
+        case 2: return zh ? "超时取药" : "Taken late"
         case 3: return zh ? "漏服" : "Missed"
-        case 4: return zh ? "提前取药" : "Early"
+        case 4: return zh ? "提前取药" : "Taken early"
         default: return zh ? "未知" : "Unknown"
         }
     }
@@ -96,9 +97,25 @@ final class MedicationDatabase {
         sqlite3_exec(db, "ALTER TABLE medication_records ADD COLUMN alarm_minute INTEGER NOT NULL DEFAULT 0", nil, nil, nil)
     }
 
-    /// 插入一条用药记录
+    /// 插入一条用药记录（去重：相同 alarmIndex + timestamp + status 不重复入库）
     @discardableResult
     func insert(timestamp: Int64, alarmIndex: Int, alarmHour: Int = 0, alarmMinute: Int = 0, status: Int) -> Bool {
+        // 去重：完全相同的 alarmIndex + timestamp + status 才跳过
+        let checkSql = "SELECT COUNT(*) FROM medication_records WHERE alarm_index = ? AND timestamp = ? AND status = ?"
+        var checkStmt: OpaquePointer?
+        if sqlite3_prepare_v2(db, checkSql, -1, &checkStmt, nil) == SQLITE_OK {
+            sqlite3_bind_int(checkStmt, 1, Int32(alarmIndex))
+            sqlite3_bind_int64(checkStmt, 2, timestamp)
+            sqlite3_bind_int(checkStmt, 3, Int32(status))
+            if sqlite3_step(checkStmt) == SQLITE_ROW {
+                let count = sqlite3_column_int(checkStmt, 0)
+                sqlite3_finalize(checkStmt)
+                if count > 0 { return false }
+            } else {
+                sqlite3_finalize(checkStmt)
+            }
+        }
+
         let sql = "INSERT INTO medication_records (timestamp, alarm_index, alarm_hour, alarm_minute, status, created_at) VALUES (?, ?, ?, ?, ?, ?)"
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return false }

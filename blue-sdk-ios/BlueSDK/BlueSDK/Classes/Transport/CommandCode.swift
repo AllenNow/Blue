@@ -29,4 +29,8 @@ enum CommandCode {
     /// 密钥认证（下行）
     /// 帧示例：55 AA 00 00 00 02 [keyHigh] [keyLow] [crc8]
     static let authKey: UInt8 = 0x00
+
+    /// 解绑设备（下行）
+    /// 帧示例：55 AA 00 A1 00 00 A0
+    static let unbind: UInt8 = 0xA1
 }

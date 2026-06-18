@@ -2,6 +2,7 @@
 // BlueSDK Example - 用药记录查看页面（支持日历选择日期查询）
 
 import UIKit
+import BlueSDK
 
 class MedicationRecordsViewController: UIViewController {
 
@@ -33,7 +34,8 @@ class MedicationRecordsViewController: UIViewController {
         tv.dataSource = self
         tv.delegate = self
         tv.register(MedicationRecordCell.self, forCellReuseIdentifier: "RecordCell")
-        tv.rowHeight = 64
+        tv.rowHeight = UITableViewAutomaticDimension
+        tv.estimatedRowHeight = 80
         tv.tableFooterView = UIView()
         return tv
     }()
@@ -65,11 +67,18 @@ class MedicationRecordsViewController: UIViewController {
 
     private var records: [MedicationEntry] = []
     private let db = MedicationDatabase.shared
-    private let dateFormatter: DateFormatter = {
+    private weak var headerLabel: UILabel?
+
+    /// 时间格式化器 — 跟随药盒当前时制（12H/24H）
+    private var dateFormatter: DateFormatter {
         let df = DateFormatter()
-        df.dateFormat = "HH:mm"
+        if BlueSDK.shared.currentTimeFormat == .hour12 {
+            df.dateFormat = "h:mm a"
+        } else {
+            df.dateFormat = "HH:mm"
+        }
         return df
-    }()
+    }
 
     // MARK: - 生命周期
 
@@ -80,6 +89,8 @@ class MedicationRecordsViewController: UIViewController {
         navigationItem.rightBarButtonItem = deleteButton
         setupUI()
         loadRecords(for: datePicker.date)
+        // 注册为 SDK 事件观察者，实时接收用药记录上报
+        BlueSDK.shared.addObserver(self)
     }
 
     @objc func dismissSelf() {
@@ -90,8 +101,45 @@ class MedicationRecordsViewController: UIViewController {
 
     private func setupUI() {
         view.addSubview(segmentControl)
+
+        // 状态图例
+        let legendStack = UIStackView()
+        legendStack.axis = .horizontal
+        legendStack.spacing = 12
+        legendStack.alignment = .center
+        legendStack.distribution = .fillEqually
+        legendStack.translatesAutoresizingMaskIntoConstraints = false
+
+        let legends: [(String, String, String)] = [
+            ("✅", "按时取药", "On time"),
+            ("⏰", "超时取药", "Late"),
+            ("❌", "漏服", "Missed"),
+            ("⏩", "提前取药", "Early"),
+        ]
+        for (emoji, zh, en) in legends {
+            let label = UILabel()
+            label.text = "\(emoji) \(SDKLocale.isZh ? zh : en)"
+            label.font = .systemFont(ofSize: 11)
+            label.textColor = .secondaryLabel
+            label.textAlignment = .center
+            legendStack.addArrangedSubview(label)
+        }
+        view.addSubview(legendStack)
+
         view.addSubview(datePicker)
         view.addSubview(summaryLabel)
+
+        let headerLabel = UILabel()
+        headerLabel.text = SDKLocale.isZh
+            ? "设定时间 → 实际取药时间"
+            : "Scheduled → Actual time"
+        headerLabel.font = .systemFont(ofSize: 12, weight: .medium)
+        headerLabel.textColor = .tertiaryLabel
+        headerLabel.textAlignment = .center
+        headerLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(headerLabel)
+        self.headerLabel = headerLabel
+
         view.addSubview(tableView)
         view.addSubview(emptyLabel)
 
@@ -100,7 +148,11 @@ class MedicationRecordsViewController: UIViewController {
             segmentControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             segmentControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
 
-            datePicker.topAnchor.constraint(equalTo: segmentControl.bottomAnchor, constant: 8),
+            legendStack.topAnchor.constraint(equalTo: segmentControl.bottomAnchor, constant: 6),
+            legendStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            legendStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
+
+            datePicker.topAnchor.constraint(equalTo: legendStack.bottomAnchor, constant: 4),
             datePicker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
             datePicker.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
 
@@ -108,7 +160,11 @@ class MedicationRecordsViewController: UIViewController {
             summaryLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             summaryLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
 
-            tableView.topAnchor.constraint(equalTo: summaryLabel.bottomAnchor, constant: 8),
+            headerLabel.topAnchor.constraint(equalTo: summaryLabel.bottomAnchor, constant: 6),
+            headerLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            headerLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+
+            tableView.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 4),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -172,6 +228,33 @@ class MedicationRecordsViewController: UIViewController {
     }
 }
 
+// MARK: - BlueSDKDelegate（实时接收用药记录上报）
+
+extension MedicationRecordsViewController: BlueSDKDelegate {
+    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationRecord record: MedicationRecord) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            // 重新加载当前视图的数据
+            if self.segmentControl.selectedSegmentIndex == 0 {
+                self.loadRecords(for: self.datePicker.date)
+            } else {
+                self.loadAllRecords()
+            }
+        }
+    }
+
+    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationResult alarmIndex: Int, status: MedicationStatus) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if self.segmentControl.selectedSegmentIndex == 0 {
+                self.loadRecords(for: self.datePicker.date)
+            } else {
+                self.loadAllRecords()
+            }
+        }
+    }
+}
+
 // MARK: - UITableViewDataSource & Delegate
 
 extension MedicationRecordsViewController: UITableViewDataSource, UITableViewDelegate {
@@ -195,45 +278,38 @@ class MedicationRecordCell: UITableViewCell {
     private let emojiLabel = UILabel()
     private let titleLabel = UILabel()
     private let detailLabel = UILabel()
-    private let timeLabel = UILabel()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         selectionStyle = .none
 
         emojiLabel.font = .systemFont(ofSize: 24)
+        emojiLabel.textAlignment = .center
         emojiLabel.translatesAutoresizingMaskIntoConstraints = false
 
         titleLabel.font = .systemFont(ofSize: 15, weight: .medium)
+        titleLabel.textAlignment = .center
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        detailLabel.font = .systemFont(ofSize: 13)
+        detailLabel.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
         detailLabel.textColor = .secondaryLabel
+        detailLabel.textAlignment = .center
         detailLabel.translatesAutoresizingMaskIntoConstraints = false
-
-        timeLabel.font = .monospacedDigitSystemFont(ofSize: 14, weight: .regular)
-        timeLabel.textColor = .secondaryLabel
-        timeLabel.textAlignment = .right
-        timeLabel.translatesAutoresizingMaskIntoConstraints = false
 
         contentView.addSubview(emojiLabel)
         contentView.addSubview(titleLabel)
         contentView.addSubview(detailLabel)
-        contentView.addSubview(timeLabel)
 
         NSLayoutConstraint.activate([
-            emojiLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            emojiLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            emojiLabel.widthAnchor.constraint(equalToConstant: 32),
+            emojiLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            emojiLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
 
-            titleLabel.leadingAnchor.constraint(equalTo: emojiLabel.trailingAnchor, constant: 12),
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+            titleLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            titleLabel.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 4),
 
-            detailLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+            detailLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             detailLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
-
-            timeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            timeLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
+            detailLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
         ])
     }
 
@@ -252,13 +328,10 @@ class MedicationRecordCell: UITableViewCell {
                 : "Scheduled \(record.alarmTimeString) → Actual \(eventTime)"
         } else if showDate {
             let df = DateFormatter()
-            df.dateFormat = "M/d HH:mm"
+            df.dateFormat = BlueSDK.shared.currentTimeFormat == .hour12 ? "M/d h:mm a" : "M/d HH:mm"
             detailLabel.text = df.string(from: record.date)
         } else {
             detailLabel.text = eventTime
         }
-
-        timeLabel.text = eventTime
-        timeLabel.isHidden = showDate
     }
 }

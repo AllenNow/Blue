@@ -88,8 +88,12 @@ final class MedicationManager {
         components.minute = eventMinute
         let date = Calendar.current.date(from: components) ?? Date()
 
+        // 使用帧中日期+时分作为基础，加上当前秒和毫秒确保同一分钟内不重复
+        let baseMs = Int64(date.timeIntervalSince1970 * 1000)
+        let currentSecMs = Int64(Date().timeIntervalSince1970 * 1000) % 60000
+
         return MedicationRecord(
-            timestamp: Int64(date.timeIntervalSince1970 * 1000),
+            timestamp: baseMs + currentSecMs,
             alarmIndex: alarmIndex,
             alarmHour: alarmHour,
             alarmMinute: alarmMinute,

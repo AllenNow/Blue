@@ -21,7 +21,7 @@ enum S {
     static var faq: String { z("常见问题", "FAQ") }
     static var clearAlarms: String { z("清空闹钟", "Clear Alarms") }
     static var restoreFactory: String { z("恢复出厂", "Reset") }
-    static var clearBinding: String { z("清除绑定", "Unbind") }
+    static var clearBinding: String { z("解绑设备", "Unbind") }
     static var debug: String { z("调试", "Debug") }
 
     // 音频设置标签
@@ -57,8 +57,8 @@ enum S {
     static var clearAlarmsMsg: String { z("确定清空所有闹钟？", "Clear all alarms?") }
     static var restoreFactoryTitle: String { z("恢复出厂", "Factory Reset") }
     static var restoreFactoryMsg: String { z("确定恢复出厂设置？", "Confirm factory reset?") }
-    static var clearBindingTitle: String { z("清除绑定", "Clear Binding") }
-    static var clearBindingMsg: String { z("清除本地密钥，设备也需恢复出厂。", "Clear local key. Device also needs factory reset.") }
+    static var clearBindingTitle: String { z("解绑设备", "Unbind Device") }
+    static var clearBindingMsg: String { z("确定解绑设备？解绑后需重新配对。", "Unbind device? Re-pairing required afterwards.") }
 
     // 日志消息
     static var alarmsCleared: String { z("所有闹钟已清空", "All alarms cleared") }
@@ -66,4 +66,11 @@ enum S {
     static var bindingCleared: String { z("本地绑定已清除", "Binding cleared") }
 
     private static func z(_ zh: String, _ en: String) -> String { isZh ? zh : en }
+    private static func t(_ zh: String, _ en: String, _ de: String) -> String {
+        switch SDKLocale.current {
+        case .zh: return zh
+        case .en: return en
+        case .de: return de
+        }
+    }
 }

@@ -65,8 +65,11 @@ internal class MedicationManager(private val commandQueue: CommandQueue) {
                 set(year, month - 1, day, eventHour, eventMinute, 0)
                 set(Calendar.MILLISECOND, 0)
             }
+            // 使用帧中的日期+时分作为基础，加上当前秒和毫秒确保同一分钟内的记录不重复
+            val baseTime = cal.timeInMillis
+            val currentSecMs = System.currentTimeMillis() % 60000 // 当前秒+毫秒部分
             return MedicationRecord(
-                timestamp = cal.timeInMillis,
+                timestamp = baseTime + currentSecMs,
                 alarmIndex = alarmIndex,
                 alarmHour = alarmHour,
                 alarmMinute = alarmMinute,

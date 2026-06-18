@@ -87,7 +87,8 @@ internal class AlarmManager(private val commandQueue: CommandQueue) {
                 hour = data[5].toInt() and 0xFF,
                 minute = data[6].toInt() and 0xFF,
                 weekMask = data[7].toInt() and 0xFF,
-                advanceStatus = data[10].toInt() and 0xFF
+                ringingState = data[9].toInt() and 0xFF,
+                eventStatus = data[10].toInt() and 0xFF
             )
         }
     }

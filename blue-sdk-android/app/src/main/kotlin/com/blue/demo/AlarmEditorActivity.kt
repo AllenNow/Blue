@@ -22,6 +22,7 @@ class AlarmEditorActivity : AppCompatActivity() {
     private val sdk get() = BlueSDK.getInstance(this)
 
     private lateinit var weekButtons: MutableList<Button>
+    private lateinit var timePicker: android.widget.TimePicker
 
     private var index = 1
     private var hour = 8
@@ -54,6 +55,9 @@ class AlarmEditorActivity : AppCompatActivity() {
         isEnabled = intent.getBooleanExtra("isEnabled", true)
         isSet = intent.getBooleanExtra("isSet", false)
         supportActionBar?.title = "闹钟 $index"
+        // 设置 TimePicker 初始值为传入的当前闹钟时间
+        timePicker.hour = hour
+        timePicker.minute = minute
         updateWeekButtons()
     }
 
@@ -73,7 +77,7 @@ class AlarmEditorActivity : AppCompatActivity() {
             setPadding(dp(20), dp(16), dp(20), dp(32))
         }
 
-        val timePicker = android.widget.TimePicker(this).apply {
+        timePicker = android.widget.TimePicker(this).apply {
             setIs24HourView(true)
             hour = this@AlarmEditorActivity.hour
             minute = this@AlarmEditorActivity.minute

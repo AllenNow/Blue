@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		049D14A42FE367CD0026E1B4 /* AlarmStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049D14A12FE367CD0026E1B4 /* AlarmStorage.swift */; };
+		049D14A52FE367CD0026E1B4 /* DemoStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049D14A22FE367CD0026E1B4 /* DemoStrings.swift */; };
+		049D14A62FE367CD0026E1B4 /* FAQViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049D14A32FE367CD0026E1B4 /* FAQViewController.swift */; };
 		04BDFE9B2FE00F4700D1F1B5 /* ProtocolTestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFE9A2FE00F4700D1F1B5 /* ProtocolTestViewController.swift */; };
 		04BDFE9C2FE00F4700D1F1B5 /* AlarmManagerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFE962FE00F4700D1F1B5 /* AlarmManagerViewController.swift */; };
 		04BDFE9D2FE00F4700D1F1B5 /* MedicationDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFE982FE00F4700D1F1B5 /* MedicationDatabase.swift */; };
@@ -39,6 +42,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		049D14A12FE367CD0026E1B4 /* AlarmStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmStorage.swift; sourceTree = "<group>"; };
+		049D14A22FE367CD0026E1B4 /* DemoStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoStrings.swift; sourceTree = "<group>"; };
+		049D14A32FE367CD0026E1B4 /* FAQViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FAQViewController.swift; sourceTree = "<group>"; };
 		04BDFE952FE00F4700D1F1B5 /* AlarmEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmEditorViewController.swift; sourceTree = "<group>"; };
 		04BDFE962FE00F4700D1F1B5 /* AlarmManagerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmManagerViewController.swift; sourceTree = "<group>"; };
 		04BDFE972FE00F4700D1F1B5 /* DebugViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewController.swift; sourceTree = "<group>"; };
@@ -125,6 +131,9 @@
 		607FACD21AFB9204008FA782 /* Example for BlueSDK */ = {
 			isa = PBXGroup;
 			children = (
+				049D14A12FE367CD0026E1B4 /* AlarmStorage.swift */,
+				049D14A22FE367CD0026E1B4 /* DemoStrings.swift */,
+				049D14A32FE367CD0026E1B4 /* FAQViewController.swift */,
 				04BDFE952FE00F4700D1F1B5 /* AlarmEditorViewController.swift */,
 				04BDFE962FE00F4700D1F1B5 /* AlarmManagerViewController.swift */,
 				04BDFE972FE00F4700D1F1B5 /* DebugViewController.swift */,
@@ -382,6 +391,9 @@
 				DE6FE45D61DC92AE8FC9C6ED /* MedicationDatabase.swift in Sources */,
 				197F57BD51D2600AFBF1E964 /* MedicationRecordsViewController.swift in Sources */,
 				C323E8E813769E3B95E32653 /* AlarmManagerViewController.swift in Sources */,
+				049D14A42FE367CD0026E1B4 /* AlarmStorage.swift in Sources */,
+				049D14A52FE367CD0026E1B4 /* DemoStrings.swift in Sources */,
+				049D14A62FE367CD0026E1B4 /* FAQViewController.swift in Sources */,
 				57AE167D928B6CEDCEB66D3C /* AlarmEditorViewController.swift in Sources */,
 				04BDFE9B2FE00F4700D1F1B5 /* ProtocolTestViewController.swift in Sources */,
 				04BDFE9C2FE00F4700D1F1B5 /* AlarmManagerViewController.swift in Sources */,

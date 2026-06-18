@@ -128,7 +128,14 @@ final class CommandQueue {
     // MARK: - 私有方法
 
     private func send(_ command: PendingCommand) {
-        sendBlock?(command.frame)
+        guard let block = sendBlock else {
+            // 没有连接，立即回调 Disconnected 错误
+            pendingCommand = nil
+            command.completion(.failure(.disconnected))
+            sendNext()
+            return
+        }
+        block(command.frame)
         scheduleTimeout(for: command)
     }
 

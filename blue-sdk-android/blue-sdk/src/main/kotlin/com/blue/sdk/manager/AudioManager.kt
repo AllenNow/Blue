@@ -45,8 +45,15 @@ internal class AudioManager(private val commandQueue: CommandQueue) {
      * 帧格式：6E 02 00 04 00 00 00 XX
      * 协议示例：55 AA 00 06 00 08 6E 02 00 04 00 00 00 05 86（2分钟，值=5）
      */
+    /**
+     * 设置提醒持续时长（1~5分钟）
+     * Set alert duration (1~5 minutes)
+     */
     fun setAlertDuration(minutes: Int, completion: (Result<Unit>) -> Unit) {
-        // DPID=0x6E, type=0x02（与音量共用DPID，通过type区分：音量type=04，持续时间type=02）
+        if (minutes < 1 || minutes > 5) {
+            completion(Result.failure(BlueError.InvalidParameter))
+            return
+        }
         sendCommand(byteArrayOf(DPIDConstants.ALERT_DURATION, 0x02, 0x00, 0x04,
             0x00, 0x00, 0x00, minutes.toByte()), completion)
     }

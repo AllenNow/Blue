@@ -49,12 +49,34 @@ import CoreBluetooth
         }
     }
 
-    /// SDK 配置（通过 initialize 时传入）
-    private var config: BlueSDKConfig = BlueSDKConfig()
+    /// SDK 配置（通过 initialize 时传入，运行时可修改 customPhoneMac 等字段）
+    public var config: BlueSDKConfig = BlueSDKConfig()
 
     // MARK: - 公开回调
 
+    /// 主 delegate（向后兼容）
     public weak var delegate: BlueSDKDelegate?
+
+    /// 多播观察者列表 — 支持多个地方同时监听事件
+    private var observers = NSHashTable<AnyObject>.weakObjects()
+
+    /// 添加事件观察者（弱引用，无需手动移除）
+    public func addObserver(_ observer: BlueSDKDelegate) {
+        observers.add(observer as AnyObject)
+    }
+
+    /// 移除事件观察者
+    public func removeObserver(_ observer: BlueSDKDelegate) {
+        observers.remove(observer as AnyObject)
+    }
+
+    /// 通知所有观察者（含主 delegate，自动去重）
+    private func notifyObservers(_ block: (BlueSDKDelegate) -> Void) {
+        if let d = delegate { block(d) }
+        for obj in observers.allObjects {
+            if let obs = obj as? BlueSDKDelegate, obs !== delegate { block(obs) }
+        }
+    }
 
     private override init() {
         super.init()
@@ -130,6 +152,10 @@ import CoreBluetooth
         return connectionManager.state
     }
 
+    /// 当前设备时间格式（设备上报后自动更新，默认 24H）
+    /// App 界面展示时间时应跟随此值选择 12/24 小时制
+    public private(set) var currentTimeFormat: TimeFormat = .hour24
+
     /// 开始扫描 LX-PD02 设备（旧版双回调，已废弃）
     @available(*, deprecated, message: "使用 startScan(timeout:callback:) 替代")
     public func startScan(
@@ -177,16 +203,60 @@ import CoreBluetooth
         connectionManager.connect(peripheral: device.peripheral)
     }
 
-    /// 清除本地绑定密钥（用于重新配对）
-    /// 清除后自动断开当前连接，下次连接会生成新的 phoneMac
-    /// 需配合设备恢复出厂使用
-    /// - Parameter completion: 操作完成回调（默认空回调，向后兼容）
+    /// 解绑设备
+    /// 向设备发送解绑指令（CMD=0xA1），成功应答后清除本地密钥并断开连接
+    /// - Parameter completion: 操作完成回调
     public func clearBinding(completion: @escaping (Result<Void, BlueError>) -> Void = { _ in }) {
-        KeychainHelper.delete(forKey: BlueSDK.keychainPhoneMacKey)
-        connectedPeripheral = nil
-        connectionManager.disconnect()
-        logger.info("本地绑定密钥已清除，连接已断开")
-        completion(.success(()))
+        guard requireInitialized(callback: { completion(.failure($0)) }) else { return }
+
+        // 已连接时发送解绑指令
+        let state = connectionManager.state
+        if state == .authenticated || state == .connected {
+            let frame = FrameBuilder.build(cmd: CommandCode.unbind)
+            connectionManager.getCommandQueue().enqueue(cmd: CommandCode.unbind, frame: frame) { [weak self] result in
+                guard let self = self else { return }
+                switch result {
+                case .success:
+                    // 设备应答成功，删除本地密钥
+                    KeychainHelper.delete(forKey: BlueSDK.keychainPhoneMacKey)
+                    self.connectedPeripheral = nil
+                    self.connectionManager.disconnect()
+                    self.logger.info("解绑成功，本地密钥已清除")
+                    completion(.success(()))
+                case .failure(let error):
+                    self.logger.error("解绑指令失败：\(error.localizedDescription)")
+                    completion(.failure(error))
+                }
+            }
+        } else {
+            // 未连接时仅清除本地
+            KeychainHelper.delete(forKey: BlueSDK.keychainPhoneMacKey)
+            connectedPeripheral = nil
+            logger.info("设备未连接，仅清除本地密钥")
+            completion(.success(()))
+        }
+    }
+
+    /// 获取当前本地认证密钥的十六进制字符串
+    /// 优先级：fixedAuthKey > customPhoneMac > Keychain phoneMac
+    /// 用于界面展示当前使用的认证密钥
+    public var currentAuthKeyDisplay: String {
+        if let fixed = config.fixedAuthKey, fixed.count == 4 {
+            return "Fixed: \(fixed)"
+        }
+        if let custom = config.customPhoneMac, custom.count == 12 {
+            // 格式化为 XX:XX:XX:XX:XX:XX
+            let formatted = stride(from: 0, to: 12, by: 2).map { i in
+                let start = custom.index(custom.startIndex, offsetBy: i)
+                let end = custom.index(start, offsetBy: 2)
+                return String(custom[start..<end])
+            }.joined(separator: ":")
+            return formatted
+        }
+        if let data = KeychainHelper.load(forKey: BlueSDK.keychainPhoneMacKey), data.count == 6 {
+            return [UInt8](data).map { String(format: "%02X", $0) }.joined(separator: ":")
+        }
+        return "N/A"
     }
 
     /// 断开连接（FR03）
@@ -244,9 +314,10 @@ import CoreBluetooth
     // MARK: - 设备信息与时间同步（Epic 4）
 
     /// 查询设备信息（FR12）
-    /// 注意：此方法可在认证前调用（用于获取设备 MAC 计算密钥）
+    /// 注意：此方法可在认证前调用，但需要 BLE 已连接
     public func queryDeviceInfo(completion: @escaping (Result<DeviceInfo, BlueError>) -> Void) {
-        guard requireInitialized(callback: { completion(.failure($0)) }) else { return }
+        guard requireInitialized(callback: { completion(.failure($0)) }),
+              requireConnected(callback: { completion(.failure($0)) }) else { return }
         deviceManager?.queryDeviceInfo(completion: completion)
     }
 
@@ -386,22 +457,30 @@ import CoreBluetooth
     public func setTimeFormat(_ format: TimeFormat, completion: @escaping (Result<Void, BlueError>) -> Void) {
         guard requireInitialized(callback: { completion(.failure($0)) }),
               requireAuthenticated(callback: { completion(.failure($0)) }) else { return }
-        audioManager?.setTimeFormat(format, completion: completion)
+        audioManager?.setTimeFormat(format) { [weak self] result in
+            if case .success = result { self?.currentTimeFormat = format }
+            completion(result)
+        }
     }
 
     // MARK: - 系统控制（Epic 9）
 
     /// 恢复出厂设置（Story 9.1）
-    /// 注意：恢复后 SDK 会自动断开连接并重置内部状态
+    /// 恢复出厂设置
+    /// 向设备发送恢复出厂指令，等待设备确认应答
     public func restoreFactory(completion: @escaping (Result<Void, BlueError>) -> Void) {
         guard requireInitialized(callback: { completion(.failure($0)) }),
               requireAuthenticated(callback: { completion(.failure($0)) }) else { return }
         let data: [UInt8] = [DPIDConstants.restoreFactory, 0x01, 0x00, 0x01, 0x01]
         let frame = FrameBuilder.build(cmd: CommandCode.sendCommand, data: data)
-        connectionManager.getCommandQueue().sendDirect(frame: frame)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.connectionManager.disconnect()
-            completion(.success(()))
+        connectionManager.getCommandQueue().enqueue(cmd: CommandCode.sendCommand, frame: frame) { result in
+            switch result {
+            case .success:
+                self.logger.info("恢复出厂成功，设备已确认")
+                completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
     }
 
@@ -444,22 +523,38 @@ import CoreBluetooth
         return true
     }
 
+    @discardableResult
+    internal func requireConnected(callback: (BlueError) -> Void) -> Bool {
+        let s = connectionManager.state
+        guard s != .disconnected && s != .connecting else { callback(.disconnected); return false }
+        return true
+    }
+
     // MARK: - 自动认证逻辑
 
     /// 获取或生成 phoneMac（6字节）
-    /// 优先从 Keychain 读取，不存在则生成新的并持久化存储
+    /// 优先级：config.customPhoneMac > Keychain 缓存 > UUID 自动生成
     private func getOrCreatePhoneMac() -> [UInt8] {
-        // 先尝试从 Keychain 读取已存储的 phoneMac
+        // 1. 集成方自定义 phoneMac（12字符十六进制，如 "A1B2C3D4E5F6"）
+        if let custom = config.customPhoneMac, custom.count == 12 {
+            let bytes = stride(from: 0, to: 12, by: 2).compactMap { i -> UInt8? in
+                let start = custom.index(custom.startIndex, offsetBy: i)
+                let end = custom.index(start, offsetBy: 2)
+                return UInt8(custom[start..<end], radix: 16)
+            }
+            if bytes.count == 6 { return bytes }
+        }
+
+        // 2. 从 Keychain 读取已存储的 phoneMac
         if let storedData = KeychainHelper.load(forKey: BlueSDK.keychainPhoneMacKey), storedData.count == 6 {
             return Array(storedData)
         }
         
-        // 生成新的伪 MAC（6字节），使用 UUID 生成，不依赖 UIKit
+        // 3. UUID 自动生成并存入 Keychain
         let uuid = UUID()
         let uuidBytes = withUnsafeBytes(of: uuid.uuid) { Array($0) }
         let phoneMac = Array(uuidBytes.prefix(6))
         
-        // 持久化到 Keychain
         KeychainHelper.save(data: Data(phoneMac), forKey: BlueSDK.keychainPhoneMacKey)
         
         return phoneMac
@@ -501,14 +596,14 @@ import CoreBluetooth
                         self.connectionManager.transitionTo(.authenticated)
                         self.logger.info("认证成功（固定密钥）")
                         CallbackDispatcher.shared.dispatch {
-                            self.delegate?.blueSDK(self, didAuthenticateWithSuccess: true, error: nil)
+                            self.notifyObservers { $0.blueSDK(self, didAuthenticateWithSuccess: true, error: nil)}
                         }
                     } else {
                         self.logger.error("固定密钥认证失败")
                         self.connectedPeripheral = nil
                         self.connectionManager.disconnect()
                         CallbackDispatcher.shared.dispatch {
-                            self.delegate?.blueSDK(self, didAuthenticateWithSuccess: false, error: .authFailed)
+                            self.notifyObservers { $0.blueSDK(self, didAuthenticateWithSuccess: false, error: .authFailed)}
                         }
                     }
                 case .failure(let error):
@@ -543,7 +638,7 @@ import CoreBluetooth
             case .success:
                 self.connectionManager.transitionTo(.authenticated)
                 CallbackDispatcher.shared.dispatch {
-                    self.delegate?.blueSDK(self, didAuthenticateWithSuccess: true, error: nil)
+                    self.notifyObservers { $0.blueSDK(self, didAuthenticateWithSuccess: true, error: nil)}
                 }
                 completion(.success(()))
             case .failure(let error):
@@ -552,7 +647,7 @@ import CoreBluetooth
                     self.connectedPeripheral = nil
                 }
                 CallbackDispatcher.shared.dispatch {
-                    self.delegate?.blueSDK(self, didAuthenticateWithSuccess: false, error: error)
+                    self.notifyObservers { $0.blueSDK(self, didAuthenticateWithSuccess: false, error: error)}
                 }
                 if error == .authFailed {
                     self.connectionManager.disconnect()
@@ -568,7 +663,7 @@ import CoreBluetooth
         connectionManager.onStateChanged = { [weak self] state in
             guard let self = self else { return }
             CallbackDispatcher.shared.dispatch {
-                self.delegate?.blueSDK(self, didChangeConnectionState: state)
+                self.notifyObservers { $0.blueSDK(self, didChangeConnectionState: state)}
             }
 
             // 连接成功后自动认证（仅当有目标设备时，认证失败断开后不再重试）
@@ -581,21 +676,21 @@ import CoreBluetooth
             guard let self = self else { return }
             self.logger.error("连接错误：\(error.localizedDescription)")
             CallbackDispatcher.shared.dispatch {
-                self.delegate?.blueSDK(self, didEncounterError: error)
+                self.notifyObservers { $0.blueSDK(self, didEncounterError: error)}
             }
         }
 
         connectionManager.onReconnecting = { [weak self] attempt, maxAttempts in
             guard let self = self else { return }
             CallbackDispatcher.shared.dispatch {
-                self.delegate?.blueSDK(self, didStartReconnecting: attempt, maxAttempts: maxAttempts)
+                self.notifyObservers { $0.blueSDK(self, didStartReconnecting: attempt, maxAttempts: maxAttempts)}
             }
         }
 
         connectionManager.onReconnectFailed = { [weak self] in
             guard let self = self else { return }
             CallbackDispatcher.shared.dispatch {
-                self.delegate?.blueSDKDidFailReconnection(self)
+                self.notifyObservers { $0.blueSDKDidFailReconnection(self) }
             }
         }
 
@@ -618,7 +713,7 @@ import CoreBluetooth
             }
             CallbackDispatcher.shared.dispatch { [weak self] in
                 guard let self = self else { return }
-                self.delegate?.blueSDKDidRequestTimeSync(self)
+                self.notifyObservers { $0.blueSDKDidRequestTimeSync(self) }
             }
 
         case CommandCode.deviceReport:
@@ -639,7 +734,7 @@ import CoreBluetooth
                 if let alarm = AlarmManager.parseAlarmInfo(from: data, index: index) {
                     CallbackDispatcher.shared.dispatch { [weak self] in
                         guard let self = self else { return }
-                        self.delegate?.blueSDK(self, didUpdateAlarm: alarm)
+                        self.notifyObservers { $0.blueSDK(self, didUpdateAlarm: alarm)}
                     }
                 }
                 return
@@ -652,26 +747,26 @@ import CoreBluetooth
                     // 响铃开始（byte9=0x00, byte10=闹钟编号标识）
                     CallbackDispatcher.shared.dispatch { [weak self] in
                         guard let self = self else { return }
-                        self.delegate?.blueSDK(self, didAlarmRinging: index, alarmInfo: alarm)
+                        self.notifyObservers { $0.blueSDK(self, didAlarmRinging: index, alarmInfo: alarm)}
                     }
                 } else if eventByte == 0x01 {
                     // 超时或取药事件
                     if let status = MedicationStatus.from(byte: statusByte) {
                         CallbackDispatcher.shared.dispatch { [weak self] in
                             guard let self = self else { return }
-                            self.delegate?.blueSDK(self, didReceiveMedicationResult: index, status: status)
+                            self.notifyObservers { $0.blueSDK(self, didReceiveMedicationResult: index, status: status)}
                         }
                     } else {
                         CallbackDispatcher.shared.dispatch { [weak self] in
                             guard let self = self else { return }
-                            self.delegate?.blueSDK(self, didAlarmTimeout: index, alarmInfo: alarm)
+                            self.notifyObservers { $0.blueSDK(self, didAlarmTimeout: index, alarmInfo: alarm)}
                         }
                     }
                 } else {
                     // 普通闹钟配置变更
                     CallbackDispatcher.shared.dispatch { [weak self] in
                         guard let self = self else { return }
-                        self.delegate?.blueSDK(self, didUpdateAlarm: alarm)
+                        self.notifyObservers { $0.blueSDK(self, didUpdateAlarm: alarm)}
                     }
                 }
             }
@@ -680,7 +775,7 @@ import CoreBluetooth
             if let record = MedicationManager.parseMedicationRecord(from: data) {
                 CallbackDispatcher.shared.dispatch { [weak self] in
                     guard let self = self else { return }
-                    self.delegate?.blueSDK(self, didReceiveMedicationRecord: record)
+                    self.notifyObservers { $0.blueSDK(self, didReceiveMedicationRecord: record)}
                 }
             }
 
@@ -688,15 +783,16 @@ import CoreBluetooth
             if let soundType = AudioManager.parseSoundType(from: data) {
                 CallbackDispatcher.shared.dispatch { [weak self] in
                     guard let self = self else { return }
-                    self.delegate?.blueSDK(self, didChangeSoundType: soundType)
+                    self.notifyObservers { $0.blueSDK(self, didChangeSoundType: soundType)}
                 }
             }
 
         case DPIDConstants.timeFormat:
             if let format = AudioManager.parseTimeFormat(from: data) {
+                currentTimeFormat = format
                 CallbackDispatcher.shared.dispatch { [weak self] in
                     guard let self = self else { return }
-                    self.delegate?.blueSDK(self, didChangeTimeFormat: format)
+                    self.notifyObservers { $0.blueSDK(self, didChangeTimeFormat: format)}
                 }
             }
 
@@ -704,7 +800,20 @@ import CoreBluetooth
             logger.info("设备上报低电状态")
             CallbackDispatcher.shared.dispatch { [weak self] in
                 guard let self = self else { return }
-                self.delegate?.blueSDKDidReportLowBattery(self)
+                self.notifyObservers { $0.blueSDKDidReportLowBattery(self) }
+            }
+
+        case DPIDConstants.notificationOfResults:
+            // 用药结果通知（设备上报）：data[4] = 01响铃/02超时/03已取药
+            if data.count >= 5 {
+                let notifType = Int(data[4])
+                if notifType >= 1 && notifType <= 3 {
+                    logger.info("用药通知：type=\(notifType)")
+                    CallbackDispatcher.shared.dispatch { [weak self] in
+                        guard let self = self else { return }
+                        self.notifyObservers { $0.blueSDK(self, didReceiveMedicationNotification: notifType)}
+                    }
+                }
             }
 
         default:

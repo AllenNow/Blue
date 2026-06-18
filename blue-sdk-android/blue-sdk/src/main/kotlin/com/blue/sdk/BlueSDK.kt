@@ -73,8 +73,8 @@ class BlueSDK private constructor(private val context: Context) {
     private var connectedDevice: ScannedDevice? = null
     private var lastTimeSyncMs: Long = 0L
 
-    /** SDK 配置 */
-    @Volatile private var config: BlueSDKConfig = BlueSDKConfig()
+    /** SDK 配置（运行时可修改 customPhoneMac 等字段） */
+    @Volatile var config: BlueSDKConfig = BlueSDKConfig()
 
     /**
      * 固定密钥（2字节十六进制字符串，如 "05FA"）。
@@ -87,6 +87,28 @@ class BlueSDK private constructor(private val context: Context) {
         }
 
     @Volatile var listener: BlueSDKListener? = null
+
+    /** 多播观察者列表 — 支持多个地方同时监听事件 */
+    private val observers = mutableListOf<BlueSDKListener>()
+
+    /** 添加事件观察者 */
+    fun addObserver(observer: BlueSDKListener) {
+        synchronized(observers) { if (!observers.contains(observer)) observers.add(observer) }
+    }
+
+    /** 移除事件观察者 */
+    fun removeObserver(observer: BlueSDKListener) {
+        synchronized(observers) { observers.remove(observer) }
+    }
+
+    /** 通知所有观察者（含主 listener，自动去重） */
+    private fun notifyObservers(block: (BlueSDKListener) -> Unit) {
+        val main = listener
+        main?.let { block(it) }
+        synchronized(observers) { observers.toList() }.forEach {
+            if (it !== main) block(it)  // 避免 listener 同时在 observers 中导致重复回调
+        }
+    }
 
     // MARK: - 生命周期（FR32、FR33）
 
@@ -152,6 +174,11 @@ class BlueSDK private constructor(private val context: Context) {
     /** 当前连接状态（FR06）*/
     val connectionState: ConnectionState get() = connectionManager.state
 
+    /** 当前设备时间格式（设备上报后自动更新，默认 24H）
+     *  App 界面展示时间时应跟随此值选择 12/24 小时制 */
+    @Volatile var currentTimeFormat: TimeFormat = TimeFormat.HOUR_24
+        private set
+
     /**
      * 开始扫描 LX-PD02 设备（FR01）
      * 使用统一的 ScanEvent 回调模式
@@ -198,18 +225,53 @@ class BlueSDK private constructor(private val context: Context) {
     }
 
     /**
-     * 清除本地绑定密钥（用于重新配对）
-     * 清除后自动断开当前连接，下次连接会生成新的 phoneMac
-     * 需配合设备恢复出厂使用
+     * 解绑设备
+     * 向设备发送解绑指令（CMD=0xA1），成功应答后清除本地密钥并断开连接
      */
     fun clearBinding(completion: (Result<Unit>) -> Unit = {}) {
-        KeystoreHelper.delete(KEYSTORE_PHONE_MAC_KEY)
-        connectedDevice = null
-        if (isInitialized && connectionManager.state != ConnectionState.DISCONNECTED) {
-            connectionManager.disconnect()
+        if (!isInitialized) {
+            completion(Result.failure(BlueError.NotInitialized))
+            return
         }
-        BlueLogger.info("本地绑定密钥已清除，连接已断开")
-        completion(Result.success(Unit))
+        // 已连接时发送解绑指令
+        if (connectionManager.state == ConnectionState.AUTHENTICATED || connectionManager.state == ConnectionState.CONNECTED) {
+            val frame = FrameBuilder.build(CommandCode.UNBIND)
+            connectionManager.commandQueue.enqueue(CommandCode.UNBIND, frame) { result ->
+                result.fold(
+                    onSuccess = {
+                        // 设备应答成功，清除本地密钥
+                        connectedDevice = null
+                        connectionManager.disconnect()
+                        BlueLogger.info("解绑成功，本地密钥已清除")
+                        completion(Result.success(Unit))
+                    },
+                    onFailure = { error ->
+                        BlueLogger.error("解绑指令失败：${(error as BlueError).message}")
+                        completion(Result.failure(error))
+                    }
+                )
+            }
+        } else {
+            connectedDevice = null
+            BlueLogger.info("设备未连接，仅清除本地状态")
+            completion(Result.success(Unit))
+        }
+    }
+
+    /**
+     * 获取当前本地认证密钥的十六进制字符串
+     * 如果设置了 fixedAuthKey 返回固定密钥；否则返回自动生成的 phoneMac
+     * 用于界面展示当前使用的认证密钥
+     */
+    val currentAuthKeyDisplay: String get() {
+        val fixed = config.fixedAuthKey
+        if (fixed != null && fixed.length == 4) return "Fixed: $fixed"
+        val custom = config.customPhoneMac
+        if (custom != null && custom.length == 12) {
+            return custom.chunked(2).joinToString(":")
+        }
+        val phoneMac = getOrCreatePhoneMac()
+        return phoneMac.joinToString(":") { b -> "%02X".format(b) }
     }
 
     /** 断开连接（FR03）*/
@@ -282,7 +344,7 @@ class BlueSDK private constructor(private val context: Context) {
      * 注意：此方法可在认证前调用（用于获取设备 MAC 计算密钥）
      */
     fun queryDeviceInfo(completion: (Result<com.blue.sdk.model.DeviceInfo>) -> Unit) {
-        if (!requireInitR(completion)) return
+        if (!requireInitR(completion) || !requireConnectedR(completion)) return
         deviceManager.queryDeviceInfo(completion)
     }
 
@@ -418,11 +480,15 @@ class BlueSDK private constructor(private val context: Context) {
         if (!requireInitR(completion) || !requireAuthR(completion)) return
         val data = byteArrayOf(DPIDConstants.RESTORE_FACTORY, 0x01, 0x00, 0x01, 0x01)
         val frame = FrameBuilder.build(CommandCode.SEND_COMMAND, data)
-        connectionManager.commandQueue.sendDirect(frame)
-        handler.postDelayed({
-            connectionManager.disconnect()
-            completion(Result.success(Unit))
-        }, 500)
+        connectionManager.commandQueue.enqueue(CommandCode.SEND_COMMAND, frame) { result ->
+            result.fold(
+                onSuccess = {
+                    BlueLogger.info("恢复出厂成功，设备已确认")
+                    completion(Result.success(Unit))
+                },
+                onFailure = { completion(Result.failure(it as BlueError)) }
+            )
+        }
     }
 
     // MARK: - 内部工具
@@ -444,25 +510,38 @@ class BlueSDK private constructor(private val context: Context) {
         return true
     }
 
+    private fun <T> requireConnectedR(completion: (Result<T>) -> Unit): Boolean {
+        val s = connectionManager.state
+        if (s == ConnectionState.DISCONNECTED || s == ConnectionState.CONNECTING) {
+            completion(Result.failure(BlueError.Disconnected)); return false
+        }
+        return true
+    }
+
     // MARK: - 自动认证逻辑
 
     /**
      * 获取或生成 phoneMac（6字节）
-     * 从 KeystoreHelper 读取，若无则生成新的并持久化
+     * 优先级：config.customPhoneMac > ANDROID_ID 确定性生成
      */
     private fun getOrCreatePhoneMac(): ByteArray {
-        val stored = KeystoreHelper.loadBytes(KEYSTORE_PHONE_MAC_KEY)
-        if (stored != null && stored.size == 6) return stored
-        // 使用 UUID 生成伪 MAC（6字节）
-        val uuid = UUID.randomUUID()
-        val bytes = ByteArray(16)
-        var msb = uuid.mostSignificantBits
-        var lsb = uuid.leastSignificantBits
-        for (i in 0..7) { bytes[i] = (msb and 0xFF).toByte(); msb = msb shr 8 }
-        for (i in 8..15) { bytes[i] = (lsb and 0xFF).toByte(); lsb = lsb shr 8 }
-        val phoneMac = bytes.copyOf(6)
-        KeystoreHelper.save(KEYSTORE_PHONE_MAC_KEY, phoneMac)
-        return phoneMac
+        // 1. 集成方自定义 phoneMac
+        val custom = config.customPhoneMac
+        if (custom != null && custom.length == 12) {
+            val bytes = custom.chunked(2).mapNotNull { it.toIntOrNull(16)?.toByte() }.toByteArray()
+            if (bytes.size == 6) return bytes
+        }
+
+        // 2. 基于 ANDROID_ID 确定性生成
+        val androidId = android.provider.Settings.Secure.getString(
+            context.contentResolver,
+            android.provider.Settings.Secure.ANDROID_ID
+        ) ?: "0000000000000000"
+
+        val digest = java.security.MessageDigest.getInstance("SHA-256")
+        digest.update("BlueSDK_phoneMac_$androidId".toByteArray())
+        val hash = digest.digest()
+        return hash.copyOf(6)
     }
 
     /**
@@ -513,13 +592,13 @@ class BlueSDK private constructor(private val context: Context) {
                                 connectionManager.transitionTo(ConnectionState.AUTHENTICATED)
                                 BlueLogger.info("认证成功（固定密钥）")
                                 CallbackDispatcher.dispatch {
-                                    listener?.onAuthResult(true, null)
+                                    notifyObservers { it.onAuthResult(true, null)}
                                 }
                             } else {
                                 BlueLogger.error("固定密钥认证失败")
                                 connectedDevice = null
                                 CallbackDispatcher.dispatch {
-                                    listener?.onAuthResult(false, BlueError.AuthFailed)
+                                    notifyObservers { it.onAuthResult(false, BlueError.AuthFailed)}
                                 }
                                 connectionManager.disconnect()
                             }
@@ -550,7 +629,7 @@ class BlueSDK private constructor(private val context: Context) {
             result.fold(
                 onSuccess = {
                     connectionManager.transitionTo(ConnectionState.AUTHENTICATED)
-                    CallbackDispatcher.dispatch { listener?.onAuthResult(true, null) }
+                    CallbackDispatcher.dispatch { notifyObservers { it.onAuthResult(true, null) } }
                     completion(Result.success(Unit))
                 },
                 onFailure = { error ->
@@ -559,7 +638,7 @@ class BlueSDK private constructor(private val context: Context) {
                     if (blueError == BlueError.AuthFailed) {
                         connectedDevice = null
                     }
-                    CallbackDispatcher.dispatch { listener?.onAuthResult(false, blueError) }
+                    CallbackDispatcher.dispatch { notifyObservers { it.onAuthResult(false, blueError) } }
                     if (blueError == BlueError.AuthFailed) {
                         connectionManager.disconnect()
                     }
@@ -573,7 +652,7 @@ class BlueSDK private constructor(private val context: Context) {
 
     private fun setupConnectionManager() {
         connectionManager.onStateChanged = { state ->
-            CallbackDispatcher.dispatch { listener?.onConnectionStateChanged(state) }
+            CallbackDispatcher.dispatch { notifyObservers { it.onConnectionStateChanged(state) } }
             // 连接成功后自动认证
             if (state == ConnectionState.CONNECTED && connectedDevice != null) {
                 autoAuthenticate()
@@ -582,15 +661,15 @@ class BlueSDK private constructor(private val context: Context) {
 
         connectionManager.onError = { error ->
             BlueLogger.error("连接错误：${error.message}")
-            CallbackDispatcher.dispatch { listener?.onError(error) }
+            CallbackDispatcher.dispatch { notifyObservers { it.onError(error) } }
         }
 
         connectionManager.onReconnecting = { attempt, maxAttempts ->
-            CallbackDispatcher.dispatch { listener?.onReconnecting(attempt, maxAttempts) }
+            CallbackDispatcher.dispatch { notifyObservers { it.onReconnecting(attempt, maxAttempts) } }
         }
 
         connectionManager.onReconnectFailed = {
-            CallbackDispatcher.dispatch { listener?.onReconnectFailed() }
+            CallbackDispatcher.dispatch { notifyObservers { it.onReconnectFailed() } }
         }
 
         connectionManager.onDataReceived = { frame -> handleIncomingFrame(frame) }
@@ -609,7 +688,7 @@ class BlueSDK private constructor(private val context: Context) {
                 } else {
                     BlueLogger.debug("时间同步请求已节流，跳过")
                 }
-                CallbackDispatcher.dispatch { listener?.onTimeSyncRequested() }
+                CallbackDispatcher.dispatch { notifyObservers { it.onTimeSyncRequested() } }
             }
             cmdInt == (CommandCode.DEVICE_REPORT.toInt() and 0xFF) ->
                 handleDeviceReport(frame.data)
@@ -633,46 +712,55 @@ class BlueSDK private constructor(private val context: Context) {
                     if (alarmInfo != null) {
                         if (eventByte == 0x00 && statusByte != 0x00) {
                             // 响铃开始
-                            CallbackDispatcher.dispatch { listener?.onAlarmRinging(index, alarmInfo) }
+                            CallbackDispatcher.dispatch { notifyObservers { it.onAlarmRinging(index, alarmInfo) } }
                         } else if (eventByte == 0x01) {
                             // 超时或取药事件
                             val status = MedicationStatus.fromByte(data[10])
                             if (status != null) {
-                                CallbackDispatcher.dispatch { listener?.onMedicationResult(index, status) }
+                                CallbackDispatcher.dispatch { notifyObservers { it.onMedicationResult(index, status) } }
                             } else {
-                                CallbackDispatcher.dispatch { listener?.onAlarmTimeout(index, alarmInfo) }
+                                CallbackDispatcher.dispatch { notifyObservers { it.onAlarmTimeout(index, alarmInfo) } }
                             }
                         } else {
                             // 普通闹钟配置变更
-                            CallbackDispatcher.dispatch { listener?.onAlarmUpdated(alarmInfo) }
+                            CallbackDispatcher.dispatch { notifyObservers { it.onAlarmUpdated(alarmInfo) } }
                         }
                     }
                 } else {
                     // 数据不足 11 字节，解析为普通闹钟配置上报
                     AlarmManager.parseAlarmInfo(data, index)?.let { alarm ->
-                        CallbackDispatcher.dispatch { listener?.onAlarmUpdated(alarm) }
+                        CallbackDispatcher.dispatch { notifyObservers { it.onAlarmUpdated(alarm) } }
                     }
                 }
             }
 
             dpid == DPIDConstants.ALARM_RECORD -> {
                 MedicationManager.parseMedicationRecord(data)?.let { record ->
-                    CallbackDispatcher.dispatch { listener?.onMedicationRecordReported(record) }
+                    CallbackDispatcher.dispatch { notifyObservers { it.onMedicationRecordReported(record) } }
                 }
             }
             dpid == DPIDConstants.TYPE_OF_SOUND -> {
                 AudioManager.parseSoundType(data)?.let { type ->
-                    CallbackDispatcher.dispatch { listener?.onSoundTypeChanged(type) }
+                    CallbackDispatcher.dispatch { notifyObservers { it.onSoundTypeChanged(type) } }
                 }
             }
             dpid == DPIDConstants.TIME_FORMAT -> {
                 AudioManager.parseTimeFormat(data)?.let { format ->
-                    CallbackDispatcher.dispatch { listener?.onTimeFormatChanged(format) }
+                    currentTimeFormat = format
+                    CallbackDispatcher.dispatch { notifyObservers { it.onTimeFormatChanged(format) } }
                 }
             }
             dpidInt == (DPIDConstants.LOW_BAT.toInt() and 0xFF) -> {
                 BlueLogger.info("设备上报低电状态")
-                CallbackDispatcher.dispatch { listener?.onLowBattery() }
+                CallbackDispatcher.dispatch { notifyObservers { it.onLowBattery() } }
+            }
+            dpidInt == (DPIDConstants.NOTIFICATION_OF_RESULTS.toInt() and 0xFF) -> {
+                // 用药结果通知：data[4] = 01响铃/02超时/03已取药
+                val notifType = if (data.size >= 5) data[4].toInt() and 0xFF else 0
+                if (notifType in 1..3) {
+                    BlueLogger.info("用药通知：type=$notifType")
+                    CallbackDispatcher.dispatch { notifyObservers { it.onMedicationNotification(notifType) } }
+                }
             }
             else -> BlueLogger.debug("未处理的上报 DPID：0x${"%02X".format(dpidInt)}")
         }

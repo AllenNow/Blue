@@ -35,13 +35,18 @@ final class AudioManager {
     /// 设置提醒持续时长（分钟）
     /// 设置提醒持续时长
     /// 帧格式：6E 02 00 04 00 00 00 [值]
-    /// 协议示例：55 AA 00 06 00 08 6E 02 00 04 00 00 00 05 86（设置2分钟，值=5）
+    /// 设置提醒持续时长（1~5分钟）
+    /// 协议示例：55 AA 00 06 00 08 6E 02 00 04 00 00 00 05 86
     func setAlertDuration(_ minutes: Int, completion: @escaping (Result<Void, BlueError>) -> Void) {
+        guard minutes >= 1 && minutes <= 5 else {
+            completion(.failure(.invalidParameter))
+            return
+        }
         let data: [UInt8] = [
-            DPIDConstants.alertDuration, // 0x6E — 提醒持续时间（与音量共用 DPID，通过 type 字段 02 vs 04 区分）
+            DPIDConstants.alertDuration,
             0x02, 0x00, 0x04,
             0x00, 0x00, 0x00,
-            UInt8(min(minutes, 255))
+            UInt8(minutes)
         ]
         sendCommand(data: data, completion: completion)
     }
@@ -82,12 +87,8 @@ final class AudioManager {
     static func parseSoundType(from data: [UInt8]) -> SoundType? {
         guard data.count >= 5 else { return nil }
         let value = data[4]
-        // 设备上报值比 APP 下发值小1（上报0=静音无对应，1=A, 2=B）
-        switch value {
-        case 0x01: return .typeA
-        case 0x02: return .typeB
-        default: return nil // 静音(0x00)通过 DPID=0x74 上报
-        }
+        return SoundType.from(byte: value)
+    }
     }
 
     /// 解析时间格式上报（DPID=0x73）

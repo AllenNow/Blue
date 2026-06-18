@@ -33,9 +33,15 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     private lateinit var statusLabel: TextView
     private lateinit var logTextView: TextView
     private lateinit var durationInput: EditText
+    private lateinit var phoneMacInput: EditText
     private lateinit var scanButton: Button
     private lateinit var disconnectButton: Button
     private lateinit var loadingOverlay: FrameLayout
+
+    // 音频设置 segment 引用（用于设备上报同步 UI）
+    private lateinit var soundTypeSegment: LinearLayout
+    private lateinit var timeFormatSegment: LinearLayout
+    private lateinit var silenceSwitch: Switch
 
     private var isScanning = false
 
@@ -76,6 +82,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             log("$prefix $message")
         }
         log("SDK 已启动")
+        log("🔑 ${sdk.currentAuthKeyDisplay}")
     }
 
     override fun onDestroy() {
@@ -92,31 +99,33 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
 
         val scrollView = ScrollView(this).apply {
-            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f)
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, 0).apply {
+                weight = 1f
+            }
         }
 
         val content = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(16), dp(16), dp(16))
+            setPadding(dp(12), dp(8), dp(12), dp(8))
         }
 
         val connCard = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setBackgroundColor(bgCard)
-            background = roundDrawable(bgCard, dp(12))
-            setPadding(dp(16), dp(16), dp(16), dp(16))
+            background = roundDrawable(bgCard, dp(10))
+            setPadding(dp(12), dp(10), dp(12), dp(10))
         }
 
         statusDot = View(this).apply {
-            layoutParams = LinearLayout.LayoutParams(dp(12), dp(12)).apply { marginEnd = dp(12) }
-            background = roundDrawable(Color.GRAY, dp(6))
+            layoutParams = LinearLayout.LayoutParams(dp(10), dp(10)).apply { marginEnd = dp(8) }
+            background = roundDrawable(Color.GRAY, dp(5))
         }
 
         statusLabel = TextView(this).apply {
             text = S.notConnected
             setTextColor(textWhite)
-            textSize = 16f
+            textSize = 14f
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
         }
 
@@ -135,7 +144,32 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         connCard.addView(disconnectButton)
         content.addView(connCard)
 
-        content.addView(gap(16))
+        // 密钥输入框
+        val keyRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(12), dp(6), dp(12), dp(6))
+        }
+        keyRow.addView(TextView(this).apply {
+            text = if (S.isZh) "密钥" else "Key"
+            setTextColor(textGray)
+            textSize = 12f
+            layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply { marginEnd = dp(8) }
+        })
+        phoneMacInput = EditText(this).apply {
+            hint = if (S.isZh) "自定义ID(12位hex)，留空自动" else "Custom ID(12 hex), empty=auto"
+            setTextColor(textWhite)
+            setHintTextColor(Color.parseColor("#636366"))
+            textSize = 12f
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
+            background = roundDrawable(bgSegment, dp(6))
+            setPadding(dp(8), dp(6), dp(8), dp(6))
+            layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
+        }
+        keyRow.addView(phoneMacInput)
+        content.addView(keyRow)
+
+        content.addView(gap(8))
 
         val funcRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -143,37 +177,36 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
         funcRow.addView(pillBtn(S.deviceInfo, accentPink) { queryDeviceInfo() })
         funcRow.addView(pillBtn(S.syncTime, accentPurple) { syncTime() })
-        funcRow.addView(pillBtn(S.alarmManager, accentPurple) { startActivity(android.content.Intent(this, AlarmManagerActivity::class.java)) })
+        funcRow.addView(pillBtn(S.protocolTest, accentViolet) { openDebugPanel() })
         content.addView(funcRow)
 
-        content.addView(gap(16))
+        content.addView(gap(8))
 
         val audioCard = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(bgCard)
-            background = roundDrawable(bgCard, dp(12))
-            setPadding(dp(16), dp(16), dp(16), dp(16))
+            background = roundDrawable(bgCard, dp(10))
+            setPadding(dp(12), dp(10), dp(12), dp(10))
         }
 
         audioCard.addView(segmentRow("铃声", listOf(
             "A" to { sdk.setSoundType(SoundType.TYPE_A) { logR("铃声A", it) } },
-            "B" to { sdk.setSoundType(SoundType.TYPE_B) { logR("铃声B", it) } },
-            "C" to { sdk.setSoundType(SoundType.TYPE_C) { logR("铃声C", it) } }
-        )))
-        audioCard.addView(gap(12))
+            "B" to { sdk.setSoundType(SoundType.TYPE_B) { logR("铃声B", it) } }
+        )).also { soundTypeSegment = it.getChildAt(1) as LinearLayout })
+        audioCard.addView(gap(6))
 
         audioCard.addView(segmentRow("音量", listOf(
             "低" to { sdk.setVolume(VolumeLevel.LOW) { logR("音量低", it) } },
             "中" to { sdk.setVolume(VolumeLevel.MEDIUM) { logR("音量中", it) } },
             "高" to { sdk.setVolume(VolumeLevel.HIGH) { logR("音量高", it) } }
         )))
-        audioCard.addView(gap(12))
+        audioCard.addView(gap(6))
 
         audioCard.addView(segmentRow("时制", listOf(
             "12H" to { sdk.setTimeFormat(TimeFormat.HOUR_12) { logR("12H", it) } },
             "24H" to { sdk.setTimeFormat(TimeFormat.HOUR_24) { logR("24H", it) } }
-        )))
-        audioCard.addView(gap(12))
+        )).also { timeFormatSegment = it.getChildAt(1) as LinearLayout })
+        audioCard.addView(gap(6))
 
         val silRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -185,9 +218,10 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                 sdk.setSilence(on) { logR(if (on) "静音开" else "静音关", it) }
             }
         }
+        silenceSwitch = sw
         silRow.addView(sw)
         audioCard.addView(silRow)
-        audioCard.addView(gap(12))
+        audioCard.addView(gap(6))
 
         val durRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -195,7 +229,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
         durRow.addView(label("持续"))
         durationInput = EditText(this).apply {
-            setText("5")
+            setText("2")
             inputType = android.text.InputType.TYPE_CLASS_NUMBER
             setTextColor(textWhite)
             textSize = 14f
@@ -211,20 +245,24 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply { marginEnd = dp(12) }
         })
         durRow.addView(pillBtn("设置", accentCyan) {
-            val m = durationInput.text.toString().toIntOrNull() ?: 5
+            val m = durationInput.text.toString().toIntOrNull() ?: 0
+            if (m < 1 || m > 5) {
+                log("❌ 响铃时长范围：1~5分钟")
+                return@addView
+            }
             sdk.setAlertDuration(m) { logR("持续${m}分", it) }
         })
         audioCard.addView(durRow)
         content.addView(audioCard)
 
-        content.addView(gap(16))
+        content.addView(gap(8))
 
         val toolRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
         toolRow.addView(pillBtn(S.medicationRecords, accentPink) { startActivity(android.content.Intent(this, MedicationRecordsActivity::class.java)) })
-        toolRow.addView(pillBtn(S.protocolTest, accentViolet) { openDebugPanel() })
+        toolRow.addView(pillBtn(S.alarmManager, accentPurple) { startActivity(android.content.Intent(this, AlarmManagerActivity::class.java)) })
         toolRow.addView(pillBtn(S.faq, Color.parseColor("#30D158")) { startActivity(android.content.Intent(this, FAQActivity::class.java)) })
         content.addView(toolRow)
 
@@ -239,24 +277,28 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         sysRow2.addView(pillBtn(S.clearBinding, accentOrange) { clearLocalBinding() })
         content.addView(sysRow2)
 
-        content.addView(gap(16))
+        scrollView.addView(content)
 
+        // 日志区域 — 占据底部剩余空间（不在 ScrollView 内）
         val logCard = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(bgCard)
-            background = roundDrawable(bgCard, dp(12))
-            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(200))
+            background = roundDrawable(bgCard, dp(10))
+            minimumHeight = dp(140)
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f).apply {
+                setMargins(dp(12), dp(4), dp(12), dp(8))
+            }
         }
 
         val logHead = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(12), dp(12), dp(12), dp(8))
+            setPadding(dp(10), dp(4), dp(10), dp(2))
         }
         logHead.addView(TextView(this).apply {
             text = S.log
             setTextColor(textWhite)
-            textSize = 14f
+            textSize = 13f
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
         })
         logHead.addView(pillBtn(S.clear, bgSegment) { logTextView.text = "" })
@@ -266,17 +308,34 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             setTextColor(textWhite)
             textSize = 10f
             typeface = Typeface.MONOSPACE
-            setBackgroundColor(bgDark)
-            setPadding(dp(12), dp(8), dp(12), dp(12))
-            movementMethod = ScrollingMovementMethod()
-            gravity = Gravity.TOP
-            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f)
+            setBackgroundColor(Color.TRANSPARENT)
+            setPadding(dp(8), dp(4), dp(8), dp(4))
+            gravity = Gravity.TOP or Gravity.START
+            text = ""
         }
-        logCard.addView(logTextView)
-        content.addView(logCard)
+        val logScroll = ScrollView(this).apply {
+            layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            addView(logTextView, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
+        }
+        // 版本号水印
+        val versionLabel = TextView(this).apply {
+            text = "v${packageManager.getPackageInfo(packageName, 0).versionName}"
+            textSize = 28f
+            setTextColor(Color.parseColor("#0DFFFFFF"))
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        }
+        val logFrame = FrameLayout(this).apply {
+            setBackgroundColor(bgDark)
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f)
+            addView(versionLabel)
+            addView(logScroll)
+        }
+        logCard.addView(logFrame)
 
-        scrollView.addView(content)
         root.addView(scrollView)
+        root.addView(logCard)
 
         // Loading 遮罩（连接认证中显示）
         loadingOverlay = FrameLayout(this).apply {
@@ -346,7 +405,23 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         isAuthFailed = false
         scanButton.text = S.stopScan
         scanButton.isEnabled = true
-        log(S.scanningAuto)
+
+        // 读取自定义密钥输入框
+        val customKey = phoneMacInput.text.toString().trim().uppercase()
+        if (customKey.length == 12) {
+            sdk.config = sdk.config.copy(customPhoneMac = customKey)
+            sdk.fixedAuthKey = null
+            log("扫描中...（自定义密钥：$customKey）")
+        } else if (customKey.length == 4) {
+            sdk.fixedAuthKey = customKey
+            sdk.config = sdk.config.copy(customPhoneMac = null)
+            log("扫描中...（固定密钥：$customKey）")
+        } else {
+            sdk.fixedAuthKey = null
+            sdk.config = sdk.config.copy(customPhoneMac = null)
+            log(S.scanningAuto)
+        }
+
         showLoading(S.scanConnecting)
         updateStatus(S.scanning, Color.parseColor("#FF9500"))
 
@@ -393,10 +468,6 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     }
 
     private fun syncTime() {
-        if (sdk.connectionState != ConnectionState.AUTHENTICATED) {
-            log("❌ 请先连接设备")
-            return
-        }
         log("⏰ 同步时间...")
         sdk.syncTime { it.fold({ log("⏰ 时间已同步") }, { log("❌ ${(it as BlueError).message}") }) }
     }
@@ -424,8 +495,12 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
 
     private fun clearLocalBinding() {
         confirm(S.clearBindingTitle, S.clearBindingMsg) {
-            sdk.clearBinding()
-            log("✅ ${S.bindingCleared}")
+            sdk.clearBinding { result ->
+                result.fold(
+                    onSuccess = { log("✅ 解绑成功") },
+                    onFailure = { log("❌ 解绑失败：${(it as BlueError).message}") }
+                )
+            }
         }
     }
 
@@ -494,6 +569,15 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                         updateStatus(text, color)
                         scanButton.isEnabled = true
                     }
+                    // 设备意外断开弹窗提示
+                    if (!isAuthFailed && !isScanning) {
+                        log("⚠️ 设备连接已断开")
+                        AlertDialog.Builder(this)
+                            .setTitle(if (S.isZh) "连接断开" else "Disconnected")
+                            .setMessage(if (S.isZh) "设备连接已断开，请检查设备状态后重新连接。" else "Device disconnected. Check device and reconnect.")
+                            .setPositiveButton(S.confirm, null)
+                            .show()
+                    }
                 }
                 ConnectionState.CONNECTING -> {
                     scanButton.visibility = View.GONE
@@ -542,22 +626,30 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     }
 
     override fun onTimeSyncRequested() { log("⏰ 同步请求"); sdk.syncTime { _ -> } }
-    override fun onAlarmUpdated(alarm: AlarmInfo) { log("⏰ 闹钟${alarm.index} ${String.format("%02d:%02d", alarm.hour, alarm.minute)}") }
+    override fun onAlarmUpdated(alarm: AlarmInfo) {
+        log("⏰ 闹钟${alarm.index} ${String.format("%02d:%02d", alarm.hour, alarm.minute)}")
+        // 设备上报闹钟变更，同步更新本地存储
+        val slot = AlarmSlot(
+            index = alarm.index,
+            isEnabled = true,
+            hour = alarm.hour,
+            minute = alarm.minute,
+            weekMask = alarm.weekMask,
+            isSet = alarm.hour != 0xFF && alarm.minute != 0xFF
+        )
+        AlarmStorage.save(this, slot)
+    }
     override fun onAlarmRinging(alarmIndex: Int, alarmInfo: AlarmInfo) { log("🔔 闹钟${alarmIndex}响铃") }
     override fun onAlarmTimeout(alarmIndex: Int, alarmInfo: AlarmInfo) { log("⚠️ 闹钟${alarmIndex}超时") }
 
     override fun onMedicationResult(alarmIndex: Int, status: MedicationStatus) {
-        log("💊 闹钟${alarmIndex} $status")
-        val statusInt = when (status) {
-            MedicationStatus.TAKEN -> 1; MedicationStatus.TIMEOUT -> 2
-            MedicationStatus.MISSED -> 3; MedicationStatus.EARLY -> 4
-        }
-        // onMedicationResult 不携带闹钟设定时间，用 0 填充
-        MedicationDatabase.getInstance(this).insert(System.currentTimeMillis(), alarmIndex, 0, 0, statusInt)
+        log("💊 闹钟${alarmIndex} ${status.displayNameZh}")
+        // 不入库 — 等 onMedicationRecordReported 上报完整记录（含设定时间和实际时间）
     }
 
     override fun onMedicationRecordReported(record: MedicationRecord) {
-        log("📋 用药记录已保存")
+        val statusText = if (S.isZh) record.status.displayNameZh else record.status.displayNameEn
+        log("📋 用药记录：闹钟${record.alarmIndex} $statusText")
         val statusInt = when (record.status) {
             MedicationStatus.TAKEN -> 1; MedicationStatus.TIMEOUT -> 2
             MedicationStatus.MISSED -> 3; MedicationStatus.EARLY -> 4
@@ -565,9 +657,72 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         MedicationDatabase.getInstance(this).insert(record.timestamp, record.alarmIndex, record.alarmHour, record.alarmMinute, statusInt)
     }
 
-    override fun onSoundTypeChanged(type: SoundType) { log("🔊 铃声变更") }
-    override fun onTimeFormatChanged(format: TimeFormat) { log("🕐 时制变更") }
+    override fun onSoundTypeChanged(type: SoundType) {
+        log("🔊 铃声变更: $type")
+        runOnUiThread {
+            when (type) {
+                SoundType.MUTE -> {
+                    // 静音：取消铃声选中，开启静音开关
+                    selectSegment(soundTypeSegment, -1)
+                    silenceSwitch.isChecked = true
+                }
+                SoundType.TYPE_A -> {
+                    selectSegment(soundTypeSegment, 0)
+                    silenceSwitch.isChecked = false
+                }
+                SoundType.TYPE_B -> {
+                    selectSegment(soundTypeSegment, 1)
+                    silenceSwitch.isChecked = false
+                }
+                else -> {}
+            }
+        }
+    }
+    override fun onTimeFormatChanged(format: TimeFormat) {
+        log("🕐 时制变更")
+        runOnUiThread { selectSegment(timeFormatSegment, format.ordinal) }
+    }
     override fun onLowBattery() { log("🪫 低电") }
+
+    override fun onMedicationNotification(type: Int) {
+        when (type) {
+            1 -> {
+                log("🔔 闹钟响铃，等待取药")
+                runOnUiThread {
+                    AlertDialog.Builder(this)
+                        .setTitle("💊 ${if (S.isZh) "闹钟响铃" else "Alarm Ringing"}")
+                        .setMessage(if (S.isZh) "请及时取药" else "Please take your medication")
+                        .setPositiveButton(S.confirm, null)
+                        .show()
+                }
+            }
+            2 -> {
+                log("⚠️ 超时未取药")
+                // 本地通知（漏服提醒）
+                val nm = getSystemService(android.app.NotificationManager::class.java)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    nm.createNotificationChannel(android.app.NotificationChannel("med_alert", "用药提醒", android.app.NotificationManager.IMPORTANCE_HIGH))
+                }
+                val notif = android.app.Notification.Builder(this, "med_alert")
+                    .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                    .setContentTitle(if (S.isZh) "用药提醒" else "Medication Reminder")
+                    .setContentText(if (S.isZh) "您已超时未取药，请尽快服药！" else "You missed your medication!")
+                    .setAutoCancel(true)
+                    .build()
+                nm.notify(System.currentTimeMillis().toInt(), notif)
+            }
+            3 -> {
+                log("✅ 用户已取药")
+                runOnUiThread {
+                    AlertDialog.Builder(this)
+                        .setTitle("👏 ${if (S.isZh) "按时服药" else "Well Done"}")
+                        .setMessage(if (S.isZh) "太棒了！坚持按时服药有助于健康。" else "Great! Keep taking medication on time.")
+                        .setPositiveButton(S.confirm, null)
+                        .show()
+                }
+            }
+        }
+    }
     override fun onDeviceUnbound() { log("🔓 解绑") }
 
     private fun log(msg: String) {
@@ -575,8 +730,9 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         runOnUiThread {
             if (::logTextView.isInitialized) {
                 logTextView.append("[$t] $msg\n")
-                logTextView.layout?.let { layout ->
-                    logTextView.scrollTo(0, layout.getLineTop(logTextView.lineCount - 1))
+                // 自动滚动到底部
+                (logTextView.parent as? ScrollView)?.post {
+                    (logTextView.parent as? ScrollView)?.fullScroll(View.FOCUS_DOWN)
                 }
             }
         }
@@ -613,6 +769,17 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             setPadding(dp(12), dp(6), dp(12), dp(6))
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { marginEnd = dp(6) }
             setOnClickListener { onClick() }
+        }
+    }
+
+    /** 更新 segment 控件的选中状态（设备上报同步 UI 用） */
+    private fun selectSegment(segment: LinearLayout, index: Int) {
+        for (i in 0 until segment.childCount) {
+            val btn = segment.getChildAt(i) as? Button ?: continue
+            btn.background = roundDrawable(
+                if (i == index) Color.parseColor("#636366") else Color.TRANSPARENT,
+                dp(6)
+            )
         }
     }
 

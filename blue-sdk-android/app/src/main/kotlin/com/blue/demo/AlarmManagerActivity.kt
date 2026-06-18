@@ -43,10 +43,21 @@ class AlarmManagerActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: AlarmSlotAdapter
 
-    private var alarms = (1..7).map { AlarmSlot(it, false, 0, 0, 0x7F, false) }.toMutableList()
+    private lateinit var alarms: MutableList<AlarmSlot>
+
+    private val alarmObserver = object : com.blue.sdk.BlueSDKListener {
+        override fun onAlarmUpdated(alarm: com.blue.sdk.model.AlarmInfo) {
+            runOnUiThread {
+                updateAlarm(alarm.index, alarm.hour, alarm.minute, alarm.weekMask, true, alarm.hour != 0xFF && alarm.minute != 0xFF)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        alarms = AlarmStorage.loadAll(this).toMutableList()
+        // 注册为 SDK 事件观察者，实时接收设备上报的闹钟变更
+        sdk.addObserver(alarmObserver)
         supportActionBar?.title = "闹钟管理"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
@@ -71,6 +82,11 @@ class AlarmManagerActivity : AppCompatActivity() {
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        sdk.removeObserver(alarmObserver)
     }
 
     private fun buildRoot(): View {
@@ -142,7 +158,9 @@ class AlarmManagerActivity : AppCompatActivity() {
 
     fun updateAlarm(index: Int, hour: Int, minute: Int, weekMask: Int, isEnabled: Boolean, isSet: Boolean) {
         if (index < 1 || index > 7) return
-        alarms[index - 1] = AlarmSlot(index, isEnabled, hour, minute, weekMask, isSet)
+        val slot = AlarmSlot(index, isEnabled, hour, minute, weekMask, isSet)
+        alarms[index - 1] = slot
+        AlarmStorage.save(this, slot)
         adapter.notifyItemChanged(index - 1)
     }
 
@@ -153,6 +171,7 @@ class AlarmManagerActivity : AppCompatActivity() {
                 result.fold(
                     onSuccess = {
                         alarms[position] = AlarmSlot(slot.index, false, 0, 0, 0x7F, false)
+                        AlarmStorage.clear(this, slot.index)
                         adapter.notifyItemChanged(position)
                     },
                     onFailure = {
@@ -175,6 +194,7 @@ class AlarmManagerActivity : AppCompatActivity() {
                         result.fold(
                             onSuccess = {
                                 alarms = (1..7).map { AlarmSlot(it, false, 0, 0, 0x7F, false) }.toMutableList()
+                                AlarmStorage.clearAll(this)
                                 adapter.notifyDataSetChanged()
                             },
                             onFailure = { android.widget.Toast.makeText(this, (it as BlueError).message, android.widget.Toast.LENGTH_SHORT).show() }

@@ -42,6 +42,16 @@ class MedicationDatabase private constructor(context: Context) : SQLiteOpenHelpe
     }
 
     fun insert(timestamp: Long, alarmIndex: Int, alarmHour: Int, alarmMinute: Int, status: Int) {
+        // 去重：完全相同的 alarmIndex + timestamp + status 不重复入库
+        // timestamp 已精确到毫秒，同一帧重复解析才会命中
+        val cursor = readableDatabase.query("records", arrayOf("id"),
+            "alarmIndex = ? AND timestamp = ? AND status = ?",
+            arrayOf(alarmIndex.toString(), timestamp.toString(), status.toString()),
+            null, null, null)
+        val exists = cursor.count > 0
+        cursor.close()
+        if (exists) return
+
         writableDatabase.insert("records", null, ContentValues().apply {
             put("timestamp", timestamp)
             put("alarmIndex", alarmIndex)
@@ -85,8 +95,9 @@ data class MedicationEntry(
     val alarmMinute: Int,
     val status: Int
 ) {
-    val statusEmoji: String get() = when (status) { 1 -> "✅"; 2 -> "⏰"; 3 -> "❌"; 4 -> "⏱"; else -> "📋" }
-    val statusText: String get() = if (S.isZh) when (status) { 1 -> "已服药"; 2 -> "超时"; 3 -> "未服药"; 4 -> "提前"; else -> "未知" }
-        else when (status) { 1 -> "Taken"; 2 -> "Timeout"; 3 -> "Missed"; 4 -> "Early"; else -> "Unknown" }
+    val statusEmoji: String get() = when (status) { 1 -> "✅"; 2 -> "⏰"; 3 -> "❌"; 4 -> "⏩"; else -> "❓" }
+    val statusText: String get() = if (S.isZh)
+        when (status) { 1 -> "按时取药"; 2 -> "超时取药"; 3 -> "漏服"; 4 -> "提前取药"; else -> "未知" }
+        else when (status) { 1 -> "Taken on time"; 2 -> "Taken late"; 3 -> "Missed"; 4 -> "Taken early"; else -> "Unknown" }
     val alarmTimeString: String get() = "%02d:%02d".format(alarmHour, alarmMinute)
 }
