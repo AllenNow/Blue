@@ -1,71 +1,103 @@
 // DemoStrings.swift
-// BlueSDK Example - Demo App 多语言字符串
-// 跟随 SDKLocale 设置
+// BlueSDK Example - Demo App 多语言字符串（中/英/德）
+// Demo App trilingual strings (zh/en/de)
 
 import Foundation
 import BlueSDK
 
 /// Demo App 多语言字符串
+/// Demo App trilingual strings
 enum S {
     static var isZh: Bool { SDKLocale.isZh }
+    static var isDe: Bool { SDKLocale.isDe }
 
-    // 主页按钮
-    static var scan: String { z("扫描", "Scan") }
-    static var stopScan: String { z("停止扫描", "Stop") }
-    static var disconnect: String { z("断开", "Disconnect") }
-    static var deviceInfo: String { z("设备信息", "Device") }
-    static var syncTime: String { z("同步时间", "Sync Time") }
-    static var alarmManager: String { z("闹钟管理", "Alarms") }
-    static var medicationRecords: String { z("用药记录", "Records") }
-    static var protocolTest: String { z("指令验证", "Protocol") }
-    static var faq: String { z("常见问题", "FAQ") }
-    static var clearAlarms: String { z("清空闹钟", "Clear Alarms") }
-    static var restoreFactory: String { z("恢复出厂", "Reset") }
-    static var clearBinding: String { z("解绑设备", "Unbind") }
-    static var debug: String { z("调试", "Debug") }
+    // MARK: - 主页按钮 / Main buttons
 
-    // 音频设置标签
-    static var soundType: String { z("铃声", "Sound") }
-    static var volume: String { z("音量", "Vol") }
-    static var timeFormat: String { z("时制", "Format") }
-    static var silence: String { z("静音", "Mute") }
-    static var duration: String { z("持续", "Dur") }
-    static var minutes: String { z("分", "min") }
-    static var setBtn: String { z("设置", "Set") }
+    static var scan: String { t("扫描", "Scan", "Scannen") }
+    static var stopScan: String { t("停止扫描", "Stop", "Stopp") }
+    static var disconnect: String { t("断开", "Disconnect", "Trennen") }
+    static var deviceInfo: String { t("设备信息", "Device", "Gerät") }
+    static var syncTime: String { t("同步时间", "Sync Time", "Zeit sync.") }
+    static var alarmManager: String { t("闹钟管理", "Alarms", "Alarme") }
+    static var medicationRecords: String { t("用药记录", "Records", "Aufzeichn.") }
+    static var protocolTest: String { t("指令验证", "Protocol", "Protokoll") }
+    static var faq: String { t("常见问题", "FAQ", "FAQ") }
+    static var clearAlarms: String { t("清空闹钟", "Clear Alarms", "Alarme lösch.") }
+    static var restoreFactory: String { t("恢复出厂", "Reset", "Werksreset") }
+    static var clearBinding: String { t("解绑设备", "Unbind", "Entkoppeln") }
+    static var debug: String { t("调试", "Debug", "Debug") }
 
-    // 日志区
-    static var log: String { z("日志", "Log") }
-    static var clear: String { z("清空", "Clear") }
+    // MARK: - 音频设置标签 / Audio labels
 
-    // 状态
-    static var notConnected: String { z("未连接", "Not Connected") }
-    static var connecting: String { z("连接中...", "Connecting...") }
-    static var authenticating: String { z("认证中...", "Authenticating...") }
-    static var connected: String { z("已连接", "Connected") }
-    static var reconnecting: String { z("重连中...", "Reconnecting...") }
-    static var scanning: String { z("扫描中...", "Scanning...") }
-    static var scanFailed: String { z("扫描失败", "Scan Failed") }
-    static var scanConnecting: String { z("扫描连接中...", "Scanning...") }
-    static var connectingAuth: String { z("连接认证中...", "Authenticating...") }
-    static var userCancelled: String { z("用户取消连接", "Cancelled") }
-    static var sdkStarted: String { z("SDK 已启动", "SDK started") }
+    static var soundType: String { t("铃声", "Sound", "Klingelton") }
+    static var volume: String { t("音量", "Vol", "Lautst.") }
+    static var timeFormat: String { t("时制", "Format", "Format") }
+    static var silence: String { t("静音", "Mute", "Stumm") }
+    static var duration: String { t("持续", "Dur", "Dauer") }
+    static var minutes: String { t("分", "min", "Min") }
+    static var setBtn: String { t("设置", "Set", "Setzen") }
 
-    // 对话框
-    static var cancel: String { z("取消", "Cancel") }
-    static var confirm: String { z("确定", "OK") }
-    static var clearAlarmsTitle: String { z("清空闹钟", "Clear Alarms") }
-    static var clearAlarmsMsg: String { z("确定清空所有闹钟？", "Clear all alarms?") }
-    static var restoreFactoryTitle: String { z("恢复出厂", "Factory Reset") }
-    static var restoreFactoryMsg: String { z("确定恢复出厂设置？", "Confirm factory reset?") }
-    static var clearBindingTitle: String { z("解绑设备", "Unbind Device") }
-    static var clearBindingMsg: String { z("确定解绑设备？解绑后需重新配对。", "Unbind device? Re-pairing required afterwards.") }
+    // MARK: - 日志区 / Log
 
-    // 日志消息
-    static var alarmsCleared: String { z("所有闹钟已清空", "All alarms cleared") }
-    static var factoryRestored: String { z("已恢复出厂", "Factory restored") }
-    static var bindingCleared: String { z("本地绑定已清除", "Binding cleared") }
+    static var log: String { t("日志", "Log", "Protokoll") }
+    static var clear: String { t("清空", "Clear", "Löschen") }
 
-    private static func z(_ zh: String, _ en: String) -> String { isZh ? zh : en }
+    // MARK: - 状态 / Status
+
+    static var notConnected: String { t("未连接", "Not Connected", "Nicht verbunden") }
+    static var connecting: String { t("连接中...", "Connecting...", "Verbinden...") }
+    static var authenticating: String { t("认证中...", "Authenticating...", "Authentifizieren...") }
+    static var connected: String { t("已连接", "Connected", "Verbunden") }
+    static var reconnecting: String { t("重连中...", "Reconnecting...", "Neuverbinden...") }
+    static var scanning: String { t("扫描中...", "Scanning...", "Scannen...") }
+    static var scanFailed: String { t("扫描失败", "Scan Failed", "Scan fehlgeschlagen") }
+    static var scanConnecting: String { t("扫描连接中...", "Scanning...", "Scannen...") }
+    static var connectingAuth: String { t("连接认证中...", "Authenticating...", "Authentifizieren...") }
+    static var userCancelled: String { t("用户取消连接", "Cancelled", "Abgebrochen") }
+    static var sdkStarted: String { t("SDK 已启动", "SDK started", "SDK gestartet") }
+
+    // MARK: - 对话框 / Dialogs
+
+    static var cancel: String { t("取消", "Cancel", "Abbrechen") }
+    static var confirm: String { t("确定", "OK", "OK") }
+    static var clearAlarmsTitle: String { t("清空闹钟", "Clear Alarms", "Alarme löschen") }
+    static var clearAlarmsMsg: String { t("确定清空所有闹钟？", "Clear all alarms?", "Alle Alarme löschen?") }
+    static var restoreFactoryTitle: String { t("恢复出厂", "Factory Reset", "Werksreset") }
+    static var restoreFactoryMsg: String { t("确定恢复出厂设置？", "Confirm factory reset?", "Werkseinstellungen wiederherstellen?") }
+    static var clearBindingTitle: String { t("解绑设备", "Unbind Device", "Gerät entkoppeln") }
+    static var clearBindingMsg: String { t("确定解绑设备？解绑后需重新配对。", "Unbind device? Re-pairing required.", "Gerät entkoppeln? Erneutes Koppeln nötig.") }
+    static var authFailedTitle: String { t("认证失败", "Auth Failed", "Authentifizierung fehlgeschlagen") }
+    static var authFailedMsg: String { t("密钥不一致，请对设备长按按键恢复出厂设置后重试。", "Key mismatch. Long-press device button to factory reset, then retry.", "Schlüssel stimmt nicht. Taste am Gerät lang drücken für Werksreset.") }
+
+    // MARK: - 日志消息 / Log messages
+
+    static var alarmsCleared: String { t("所有闹钟已清空", "All alarms cleared", "Alle Alarme gelöscht") }
+    static var factoryRestored: String { t("已恢复出厂", "Factory restored", "Werkseinstellungen wiederhergestellt") }
+    static var bindingCleared: String { t("本地绑定已清除", "Binding cleared", "Lokale Bindung gelöscht") }
+    static var scanningAuto: String { t("扫描中...（自动密钥）", "Scanning... (auto key)", "Scannen... (Auto-Schlüssel)") }
+    static var scanStopped: String { t("扫描超时", "Scan timeout", "Scan-Timeout") }
+
+    // MARK: - 用药通知 / Medication notifications
+
+    static var alarmRingingTitle: String { t("💊 闹钟响铃", "💊 Alarm Ringing", "💊 Alarm klingelt") }
+    static var alarmRingingMsg: String { t("请及时取药", "Please take your medication", "Bitte nehmen Sie Ihre Medikamente") }
+    static var missedTitle: String { t("用药提醒", "Medication Reminder", "Medikamenten-Erinnerung") }
+    static var missedMsg: String { t("您已超时未取药，请尽快服药！", "You missed your medication!", "Sie haben Ihre Medikamente verpasst!") }
+    static var takenTitle: String { t("👏 按时服药", "👏 Well Done", "👏 Gut gemacht") }
+    static var takenMsg: String { t("太棒了！坚持按时服药有助于健康。", "Great! Keep taking medication on time.", "Toll! Nehmen Sie weiter pünktlich Ihre Medikamente.") }
+    static var ok: String { t("知道了", "OK", "OK") }
+
+    // MARK: - 断开提示 / Disconnect alert
+
+    static var disconnectedTitle: String { t("连接断开", "Disconnected", "Verbindung getrennt") }
+    static var disconnectedMsg: String { t("设备连接已断开，请检查设备状态后重新连接。", "Device disconnected. Check device and reconnect.", "Gerät getrennt. Überprüfen und erneut verbinden.") }
+
+    // MARK: - 响铃时长 / Duration
+
+    static var durationError: String { t("响铃时长范围：1~5分钟", "Duration range: 1~5 min", "Dauer: 1~5 Min") }
+
+    // MARK: - 工具方法
+
     private static func t(_ zh: String, _ en: String, _ de: String) -> String {
         switch SDKLocale.current {
         case .zh: return zh

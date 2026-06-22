@@ -9,6 +9,13 @@ import UserNotifications
 
 class ViewController: UIViewController {
 
+    // MARK: - 从设备列表传入的设备信息
+
+    var deviceId: String?
+    var deviceName: String?
+    /// 是否从设备列表页进入（新流程）
+    private var isFromDeviceList: Bool { deviceId != nil }
+
     // MARK: - 连接状态区
 
     private let statusDot = UIView()
@@ -101,6 +108,17 @@ class ViewController: UIViewController {
         BlueSDK.shared.initialize()
         BlueSDK.shared.delegate = self
         
+        // 如果从设备列表进入，隐藏扫描相关 UI
+        if isFromDeviceList {
+            scanButton.isHidden = true
+            phoneMacField.isHidden = true
+            title = deviceName ?? "BlueSDK"
+            if BlueSDK.shared.connectionState == .authenticated {
+                disconnectButton.isHidden = false
+                updateStatus(S.connected, color: .systemGreen)
+            }
+        }
+
         let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tap.cancelsTouchesInView = false
         view.addGestureRecognizer(tap)
@@ -631,7 +649,7 @@ extension ViewController: BlueSDKDelegate {
             guard let self = self else { return }
             switch state {
             case .disconnected:
-                self.scanButton.isHidden = false
+                self.scanButton.isHidden = self.isFromDeviceList ? true : false
                 self.disconnectButton.isHidden = true
                 if self.isAuthFailed {
                     self.isAuthFailed = false
@@ -640,6 +658,13 @@ extension ViewController: BlueSDKDelegate {
                     self.loadingIndicator.stopAnimating()
                     self.scanButton.isEnabled = true
                     self.hideLoading()
+                    // 从设备列表进入时，断开连接自动返回
+                    if self.isFromDeviceList {
+                        if self.previousConnectionState == .authenticated || self.previousConnectionState == .connected {
+                            self.navigationController?.popViewController(animated: true)
+                            return
+                        }
+                    }
                     // 设备意外断开弹窗提示
                     if self.previousConnectionState == .authenticated || self.previousConnectionState == .connected {
                         self.log("⚠️ 设备连接已断开")
@@ -722,7 +747,7 @@ extension ViewController: BlueSDKDelegate {
         DispatchQueue.main.async { [weak self] in
             switch type {
             case .mute:
-                self?.soundTypeSegment.selectedSegmentIndex = UISegmentedControl.noSegment
+                self?.soundTypeSegment.selectedSegmentIndex = UISegmentedControlNoSegment
                 self?.silenceSwitch.setOn(true, animated: true)
             case .typeA:
                 self?.soundTypeSegment.selectedSegmentIndex = 0
@@ -768,7 +793,7 @@ extension ViewController: BlueSDKDelegate {
             let content = UNMutableNotificationContent()
             content.title = SDKLocale.s("用药提醒", "Medication Reminder")
             content.body = SDKLocale.s("您已超时未取药，请尽快服药！", "You missed your medication. Please take it now!")
-            content.sound = .default
+            content.sound = UNNotificationSound.default()
             let request = UNNotificationRequest(identifier: "missed_\(Date().timeIntervalSince1970)", content: content, trigger: nil)
             UNUserNotificationCenter.current().add(request)
         case 3:

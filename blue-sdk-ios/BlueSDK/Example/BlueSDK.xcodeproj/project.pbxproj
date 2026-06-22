@@ -10,6 +10,9 @@
 		049D14A42FE367CD0026E1B4 /* AlarmStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049D14A12FE367CD0026E1B4 /* AlarmStorage.swift */; };
 		049D14A52FE367CD0026E1B4 /* DemoStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049D14A22FE367CD0026E1B4 /* DemoStrings.swift */; };
 		049D14A62FE367CD0026E1B4 /* FAQViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049D14A32FE367CD0026E1B4 /* FAQViewController.swift */; };
+		049D14B12FE467CD0026E1B4 /* DeviceStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049D14AE2FE467CD0026E1B4 /* DeviceStorage.swift */; };
+		049D14B22FE467CD0026E1B4 /* DeviceListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049D14AF2FE467CD0026E1B4 /* DeviceListViewController.swift */; };
+		049D14B32FE467CD0026E1B4 /* ScanViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049D14B02FE467CD0026E1B4 /* ScanViewController.swift */; };
 		04BDFE9B2FE00F4700D1F1B5 /* ProtocolTestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFE9A2FE00F4700D1F1B5 /* ProtocolTestViewController.swift */; };
 		04BDFE9C2FE00F4700D1F1B5 /* AlarmManagerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFE962FE00F4700D1F1B5 /* AlarmManagerViewController.swift */; };
 		04BDFE9D2FE00F4700D1F1B5 /* MedicationDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFE982FE00F4700D1F1B5 /* MedicationDatabase.swift */; };
@@ -45,6 +48,9 @@
 		049D14A12FE367CD0026E1B4 /* AlarmStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmStorage.swift; sourceTree = "<group>"; };
 		049D14A22FE367CD0026E1B4 /* DemoStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoStrings.swift; sourceTree = "<group>"; };
 		049D14A32FE367CD0026E1B4 /* FAQViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FAQViewController.swift; sourceTree = "<group>"; };
+		049D14AE2FE467CD0026E1B4 /* DeviceStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceStorage.swift; sourceTree = "<group>"; };
+		049D14AF2FE467CD0026E1B4 /* DeviceListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceListViewController.swift; sourceTree = "<group>"; };
+		049D14B02FE467CD0026E1B4 /* ScanViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanViewController.swift; sourceTree = "<group>"; };
 		04BDFE952FE00F4700D1F1B5 /* AlarmEditorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmEditorViewController.swift; sourceTree = "<group>"; };
 		04BDFE962FE00F4700D1F1B5 /* AlarmManagerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlarmManagerViewController.swift; sourceTree = "<group>"; };
 		04BDFE972FE00F4700D1F1B5 /* DebugViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewController.swift; sourceTree = "<group>"; };
@@ -134,6 +140,9 @@
 				049D14A12FE367CD0026E1B4 /* AlarmStorage.swift */,
 				049D14A22FE367CD0026E1B4 /* DemoStrings.swift */,
 				049D14A32FE367CD0026E1B4 /* FAQViewController.swift */,
+				049D14AE2FE467CD0026E1B4 /* DeviceStorage.swift */,
+				049D14AF2FE467CD0026E1B4 /* DeviceListViewController.swift */,
+				049D14B02FE467CD0026E1B4 /* ScanViewController.swift */,
 				04BDFE952FE00F4700D1F1B5 /* AlarmEditorViewController.swift */,
 				04BDFE962FE00F4700D1F1B5 /* AlarmManagerViewController.swift */,
 				04BDFE972FE00F4700D1F1B5 /* DebugViewController.swift */,
@@ -394,6 +403,9 @@
 				049D14A42FE367CD0026E1B4 /* AlarmStorage.swift in Sources */,
 				049D14A52FE367CD0026E1B4 /* DemoStrings.swift in Sources */,
 				049D14A62FE367CD0026E1B4 /* FAQViewController.swift in Sources */,
+				049D14B12FE467CD0026E1B4 /* DeviceStorage.swift in Sources */,
+				049D14B22FE467CD0026E1B4 /* DeviceListViewController.swift in Sources */,
+				049D14B32FE467CD0026E1B4 /* ScanViewController.swift in Sources */,
 				57AE167D928B6CEDCEB66D3C /* AlarmEditorViewController.swift in Sources */,
 				04BDFE9B2FE00F4700D1F1B5 /* ProtocolTestViewController.swift in Sources */,
 				04BDFE9C2FE00F4700D1F1B5 /* AlarmManagerViewController.swift in Sources */,

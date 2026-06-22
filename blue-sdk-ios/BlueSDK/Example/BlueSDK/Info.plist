@@ -28,8 +28,6 @@
 	<string>需要蓝牙权限以连接 LX-PD02 智能药盒设备</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>

@@ -203,6 +203,35 @@ import CoreBluetooth
         connectionManager.connect(peripheral: device.peripheral)
     }
 
+    /// 通过设备 UUID 直接连接（无需重新扫描）
+    /// 适用于已绑定设备的快速重连场景
+    /// - Parameters:
+    ///   - identifier: 设备的 UUID 字符串（ScannedDevice.deviceId）
+    ///   - completion: 如果设备未找到返回错误，找到后自动发起连接（结果通过 delegate 回调）
+    public func connect(byIdentifier identifier: String, completion: ((BlueError?) -> Void)? = nil) {
+        guard requireInitialized(callback: { _ in completion?(.notInitialized) }) else { return }
+        guard let uuid = UUID(uuidString: identifier) else {
+            completion?(.invalidParameter)
+            return
+        }
+        let peripherals = BLECentralManager.shared.centralManager.retrievePeripherals(withIdentifiers: [uuid])
+        if let peripheral = peripherals.first {
+            connectedPeripheral = peripheral
+            connectionManager.connect(peripheral: peripheral)
+            completion?(nil)
+        } else {
+            // 尝试从已连接设备恢复
+            let connected = BLECentralManager.shared.centralManager.retrieveConnectedPeripherals(withServices: [])
+            if let peripheral = connected.first(where: { $0.identifier == uuid }) {
+                connectedPeripheral = peripheral
+                connectionManager.connect(peripheral: peripheral)
+                completion?(nil)
+            } else {
+                completion?(.deviceNotFound)
+            }
+        }
+    }
+
     /// 解绑设备
     /// 向设备发送解绑指令（CMD=0xA1），成功应答后清除本地密钥并断开连接
     /// - Parameter completion: 操作完成回调

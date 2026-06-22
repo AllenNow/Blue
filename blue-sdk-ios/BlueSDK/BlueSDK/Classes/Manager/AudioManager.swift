@@ -89,7 +89,6 @@ final class AudioManager {
         let value = data[4]
         return SoundType.from(byte: value)
     }
-    }
 
     /// 解析时间格式上报（DPID=0x73）
     static func parseTimeFormat(from data: [UInt8]) -> TimeFormat? {

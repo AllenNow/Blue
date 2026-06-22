@@ -18,13 +18,21 @@
         android:label="BlueSDK Demo"
         android:theme="@style/Theme.BlueSDKDemo">
         <activity
-            android:name=".MainActivity"
+            android:name=".DeviceListActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ScanActivity"
+            android:exported="false"
+            android:label="扫描设备"/>
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:label="设备控制"/>
         <activity
             android:name=".ProtocolTestActivity"
             android:exported="false"

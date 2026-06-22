@@ -19,6 +19,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // 开发阶段开启 DEBUG 日志，生产环境改为 .none
         BlueSDK.shared.setLogLevel(.debug)
 
+        // 设置根视图为设备列表页
+        window = UIWindow(frame: UIScreen.main.bounds)
+        let deviceListVC = DeviceListViewController()
+        let nav = UINavigationController(rootViewController: deviceListVC)
+        window?.rootViewController = nav
+        window?.makeKeyAndVisible()
+
         return true
     }
 

@@ -54,8 +54,7 @@ final class AlarmManager {
                     index: index,
                     hour: hour,
                     minute: minute,
-                    weekMask: weekMask,
-                    advanceStatus: 0
+                    weekMask: weekMask
                 )
                 completion(.success(alarm))
             case .failure(let error):

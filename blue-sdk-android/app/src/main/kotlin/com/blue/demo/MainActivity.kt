@@ -45,6 +45,12 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
 
     private var isScanning = false
 
+    // 从设备列表页传入的设备信息
+    private var deviceId: String? = null
+    private var deviceName: String? = null
+    /** 是否从设备列表页进入（新流程） */
+    private val isFromDeviceList: Boolean get() = deviceId != null
+
     private val sdk get() = BlueSDK.getInstance(this)
     private val timeFmt = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
@@ -68,6 +74,11 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         window.statusBarColor = bgDark
         window.navigationBarColor = bgDark
         supportActionBar?.hide()
+
+        // 接收设备列表页传入的设备信息
+        deviceId = intent.getStringExtra("device_id")
+        deviceName = intent.getStringExtra("device_name")
+
         setContentView(buildRoot())
         sdk.initialize()
         sdk.listener = this
@@ -83,6 +94,17 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
         log("SDK 已启动")
         log("🔑 ${sdk.currentAuthKeyDisplay}")
+
+        // 如果从设备列表页进入，隐藏扫描相关 UI，显示已连接状态
+        if (isFromDeviceList) {
+            scanButton.visibility = View.GONE
+            phoneMacInput.visibility = View.GONE
+            // 如果已经认证，直接显示已连接状态
+            if (sdk.connectionState == ConnectionState.AUTHENTICATED) {
+                updateStatus(S.connected, Color.GREEN)
+                disconnectButton.visibility = View.VISIBLE
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -123,7 +145,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
 
         statusLabel = TextView(this).apply {
-            text = S.notConnected
+            text = if (isFromDeviceList) (deviceName ?: S.notConnected) else S.notConnected
             setTextColor(textWhite)
             textSize = 14f
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
@@ -149,6 +171,8 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(12), dp(6), dp(12), dp(6))
+            // 从设备列表进入时隐藏密钥输入框
+            if (isFromDeviceList) visibility = View.GONE
         }
         keyRow.addView(TextView(this).apply {
             text = if (S.isZh) "密钥" else "Key"
@@ -248,7 +272,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             val m = durationInput.text.toString().toIntOrNull() ?: 0
             if (m < 1 || m > 5) {
                 log("❌ 响铃时长范围：1~5分钟")
-                return@addView
+                return@pillBtn
             }
             sdk.setAlertDuration(m) { logR("持续${m}分", it) }
         })
@@ -563,11 +587,20 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         runOnUiThread {
             when (state) {
                 ConnectionState.DISCONNECTED -> {
-                    scanButton.visibility = View.VISIBLE
+                    scanButton.visibility = if (isFromDeviceList) View.GONE else View.VISIBLE
                     disconnectButton.visibility = View.GONE
                     if (!isAuthFailed) {
                         updateStatus(text, color)
                         scanButton.isEnabled = true
+                    }
+                    // 从设备列表进入时，断开连接自动返回列表页
+                    if (isFromDeviceList && !isAuthFailed) {
+                        Toast.makeText(this,
+                            if (S.isZh) "设备连接已断开" else "Device disconnected",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        finish()
+                        return@runOnUiThread
                     }
                     // 设备意外断开弹窗提示
                     if (!isAuthFailed && !isScanning) {

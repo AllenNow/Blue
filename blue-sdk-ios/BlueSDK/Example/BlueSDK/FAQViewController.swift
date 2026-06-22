@@ -7,23 +7,75 @@ import UIKit
 struct FAQItem {
     let questionZh: String
     let questionEn: String
+    let questionDe: String
     let answerZh: String
     let answerEn: String
+    let answerDe: String
     let category: String
 
-    var question: String { FAQLocale.isZh ? questionZh : questionEn }
-    var answer: String { FAQLocale.isZh ? answerZh : answerEn }
+    init(questionZh: String, questionEn: String, questionDe: String = "", answerZh: String, answerEn: String, answerDe: String = "", category: String) {
+        self.questionZh = questionZh
+        self.questionEn = questionEn
+        self.questionDe = questionDe.isEmpty ? questionEn : questionDe
+        self.answerZh = answerZh
+        self.answerEn = answerEn
+        self.answerDe = answerDe.isEmpty ? answerEn : answerDe
+        self.category = category
+    }
+
+    var question: String {
+        switch FAQLocale.lang {
+        case .zh: return questionZh
+        case .en: return questionEn
+        case .de: return questionDe
+        }
+    }
+    var answer: String {
+        switch FAQLocale.lang {
+        case .zh: return answerZh
+        case .en: return answerEn
+        case .de: return answerDe
+        }
+    }
 }
 
 enum FAQLocale {
-    static var isZh: Bool {
-        let lang = Locale.preferredLanguages.first ?? "en"
-        return lang.hasPrefix("zh")
+    enum Lang { case zh, en, de }
+    static var lang: Lang {
+        let l = Locale.preferredLanguages.first ?? "en"
+        if l.hasPrefix("zh") { return .zh }
+        if l.hasPrefix("de") { return .de }
+        return .en
     }
-    static var searchPlaceholder: String { isZh ? "搜索问题..." : "Search..." }
-    static var title: String { isZh ? "常见问题" : "FAQ" }
-    static var detailTitle: String { isZh ? "解答" : "Answer" }
-    static var noResult: String { isZh ? "没有匹配的问题" : "No matching questions" }
+    static var isZh: Bool { lang == .zh }
+    static var searchPlaceholder: String {
+        switch lang {
+        case .zh: return "搜索问题..."
+        case .en: return "Search..."
+        case .de: return "Frage suchen..."
+        }
+    }
+    static var title: String {
+        switch lang {
+        case .zh: return "常见问题"
+        case .en: return "FAQ"
+        case .de: return "Häufige Fragen"
+        }
+    }
+    static var detailTitle: String {
+        switch lang {
+        case .zh: return "解答"
+        case .en: return "Answer"
+        case .de: return "Antwort"
+        }
+    }
+    static var noResult: String {
+        switch lang {
+        case .zh: return "没有匹配的问题"
+        case .en: return "No matching questions"
+        case .de: return "Keine passenden Fragen"
+        }
+    }
 }
 
 class FAQViewController: UIViewController {
@@ -34,6 +86,7 @@ class FAQViewController: UIViewController {
         FAQItem(
             questionZh: "扫描不到设备怎么办？",
             questionEn: "Can't find the device when scanning?",
+            questionDe: "Gerät wird beim Scannen nicht gefunden?",
             answerZh: """
             1. 确认设备已开机且蓝牙指示灯闪烁
             2. 确认手机蓝牙已开启
@@ -50,7 +103,15 @@ class FAQViewController: UIViewController {
             5. If previously paired with another phone, factory reset the device (long press button)
             6. Try toggling phone Bluetooth off/on and scan again
             """,
-            category: "连接 / Connection"),
+            answerDe: """
+            1. Gerät eingeschaltet und Bluetooth-LED blinkt?
+            2. Bluetooth am Handy aktiviert?
+            3. iOS: NSBluetoothAlwaysUsageDescription in Info.plist erforderlich
+            4. Gerät innerhalb von 3 Metern?
+            5. Falls zuvor mit anderem Handy gekoppelt: Werksreset (Taste lang drücken)
+            6. Bluetooth am Handy aus-/einschalten und erneut scannen
+            """,
+            category: "连接 / Connection / Verbindung"),
 
         FAQItem(
             questionZh: "认证失败是什么原因？",
