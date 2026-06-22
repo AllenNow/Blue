@@ -3,6 +3,7 @@
 //
 // SDK 公开 API 入口（单例）
 // 使用方式：BlueSDK.getInstance(context).initialize()
+// 支持同时连接多个设备，支持设备分组和命令广播
 // 连接成功后自动完成密钥认证（phoneMac 持久化存储在 KeystoreHelper）
 
 package com.blue.sdk
@@ -34,17 +35,26 @@ import com.blue.sdk.manager.MedicationManager
 import com.blue.sdk.manager.PermissionManager
 import com.blue.sdk.model.AlarmConfig
 import com.blue.sdk.model.AlarmInfo
+import com.blue.sdk.model.DeviceFailure
+import com.blue.sdk.model.DeviceGroup
+import com.blue.sdk.model.DeviceResult
+import com.blue.sdk.model.DeviceTarget
+import com.blue.sdk.model.MultiDeviceResult
 import com.blue.sdk.model.ScanEvent
 import com.blue.sdk.model.ScannedDevice
 import com.blue.sdk.transport.CommandCode
 import com.blue.sdk.transport.DPIDConstants
 import com.blue.sdk.transport.FrameBuilder
+import com.blue.sdk.transport.ParsedFrame
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * BlueSDK 主入口，采用单例模式
+ * 支持同时连接多个 LX-PD02 设备，支持设备分组和命令广播
  */
-class BlueSDK private constructor(private val context: Context) {
+class BlueSDK private constructor(private val context: Context) : BlueDeviceConnectionDelegate {
 
     companion object {
         @Volatile private var instance: BlueSDK? = null
@@ -69,7 +79,18 @@ class BlueSDK private constructor(private val context: Context) {
     private val scanner = com.blue.sdk.transport.BLEScanner()
     private val handler = Handler(Looper.getMainLooper())
 
-    // 自动认证状态
+    // MARK: - 多设备管理
+
+    /** 所有活跃的设备连接（deviceId -> BlueDeviceConnection） */
+    private val connections = mutableMapOf<String, BlueDeviceConnection>()
+
+    /** 设备分组（groupName -> DeviceGroup） */
+    private val deviceGroups = mutableMapOf<String, DeviceGroup>()
+
+    /** 向后兼容：当前"主"连接（最后一次 connect 的设备） */
+    private var primaryDeviceId: String? = null
+
+    // 自动认证状态（旧版单设备兼容）
     private var connectedDevice: ScannedDevice? = null
     private var lastTimeSyncMs: Long = 0L
 
@@ -516,6 +537,251 @@ class BlueSDK private constructor(private val context: Context) {
             completion(Result.failure(BlueError.Disconnected)); return false
         }
         return true
+    }
+
+    // MARK: - 多设备公开 API
+
+    /** 获取所有活跃的设备连接实例 */
+    val activeConnections: List<BlueDeviceConnection>
+        get() = connections.values.toList()
+
+    /** 获取所有已认证设备的连接实例 */
+    val authenticatedConnections: List<BlueDeviceConnection>
+        get() = connections.values.filter { it.connectionState == ConnectionState.AUTHENTICATED }
+
+    /** 获取指定设备的连接实例 */
+    fun connection(deviceId: String): BlueDeviceConnection? = connections[deviceId]
+
+    /** 当前已连接设备数量 */
+    val connectedDeviceCount: Int get() = connections.size
+
+    /**
+     * 连接一个新设备（多设备模式）
+     * 连接成功后自动认证，认证成功后设备进入可操作状态
+     * @param device 扫描发现的设备
+     * @return 该设备的连接实例
+     */
+    fun connectDevice(device: ScannedDevice): BlueDeviceConnection {
+        // 如果已有该设备的连接，直接返回
+        connections[device.deviceId]?.let { existing ->
+            if (existing.connectionState == ConnectionState.DISCONNECTED) {
+                existing.connect()
+            }
+            return existing
+        }
+
+        val conn = BlueDeviceConnection(context, device, config)
+        conn.delegate = this
+        connections[device.deviceId] = conn
+        primaryDeviceId = device.deviceId
+        conn.connect()
+        return conn
+    }
+
+    /** 断开指定设备 */
+    fun disconnectDevice(deviceId: String) {
+        connections[deviceId]?.disconnect()
+    }
+
+    /** 断开所有设备 */
+    fun disconnectAll() {
+        connections.values.forEach { it.disconnect() }
+    }
+
+    /** 移除已断开的设备连接实例（清理资源） */
+    fun removeDisconnectedDevices() {
+        val disconnected = connections.filter { it.value.connectionState == ConnectionState.DISCONNECTED }
+        disconnected.keys.forEach { connections.remove(it) }
+    }
+
+    // MARK: - 设备分组管理
+
+    /** 创建设备分组 */
+    fun createGroup(name: String, deviceIds: List<String> = emptyList()) {
+        deviceGroups[name] = DeviceGroup(name, deviceIds)
+        BlueLogger.info("创建设备分组：$name，设备数：${deviceIds.size}")
+    }
+
+    /** 删除设备分组 */
+    fun removeGroup(name: String) {
+        deviceGroups.remove(name)
+    }
+
+    /** 获取指定分组 */
+    fun group(name: String): DeviceGroup? = deviceGroups[name]
+
+    /** 获取所有分组 */
+    val allGroups: List<DeviceGroup> get() = deviceGroups.values.toList()
+
+    /** 向分组添加设备 */
+    fun addDeviceToGroup(deviceId: String, groupName: String) {
+        deviceGroups[groupName]?.addDevice(deviceId)
+    }
+
+    /** 从分组移除设备 */
+    fun removeDeviceFromGroup(deviceId: String, groupName: String) {
+        deviceGroups[groupName]?.removeDevice(deviceId)
+    }
+
+    // MARK: - 命令广播 API（多设备命令下发）
+
+    /** 获取指定目标的已认证设备连接列表 */
+    private fun resolveTargetConnections(target: DeviceTarget): List<BlueDeviceConnection> {
+        val authenticatedIds = connections
+            .filter { it.value.connectionState == ConnectionState.AUTHENTICATED }
+            .map { it.key }
+        val targetIds = target.resolve(deviceGroups, authenticatedIds)
+        return targetIds.mapNotNull { connections[it] }
+    }
+
+    /** 向目标设备广播：设置闹钟 */
+    fun setAlarm(target: DeviceTarget, index: Int, hour: Int, minute: Int, weekMask: Int = 0x7F, completion: (MultiDeviceResult<AlarmInfo>) -> Unit) {
+        broadcastCommand(target, completion) { conn, done ->
+            conn.setAlarm(index, hour, minute, weekMask, done)
+        }
+    }
+
+    /** 向目标设备广播：删除闹钟 */
+    fun deleteAlarm(target: DeviceTarget, index: Int, completion: (MultiDeviceResult<Unit>) -> Unit) {
+        broadcastCommand(target, completion) { conn, done ->
+            conn.deleteAlarm(index, done)
+        }
+    }
+
+    /** 向目标设备广播：清空所有闹钟 */
+    fun clearAllAlarms(target: DeviceTarget, completion: (MultiDeviceResult<Unit>) -> Unit) {
+        broadcastCommand(target, completion) { conn, done ->
+            conn.clearAllAlarms(done)
+        }
+    }
+
+    /** 向目标设备广播：时间同步 */
+    fun syncTime(target: DeviceTarget, timeMs: Long = System.currentTimeMillis(), completion: (MultiDeviceResult<Unit>) -> Unit) {
+        broadcastCommand(target, completion) { conn, done ->
+            conn.syncTime(timeMs, done)
+        }
+    }
+
+    /** 向目标设备广播：设置音量 */
+    fun setVolume(target: DeviceTarget, level: VolumeLevel, completion: (MultiDeviceResult<Unit>) -> Unit) {
+        broadcastCommand(target, completion) { conn, done ->
+            conn.setVolume(level, done)
+        }
+    }
+
+    /** 向目标设备广播：设置铃声类型 */
+    fun setSoundType(target: DeviceTarget, type: SoundType, completion: (MultiDeviceResult<Unit>) -> Unit) {
+        broadcastCommand(target, completion) { conn, done ->
+            conn.setSoundType(type, done)
+        }
+    }
+
+    /** 向目标设备广播：设置静音 */
+    fun setSilence(target: DeviceTarget, enabled: Boolean, completion: (MultiDeviceResult<Unit>) -> Unit) {
+        broadcastCommand(target, completion) { conn, done ->
+            conn.setSilence(enabled, done)
+        }
+    }
+
+    /** 向目标设备广播：设置提醒持续时长 */
+    fun setAlertDuration(target: DeviceTarget, minutes: Int, completion: (MultiDeviceResult<Unit>) -> Unit) {
+        broadcastCommand(target, completion) { conn, done ->
+            conn.setAlertDuration(minutes, done)
+        }
+    }
+
+    /** 向目标设备广播：设置时间格式 */
+    fun setTimeFormat(target: DeviceTarget, format: TimeFormat, completion: (MultiDeviceResult<Unit>) -> Unit) {
+        broadcastCommand(target, completion) { conn, done ->
+            conn.setTimeFormat(format, done)
+        }
+    }
+
+    /** 向目标设备广播：下发用药结果通知 */
+    fun sendMedicationNotification(target: DeviceTarget, status: MedicationStatus, completion: (MultiDeviceResult<Unit>) -> Unit) {
+        broadcastCommand(target, completion) { conn, done ->
+            conn.sendMedicationNotification(status, done)
+        }
+    }
+
+    /** 向目标设备广播：恢复出厂设置 */
+    fun restoreFactory(target: DeviceTarget, completion: (MultiDeviceResult<Unit>) -> Unit) {
+        broadcastCommand(target, completion) { conn, done ->
+            conn.restoreFactory(done)
+        }
+    }
+
+    /** 向目标设备广播：发送原始指令 */
+    fun sendRawData(target: DeviceTarget, data: ByteArray, completion: (MultiDeviceResult<Unit>) -> Unit) {
+        broadcastCommand(target, completion) { conn, done ->
+            conn.sendRawData(data, done)
+        }
+    }
+
+    /**
+     * 通用广播执行器 — 并发向所有目标设备发送命令，汇总结果
+     */
+    private fun <T> broadcastCommand(
+        target: DeviceTarget,
+        completion: (MultiDeviceResult<T>) -> Unit,
+        execute: (BlueDeviceConnection, (Result<T>) -> Unit) -> Unit
+    ) {
+        val targetConnections = resolveTargetConnections(target)
+        if (targetConnections.isEmpty()) {
+            CallbackDispatcher.dispatch { completion(MultiDeviceResult(emptyList(), emptyList())) }
+            return
+        }
+
+        val remaining = AtomicInteger(targetConnections.size)
+        val successes = mutableListOf<DeviceResult<T>>()
+        val failures = mutableListOf<DeviceFailure>()
+        val lock = Any()
+
+        for (conn in targetConnections) {
+            execute(conn) { result ->
+                synchronized(lock) {
+                    result.fold(
+                        onSuccess = { value -> successes.add(DeviceResult(conn.deviceId, value)) },
+                        onFailure = { error -> failures.add(DeviceFailure(conn.deviceId, error as BlueError)) }
+                    )
+                }
+                if (remaining.decrementAndGet() == 0) {
+                    CallbackDispatcher.dispatch {
+                        completion(MultiDeviceResult(successes.toList(), failures.toList()))
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - BlueDeviceConnectionDelegate 实现
+
+    override fun onDeviceStateChanged(connection: BlueDeviceConnection, state: ConnectionState) {
+        CallbackDispatcher.dispatch { notifyObservers { it.onConnectionStateChanged(state) } }
+        // 连接成功后自动认证
+        if (state == ConnectionState.CONNECTED) {
+            connection.autoAuthenticate { getOrCreatePhoneMac() }
+        }
+    }
+
+    override fun onDeviceAuthResult(connection: BlueDeviceConnection, success: Boolean, error: BlueError?) {
+        CallbackDispatcher.dispatch { notifyObservers { it.onAuthResult(success, error) } }
+    }
+
+    override fun onDeviceError(connection: BlueDeviceConnection, error: BlueError) {
+        CallbackDispatcher.dispatch { notifyObservers { it.onError(error) } }
+    }
+
+    override fun onDeviceReconnecting(connection: BlueDeviceConnection, attempt: Int, maxAttempts: Int) {
+        CallbackDispatcher.dispatch { notifyObservers { it.onReconnecting(attempt, maxAttempts) } }
+    }
+
+    override fun onDeviceReconnectFailed(connection: BlueDeviceConnection) {
+        CallbackDispatcher.dispatch { notifyObservers { it.onReconnectFailed() } }
+    }
+
+    override fun onDeviceFrameReceived(connection: BlueDeviceConnection, frame: ParsedFrame) {
+        handleIncomingFrame(frame)
     }
 
     // MARK: - 自动认证逻辑

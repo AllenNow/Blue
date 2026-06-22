@@ -3,6 +3,7 @@
 //
 // SDK 公开 API 入口（单例）
 // 所有公开 API 通过此类访问，支持 Swift 和 Objective-C 调用
+// 支持同时连接多个设备，支持设备分组和命令广播
 // 连接成功后自动完成密钥认证（phoneMac 持久化存储在 Keychain）
 
 import Foundation
@@ -20,8 +21,22 @@ import CoreBluetooth
 
     private var isInitialized = false
     private let logger = BlueLogger.shared
-    private let connectionManager = ConnectionManager()
     private let scanner = BLEScanner()
+
+    // MARK: - 多设备管理
+
+    /// 所有活跃的设备连接（deviceId -> BlueDeviceConnection）
+    private var connections: [String: BlueDeviceConnection] = [:]
+
+    /// 设备分组（groupName -> DeviceGroup）
+    private var deviceGroups: [String: DeviceGroup] = [:]
+
+    /// 向后兼容：当前"主"连接（最后一次 connect 的设备）
+    private var primaryDeviceId: String?
+
+    // MARK: - 旧版单设备兼容组件（将逐步废弃）
+
+    private let connectionManager = ConnectionManager()
     private var authManager: AuthManager?
     private var deviceManager: DeviceManager?
     private var alarmManager: AlarmManager?
@@ -81,6 +96,331 @@ import CoreBluetooth
     private override init() {
         super.init()
         setupConnectionManager()
+    }
+
+    // MARK: - 多设备公开 API
+
+    /// 获取所有已连接设备的连接实例
+    public var activeConnections: [BlueDeviceConnection] {
+        return Array(connections.values)
+    }
+
+    /// 获取所有已认证设备的连接实例
+    public var authenticatedConnections: [BlueDeviceConnection] {
+        return connections.values.filter { $0.connectionState == .authenticated }
+    }
+
+    /// 获取指定设备的连接实例
+    /// - Parameter deviceId: 设备 UUID 字符串
+    /// - Returns: 对应的连接实例，如果设备未连接则返回 nil
+    public func connection(for deviceId: String) -> BlueDeviceConnection? {
+        return connections[deviceId]
+    }
+
+    /// 当前已连接设备数量
+    public var connectedDeviceCount: Int {
+        return connections.count
+    }
+
+    /// 连接一个新设备（多设备模式）
+    /// 连接成功后自动认证，认证成功后设备进入可操作状态
+    /// - Parameter device: 扫描发现的设备
+    /// - Returns: 该设备的连接实例
+    @discardableResult
+    public func connectDevice(_ device: ScannedDevice) -> BlueDeviceConnection {
+        // 如果已有该设备的连接，直接返回
+        if let existing = connections[device.deviceId] {
+            if existing.connectionState == .disconnected {
+                existing.connect()
+            }
+            return existing
+        }
+
+        let conn = BlueDeviceConnection(device: device, config: config)
+        conn.delegate = self
+        connections[device.deviceId] = conn
+        primaryDeviceId = device.deviceId
+        conn.connect()
+        return conn
+    }
+
+    /// 通过设备 UUID 直接连接（无需重新扫描，多设备模式）
+    /// - Parameters:
+    ///   - identifier: 设备的 UUID 字符串
+    ///   - completion: 如果设备未找到返回错误
+    /// - Returns: 设备连接实例（如果找到）
+    @discardableResult
+    public func connectDevice(byIdentifier identifier: String, completion: ((BlueError?) -> Void)? = nil) -> BlueDeviceConnection? {
+        guard requireInitialized(callback: { _ in completion?(.notInitialized) }) else { return nil }
+
+        // 已有连接
+        if let existing = connections[identifier] {
+            if existing.connectionState == .disconnected {
+                existing.connect()
+            }
+            completion?(nil)
+            return existing
+        }
+
+        guard let uuid = UUID(uuidString: identifier) else {
+            completion?(.invalidParameter)
+            return nil
+        }
+
+        let peripherals = BLECentralManager.shared.centralManager.retrievePeripherals(withIdentifiers: [uuid])
+        if let peripheral = peripherals.first {
+            let conn = BlueDeviceConnection(peripheral: peripheral, config: config)
+            conn.delegate = self
+            connections[identifier] = conn
+            primaryDeviceId = identifier
+            conn.connect()
+            completion?(nil)
+            return conn
+        }
+
+        // 尝试从已连接设备恢复
+        let connected = BLECentralManager.shared.centralManager.retrieveConnectedPeripherals(withServices: [])
+        if let peripheral = connected.first(where: { $0.identifier.uuidString == identifier }) {
+            let conn = BlueDeviceConnection(peripheral: peripheral, config: config)
+            conn.delegate = self
+            connections[identifier] = conn
+            primaryDeviceId = identifier
+            conn.connect()
+            completion?(nil)
+            return conn
+        }
+
+        completion?(.deviceNotFound)
+        return nil
+    }
+
+    /// 断开指定设备
+    public func disconnectDevice(_ deviceId: String) {
+        connections[deviceId]?.disconnect()
+    }
+
+    /// 断开所有设备
+    public func disconnectAll() {
+        connections.values.forEach { $0.disconnect() }
+    }
+
+    /// 移除已断开的设备连接实例（清理资源）
+    public func removeDisconnectedDevices() {
+        connections = connections.filter { $0.value.connectionState != .disconnected }
+    }
+
+    // MARK: - 设备分组管理
+
+    /// 创建设备分组
+    /// - Parameters:
+    ///   - name: 分组名称（唯一）
+    ///   - deviceIds: 初始设备 ID 列表
+    public func createGroup(name: String, deviceIds: [String] = []) {
+        deviceGroups[name] = DeviceGroup(name: name, deviceIds: deviceIds)
+        logger.info("创建设备分组：\(name)，设备数：\(deviceIds.count)")
+    }
+
+    /// 删除设备分组
+    public func removeGroup(name: String) {
+        deviceGroups.removeValue(forKey: name)
+    }
+
+    /// 获取指定分组
+    public func group(named name: String) -> DeviceGroup? {
+        return deviceGroups[name]
+    }
+
+    /// 获取所有分组
+    public var allGroups: [DeviceGroup] {
+        return Array(deviceGroups.values)
+    }
+
+    /// 向分组添加设备
+    public func addDevice(_ deviceId: String, toGroup groupName: String) {
+        deviceGroups[groupName]?.addDevice(deviceId)
+    }
+
+    /// 从分组移除设备
+    public func removeDevice(_ deviceId: String, fromGroup groupName: String) {
+        deviceGroups[groupName]?.removeDevice(deviceId)
+    }
+
+    // MARK: - 命令广播 API（多设备命令下发）
+
+    /// 获取指定目标的已认证设备连接列表
+    private func resolveTargetConnections(_ target: DeviceTarget) -> [BlueDeviceConnection] {
+        let authenticatedIds = connections
+            .filter { $0.value.connectionState == .authenticated }
+            .map { $0.key }
+        let targetIds = target.resolve(groups: deviceGroups, connectedDeviceIds: authenticatedIds)
+        return targetIds.compactMap { connections[$0] }
+    }
+
+    /// 向目标设备广播：设置闹钟
+    public func setAlarm(
+        target: DeviceTarget,
+        index: Int, hour: Int, minute: Int, weekMask: Int = 0x7F,
+        completion: @escaping (MultiDeviceResult<AlarmInfo>) -> Void
+    ) {
+        broadcastCommand(target: target, completion: completion) { conn, done in
+            conn.setAlarm(index: index, hour: hour, minute: minute, weekMask: weekMask, completion: done)
+        }
+    }
+
+    /// 向目标设备广播：删除闹钟
+    public func deleteAlarm(
+        target: DeviceTarget,
+        index: Int,
+        completion: @escaping (MultiDeviceResult<Void>) -> Void
+    ) {
+        broadcastCommand(target: target, completion: completion) { conn, done in
+            conn.deleteAlarm(index: index, completion: done)
+        }
+    }
+
+    /// 向目标设备广播：清空所有闹钟
+    public func clearAllAlarms(
+        target: DeviceTarget,
+        completion: @escaping (MultiDeviceResult<Void>) -> Void
+    ) {
+        broadcastCommand(target: target, completion: completion) { conn, done in
+            conn.clearAllAlarms(completion: done)
+        }
+    }
+
+    /// 向目标设备广播：时间同步
+    public func syncTime(
+        target: DeviceTarget,
+        date: Date = Date(),
+        completion: @escaping (MultiDeviceResult<Void>) -> Void
+    ) {
+        broadcastCommand(target: target, completion: completion) { conn, done in
+            conn.syncTime(date: date, completion: done)
+        }
+    }
+
+    /// 向目标设备广播：设置音量
+    public func setVolume(
+        target: DeviceTarget,
+        level: VolumeLevel,
+        completion: @escaping (MultiDeviceResult<Void>) -> Void
+    ) {
+        broadcastCommand(target: target, completion: completion) { conn, done in
+            conn.setVolume(level, completion: done)
+        }
+    }
+
+    /// 向目标设备广播：设置铃声类型
+    public func setSoundType(
+        target: DeviceTarget,
+        type: SoundType,
+        completion: @escaping (MultiDeviceResult<Void>) -> Void
+    ) {
+        broadcastCommand(target: target, completion: completion) { conn, done in
+            conn.setSoundType(type, completion: done)
+        }
+    }
+
+    /// 向目标设备广播：设置静音
+    public func setSilence(
+        target: DeviceTarget,
+        enabled: Bool,
+        completion: @escaping (MultiDeviceResult<Void>) -> Void
+    ) {
+        broadcastCommand(target: target, completion: completion) { conn, done in
+            conn.setSilence(enabled, completion: done)
+        }
+    }
+
+    /// 向目标设备广播：设置提醒持续时长
+    public func setAlertDuration(
+        target: DeviceTarget,
+        minutes: Int,
+        completion: @escaping (MultiDeviceResult<Void>) -> Void
+    ) {
+        broadcastCommand(target: target, completion: completion) { conn, done in
+            conn.setAlertDuration(minutes, completion: done)
+        }
+    }
+
+    /// 向目标设备广播：设置时间格式
+    public func setTimeFormat(
+        target: DeviceTarget,
+        format: TimeFormat,
+        completion: @escaping (MultiDeviceResult<Void>) -> Void
+    ) {
+        broadcastCommand(target: target, completion: completion) { conn, done in
+            conn.setTimeFormat(format, completion: done)
+        }
+    }
+
+    /// 向目标设备广播：下发用药结果通知
+    public func sendMedicationNotification(
+        target: DeviceTarget,
+        status: MedicationStatus,
+        completion: @escaping (MultiDeviceResult<Void>) -> Void
+    ) {
+        broadcastCommand(target: target, completion: completion) { conn, done in
+            conn.sendMedicationNotification(status: status, completion: done)
+        }
+    }
+
+    /// 向目标设备广播：恢复出厂设置
+    public func restoreFactory(
+        target: DeviceTarget,
+        completion: @escaping (MultiDeviceResult<Void>) -> Void
+    ) {
+        broadcastCommand(target: target, completion: completion) { conn, done in
+            conn.restoreFactory(completion: done)
+        }
+    }
+
+    /// 向目标设备广播：发送原始指令
+    public func sendRawData(
+        target: DeviceTarget,
+        data: [UInt8],
+        completion: @escaping (MultiDeviceResult<Void>) -> Void
+    ) {
+        broadcastCommand(target: target, completion: completion) { conn, done in
+            conn.sendRawData(data: data, completion: done)
+        }
+    }
+
+    /// 通用广播执行器 — 并发向所有目标设备发送命令，汇总结果
+    private func broadcastCommand<T>(
+        target: DeviceTarget,
+        completion: @escaping (MultiDeviceResult<T>) -> Void,
+        execute: @escaping (BlueDeviceConnection, @escaping (Result<T, BlueError>) -> Void) -> Void
+    ) {
+        let targetConnections = resolveTargetConnections(target)
+        guard !targetConnections.isEmpty else {
+            completion(MultiDeviceResult(successes: [], failures: []))
+            return
+        }
+
+        let group = DispatchGroup()
+        var successes: [(deviceId: String, value: T)] = []
+        var failures: [(deviceId: String, error: BlueError)] = []
+        let lock = NSLock()
+
+        for conn in targetConnections {
+            group.enter()
+            execute(conn) { result in
+                lock.lock()
+                switch result {
+                case .success(let value):
+                    successes.append((deviceId: conn.deviceId, value: value))
+                case .failure(let error):
+                    failures.append((deviceId: conn.deviceId, error: error))
+                }
+                lock.unlock()
+                group.leave()
+            }
+        }
+
+        group.notify(queue: .main) {
+            completion(MultiDeviceResult(successes: successes, failures: failures))
+        }
     }
 
     // MARK: - 生命周期（FR32、FR33）
@@ -848,5 +1188,62 @@ import CoreBluetooth
         default:
             logger.debug("未处理的上报 DPID：\(String(format: "0x%02X", dpid))")
         }
+    }
+}
+
+// MARK: - BlueDeviceConnectionDelegate（多设备事件处理）
+
+extension BlueSDK: BlueDeviceConnectionDelegate {
+
+    func deviceConnection(_ connection: BlueDeviceConnection, didChangeState state: ConnectionState) {
+        CallbackDispatcher.shared.dispatch { [weak self] in
+            guard let self = self else { return }
+            self.notifyObservers { $0.blueSDK(self, didChangeConnectionState: state) }
+        }
+
+        // 连接成功后自动认证
+        if state == .connected {
+            connection.autoAuthenticate(phoneMacProvider: { [weak self] in
+                self?.getOrCreatePhoneMac() ?? []
+            })
+        }
+
+        // 设备断开后，若为主动断开则从 connections 标记（保留实例，不自动移除）
+        if state == .disconnected {
+            // 不自动从 connections 移除，开发者可手动调用 removeDisconnectedDevices()
+        }
+    }
+
+    func deviceConnection(_ connection: BlueDeviceConnection, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
+        CallbackDispatcher.shared.dispatch { [weak self] in
+            guard let self = self else { return }
+            self.notifyObservers { $0.blueSDK(self, didAuthenticateWithSuccess: success, error: error) }
+        }
+    }
+
+    func deviceConnection(_ connection: BlueDeviceConnection, didEncounterError error: BlueError) {
+        CallbackDispatcher.shared.dispatch { [weak self] in
+            guard let self = self else { return }
+            self.notifyObservers { $0.blueSDK(self, didEncounterError: error) }
+        }
+    }
+
+    func deviceConnection(_ connection: BlueDeviceConnection, didStartReconnecting attempt: Int, maxAttempts: Int) {
+        CallbackDispatcher.shared.dispatch { [weak self] in
+            guard let self = self else { return }
+            self.notifyObservers { $0.blueSDK(self, didStartReconnecting: attempt, maxAttempts: maxAttempts) }
+        }
+    }
+
+    func deviceConnectionDidFailReconnection(_ connection: BlueDeviceConnection) {
+        CallbackDispatcher.shared.dispatch { [weak self] in
+            guard let self = self else { return }
+            self.notifyObservers { $0.blueSDKDidFailReconnection(self) }
+        }
+    }
+
+    func deviceConnection(_ connection: BlueDeviceConnection, didReceiveFrame frame: ParsedFrame) {
+        // 多设备模式下的帧处理 — 复用现有的单设备逻辑
+        handleIncomingFrame(frame)
     }
 }
