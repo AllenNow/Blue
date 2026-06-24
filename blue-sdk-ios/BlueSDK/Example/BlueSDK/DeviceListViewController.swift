@@ -77,6 +77,8 @@ class DeviceListViewController: UIViewController {
     private var pendingConnectDevice: BoundDevice?
     /// 当前已连接的设备 ID（跟踪连接状态用）
     private var connectedDeviceId: String?
+    /// 认证是否失败（防止 .disconnected 事件触发自动重连循环）
+    private var isAuthFailed = false
 
     // MARK: - 生命周期
 
@@ -113,6 +115,10 @@ class DeviceListViewController: UIViewController {
     // MARK: - UI 构建
 
     private func buildUI() {
+        // 左上角语言切换按钮
+        let langItem = UIBarButtonItem(title: "🌐", style: .plain, target: self, action: #selector(openLanguageSettings))
+        navigationItem.leftBarButtonItem = langItem
+
         // 右上角添加按钮
         let addItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(openScanPage))
         navigationItem.rightBarButtonItem = addItem
@@ -218,6 +224,17 @@ class DeviceListViewController: UIViewController {
 
     // MARK: - 操作
 
+    @objc private func openLanguageSettings() {
+        let langVC = LanguageViewController()
+        langVC.isFromSettings = true
+        langVC.onLanguageChanged = { [weak self] in
+            // 语言切换后刷新页面标题和列表
+            self?.navigationItem.title = "Blue SDK Demo"
+            self?.refreshList()
+        }
+        navigationController?.pushViewController(langVC, animated: true)
+    }
+
     @objc private func openScanPage() {
         let scanVC = ScanViewController()
         navigationController?.pushViewController(scanVC, animated: true)
@@ -246,6 +263,7 @@ class DeviceListViewController: UIViewController {
 
     /// 实际执行连接逻辑
     private func performConnect(_ device: BoundDevice) {
+        isAuthFailed = false  // 重置认证失败标记
         // 优先使用缓存的 ScannedDevice（扫描到的设备可直接连接）
         if let cached = scannedDeviceCache[device.deviceId] {
             BlueSDK.shared.connect(cached)
@@ -419,8 +437,14 @@ extension DeviceListViewController: BlueSDKDelegate {
                 self.navigateToControl(device: device)
             case .disconnected:
                 self.connectedDeviceId = nil
-                // 如果有待连接设备（切换设备场景），断开后延迟发起新连接
-                if let pending = self.pendingConnectDevice {
+                // 认证失败后不自动重连（避免无限循环）
+                if self.isAuthFailed {
+                    self.isAuthFailed = false
+                    self.pendingConnectDevice = nil
+                    self.hideLoading()
+                    self.refreshList()
+                } else if let pending = self.pendingConnectDevice {
+                    // 切换设备场景：断开后延迟发起新连接
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                         self?.performConnect(pending)
                     }
@@ -437,6 +461,7 @@ extension DeviceListViewController: BlueSDKDelegate {
     func blueSDK(_ sdk: BlueSDK, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
         if !success {
             DispatchQueue.main.async { [weak self] in
+                self?.isAuthFailed = true
                 self?.hideLoading()
                 self?.pendingConnectDevice = nil
                 self?.showToast(SDKLocale.s("认证失败：\(error?.localizedDescription ?? "")",

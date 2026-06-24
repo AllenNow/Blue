@@ -96,6 +96,19 @@ final class AudioManager {
         return TimeFormat(rawValue: Int(data[4]))
     }
 
+    /// 解析提醒持续时间上报（DPID=0x6E）
+    /// 帧格式：6E 02 00 04 00 00 XX 00 — 其中 data[6] 为分钟数
+    /// 或：6E 02 00 04 00 00 00 XX — 其中 data[7] 为分钟数（与下发对称）
+    static func parseAlertDuration(from data: [UInt8]) -> Int? {
+        // 帧结构：dpid(1) + type(1) + len(2) + value(4) = 8 字节
+        guard data.count >= 8 else { return nil }
+        // value 字段为 4 字节，分钟数在最后一个非零字节
+        let v1 = Int(data[7])
+        let v2 = Int(data[6])
+        let minutes = v1 != 0 ? v1 : v2
+        return minutes > 0 ? minutes : nil
+    }
+
     // MARK: - 私有方法
 
     private func sendCommand(data: [UInt8], completion: @escaping (Result<Void, BlueError>) -> Void) {

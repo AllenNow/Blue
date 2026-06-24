@@ -57,5 +57,9 @@
             android:name=".FAQDetailActivity"
             android:exported="false"
             android:label="解答"/>
+        <activity
+            android:name=".LanguageActivity"
+            android:exported="false"
+            android:label="语言选择"/>
     </application>
 </manifest>

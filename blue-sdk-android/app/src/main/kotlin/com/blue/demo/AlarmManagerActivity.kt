@@ -194,7 +194,10 @@ class AlarmManagerActivity : AppCompatActivity() {
                     runOnUiThread {
                         result.fold(
                             onSuccess = {
-                                alarms = (1..7).map { AlarmSlot(it, false, 0, 0, 0x7F, false) }.toMutableList()
+                                // 原地修改列表（保持 adapter 引用一致）
+                                for (i in alarms.indices) {
+                                    alarms[i] = AlarmSlot(i + 1, false, 0, 0, 0x7F, false)
+                                }
                                 AlarmStorage.clearAll(this)
                                 adapter.notifyDataSetChanged()
                             },

@@ -131,7 +131,7 @@ class BlueSDK private constructor(private val context: Context) {
         BlueLogger.logLevel = config.logLevel
         SDKLocale.setLanguage(config.language)
         isInitialized = true
-        BlueLogger.info("BlueSDK 初始化完成")
+        BlueLogger.info(SDKLocale.s("BlueSDK 初始化完成", "BlueSDK initialized", "BlueSDK initialisiert"))
     }
 
     /** 销毁 SDK，释放所有 BLE 资源（FR33）*/
@@ -141,7 +141,7 @@ class BlueSDK private constructor(private val context: Context) {
         connectedDevice = null
         lastTimeSyncMs = 0L
         isInitialized = false
-        BlueLogger.info("BlueSDK 已销毁")
+        BlueLogger.info(SDKLocale.s("BlueSDK 已销毁", "BlueSDK destroyed", "BlueSDK zerstört"))
     }
 
     // MARK: - 日志配置（FR34、FR35）
@@ -242,18 +242,18 @@ class BlueSDK private constructor(private val context: Context) {
                         // 设备应答成功，断开连接
                         connectedDevice = null
                         connectionManager.disconnect()
-                        BlueLogger.info("解绑成功，连接已断开")
+                        BlueLogger.info(SDKLocale.s("解绑成功，连接已断开", "Unbind success, disconnected", "Entkopplung erfolgreich, getrennt"))
                         completion(Result.success(Unit))
                     },
                     onFailure = { error ->
-                        BlueLogger.error("解绑指令失败：${(error as BlueError).message}")
+                        BlueLogger.error(SDKLocale.s("解绑指令失败：${(error as BlueError).message}", "Unbind failed: ${(error as BlueError).message}", "Entkopplung fehlgeschlagen: ${(error as BlueError).message}"))
                         completion(Result.failure(error))
                     }
                 )
             }
         } else {
             connectedDevice = null
-            BlueLogger.info("设备未连接，解绑完成")
+            BlueLogger.info(SDKLocale.s("设备未连接，解绑完成", "Device not connected, unbind done", "Gerät nicht verbunden, Entkopplung abgeschlossen"))
             completion(Result.success(Unit))
         }
     }
@@ -742,6 +742,12 @@ class BlueSDK private constructor(private val context: Context) {
             dpid == DPIDConstants.TYPE_OF_SOUND -> {
                 AudioManager.parseSoundType(data)?.let { type ->
                     CallbackDispatcher.dispatch { notifyObservers { it.onSoundTypeChanged(type) } }
+                }
+            }
+            dpid == DPIDConstants.ALERT_DURATION -> {
+                AudioManager.parseAlertDuration(data)?.let { minutes ->
+                    BlueLogger.info("设备上报提醒持续时间变更：${minutes} 分钟")
+                    CallbackDispatcher.dispatch { notifyObservers { it.onAlertDurationChanged(minutes) } }
                 }
             }
             dpid == DPIDConstants.TIME_FORMAT -> {

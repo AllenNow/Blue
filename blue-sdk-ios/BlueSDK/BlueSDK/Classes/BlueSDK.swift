@@ -99,7 +99,7 @@ import CoreBluetooth
         audioManager      = AudioManager(commandQueue: queue)
         logger.logLevel = config.logLevel
         SDKLocale.setLanguage(config.language)
-        logger.info("BlueSDK 初始化完成")
+        logger.info(SDKLocale.s("BlueSDK 初始化完成", "BlueSDK initialized", "BlueSDK initialisiert"))
     }
 
     /// 销毁 SDK，释放所有 BLE 资源（FR33）
@@ -109,7 +109,7 @@ import CoreBluetooth
         connectedPeripheral = nil
         lastTimeSyncDate = nil
         isInitialized = false
-        logger.info("BlueSDK 已销毁")
+        logger.info(SDKLocale.s("BlueSDK 已销毁", "BlueSDK destroyed", "BlueSDK zerstört"))
     }
 
     // MARK: - 日志配置（FR34、FR35）
@@ -249,17 +249,17 @@ import CoreBluetooth
                     // 设备应答成功，断开连接（保留本地 phoneMac）
                     self.connectedPeripheral = nil
                     self.connectionManager.disconnect()
-                    self.logger.info("解绑成功，连接已断开")
+                    self.logger.info(SDKLocale.s("解绑成功，连接已断开", "Unbind success, disconnected", "Entkopplung erfolgreich, getrennt"))
                     completion(.success(()))
                 case .failure(let error):
-                    self.logger.error("解绑指令失败：\(error.localizedDescription)")
+                    self.logger.error(SDKLocale.s("解绑指令失败：\(error.localizedDescription)", "Unbind command failed: \(error.localizedDescription)", "Entkopplungsbefehl fehlgeschlagen: \(error.localizedDescription)"))
                     completion(.failure(error))
                 }
             }
         } else {
             // 未连接时直接完成
             connectedPeripheral = nil
-            logger.info("设备未连接，解绑完成")
+            logger.info(SDKLocale.s("设备未连接，解绑完成", "Device not connected, unbind done", "Gerät nicht verbunden, Entkopplung abgeschlossen"))
             completion(.success(()))
         }
     }
@@ -308,7 +308,7 @@ import CoreBluetooth
     ) {
         guard requireInitialized(callback: { completion(.failure($0)) }) else { return }
         let keyBytes: [UInt8] = [keyHigh, keyLow]
-        logger.info("手动密钥认证：key=\(String(format: "%02X%02X", keyHigh, keyLow))")
+        logger.info(SDKLocale.s("手动密钥认证：key=\(String(format: "%02X%02X", keyHigh, keyLow))", "Manual auth: key=\(String(format: "%02X%02X", keyHigh, keyLow))", "Manuelle Auth: key=\(String(format: "%02X%02X", keyHigh, keyLow))"))
         let frame = FrameBuilder.build(cmd: CommandCode.authKey, data: keyBytes)
         connectionManager.getCommandQueue().enqueue(cmd: CommandCode.authKey, frame: frame) { [weak self] result in
             guard let self = self else { return }
@@ -503,7 +503,7 @@ import CoreBluetooth
         connectionManager.getCommandQueue().enqueue(cmd: CommandCode.sendCommand, frame: frame) { result in
             switch result {
             case .success:
-                self.logger.info("恢复出厂成功，设备已确认")
+                self.logger.info(SDKLocale.s("恢复出厂成功，设备已确认", "Factory reset success", "Werksreset erfolgreich"))
                 completion(.success(()))
             case .failure(let error):
                 completion(.failure(error))
@@ -597,15 +597,15 @@ import CoreBluetooth
     /// 如果设置了 fixedAuthKey 则直接使用，否则用 phoneMac + deviceMac 自动计算
     private func autoAuthenticate() {
         guard config.autoAuthEnabled else {
-            logger.debug("自动认证已禁用（config.autoAuthEnabled=false）")
+            logger.debug(SDKLocale.s("自动认证已禁用（config.autoAuthEnabled=false）", "Auto-auth disabled (config.autoAuthEnabled=false)", "Auto-Auth deaktiviert (config.autoAuthEnabled=false)"))
             return
         }
         guard let peripheral = connectedPeripheral else {
-            logger.error("自动认证失败：无连接设备")
+            logger.error(SDKLocale.s("自动认证失败：无连接设备", "Auto-auth failed: no connected device", "Auto-Auth fehlgeschlagen: kein Gerät verbunden"))
             return
         }
 
-        logger.info("连接成功，自动发起密钥认证...")
+        logger.info(SDKLocale.s("连接成功，自动发起密钥认证...", "Connected, starting auto-auth...", "Verbunden, starte Auto-Auth..."))
 
         // 判断是否使用固定密钥
         if let fixedKey = config.fixedAuthKey, fixedKey.count == 4,
@@ -613,7 +613,7 @@ import CoreBluetooth
            let keyLow = UInt8(fixedKey.suffix(2), radix: 16) {
             // 固定密钥模式
             let keyBytes: [UInt8] = [keyHigh, keyLow]
-            logger.debug("使用固定密钥 \(fixedKey) 认证")
+            logger.debug(SDKLocale.s("使用固定密钥 \(fixedKey) 认证", "Using fixed key \(fixedKey)", "Verwende festen Schlüssel \(fixedKey)"))
             let frame = FrameBuilder.build(cmd: CommandCode.authKey, data: keyBytes)
             connectionManager.getCommandQueue().enqueue(cmd: CommandCode.authKey, frame: frame) { [weak self] result in
                 guard let self = self else { return }
@@ -621,12 +621,12 @@ import CoreBluetooth
                 case .success(let response):
                     if response.data.first == 0x01 {
                         self.connectionManager.transitionTo(.authenticated)
-                        self.logger.info("认证成功（固定密钥）")
+                        self.logger.info(SDKLocale.s("认证成功（固定密钥）", "Auth success (fixed key)", "Auth erfolgreich (fester Schlüssel)"))
                         CallbackDispatcher.shared.dispatch {
                             self.notifyObservers { $0.blueSDK(self, didAuthenticateWithSuccess: true, error: nil)}
                         }
                     } else {
-                        self.logger.error("固定密钥认证失败")
+                        self.logger.error(SDKLocale.s("固定密钥认证失败", "Fixed key auth failed", "Fester Schlüssel Auth fehlgeschlagen"))
                         self.connectedPeripheral = nil
                         self.connectionManager.disconnect()
                         CallbackDispatcher.shared.dispatch {
@@ -634,7 +634,7 @@ import CoreBluetooth
                         }
                     }
                 case .failure(let error):
-                    self.logger.error("认证指令发送失败：\(error)")
+                    self.logger.error(SDKLocale.s("认证指令发送失败：\(error)", "Auth command failed: \(error)", "Auth-Befehl fehlgeschlagen: \(error)"))
                 }
             }
         } else {
@@ -645,9 +645,9 @@ import CoreBluetooth
                 guard let self = self else { return }
                 switch result {
                 case .success:
-                    self.logger.info("自动认证成功")
+                    self.logger.info(SDKLocale.s("自动认证成功", "Auto-auth success", "Auto-Auth erfolgreich"))
                 case .failure(let error):
-                    self.logger.error("自动认证失败：\(error.localizedDescription)")
+                    self.logger.error(SDKLocale.s("自动认证失败：\(error.localizedDescription)", "Auto-auth failed: \(error.localizedDescription)", "Auto-Auth fehlgeschlagen: \(error.localizedDescription)"))
                 }
             }
         }
@@ -669,7 +669,7 @@ import CoreBluetooth
                 }
                 completion(.success(()))
             case .failure(let error):
-                self.logger.error("performAuth 失败：\(error.localizedDescription)")
+                self.logger.error(SDKLocale.s("performAuth 失败：\(error.localizedDescription)", "performAuth failed: \(error.localizedDescription)", "performAuth fehlgeschlagen: \(error.localizedDescription)"))
                 if error == .authFailed {
                     self.connectedPeripheral = nil
                 }
@@ -701,7 +701,7 @@ import CoreBluetooth
 
         connectionManager.onError = { [weak self] error in
             guard let self = self else { return }
-            self.logger.error("连接错误：\(error.localizedDescription)")
+            self.logger.error(SDKLocale.s("连接错误：\(error.localizedDescription)", "Connection error: \(error.localizedDescription)", "Verbindungsfehler: \(error.localizedDescription)"))
             CallbackDispatcher.shared.dispatch {
                 self.notifyObservers { $0.blueSDK(self, didEncounterError: error)}
             }
@@ -732,10 +732,10 @@ import CoreBluetooth
             // 设备请求时间同步，节流处理：30秒内只响应一次
             let now = Date()
             if let last = lastTimeSyncDate, now.timeIntervalSince(last) < 30 {
-                logger.debug("时间同步请求已节流，跳过")
+                logger.debug(SDKLocale.s("时间同步请求已节流，跳过", "Time sync throttled, skipped", "Zeitsync gedrosselt, übersprungen"))
             } else {
                 lastTimeSyncDate = now
-                logger.info("设备请求时间同步，自动下发")
+                logger.info(SDKLocale.s("设备请求时间同步，自动下发", "Device requests time sync, auto-sending", "Gerät fordert Zeitsync, automatisch senden"))
                 deviceManager?.syncTime { _ in }
             }
             CallbackDispatcher.shared.dispatch { [weak self] in
@@ -814,6 +814,15 @@ import CoreBluetooth
                 }
             }
 
+        case DPIDConstants.alertDuration:
+            if let minutes = AudioManager.parseAlertDuration(from: data) {
+                logger.info(SDKLocale.s("设备上报提醒持续时间变更：\(minutes) 分钟", "Alert duration changed: \(minutes) min", "Alarmdauer geändert: \(minutes) Min"))
+                CallbackDispatcher.shared.dispatch { [weak self] in
+                    guard let self = self else { return }
+                    self.notifyObservers { $0.blueSDK(self, didChangeAlertDuration: minutes)}
+                }
+            }
+
         case DPIDConstants.timeFormat:
             if let format = AudioManager.parseTimeFormat(from: data) {
                 currentTimeFormat = format
@@ -824,7 +833,7 @@ import CoreBluetooth
             }
 
         case DPIDConstants.lowBat:
-            logger.info("设备上报低电状态")
+            logger.info(SDKLocale.s("设备上报低电状态", "Device reports low battery", "Gerät meldet niedrigen Akku"))
             CallbackDispatcher.shared.dispatch { [weak self] in
                 guard let self = self else { return }
                 self.notifyObservers { $0.blueSDKDidReportLowBattery(self) }
@@ -835,7 +844,7 @@ import CoreBluetooth
             if data.count >= 5 {
                 let notifType = Int(data[4])
                 if notifType >= 1 && notifType <= 3 {
-                    logger.info("用药通知：type=\(notifType)")
+                    logger.info(SDKLocale.s("用药通知：type=\(notifType)", "Medication notification: type=\(notifType)", "Medikamentenbenachrichtigung: type=\(notifType)"))
                     CallbackDispatcher.shared.dispatch { [weak self] in
                         guard let self = self else { return }
                         self.notifyObservers { $0.blueSDK(self, didReceiveMedicationNotification: notifType)}
@@ -844,7 +853,7 @@ import CoreBluetooth
             }
 
         default:
-            logger.debug("未处理的上报 DPID：\(String(format: "0x%02X", dpid))")
+            logger.debug(SDKLocale.s("未处理的上报 DPID：\(String(format: "0x%02X", dpid))", "Unhandled report DPID: \(String(format: "0x%02X", dpid))", "Unbehandelte DPID: \(String(format: "0x%02X", dpid))"))
         }
     }
 }

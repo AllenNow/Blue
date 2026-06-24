@@ -113,6 +113,14 @@ class DeviceListActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 首次启动时跳转语言选择页
+        if (LanguageActivity.needsLanguageSelection(this)) {
+            startActivity(Intent(this, LanguageActivity::class.java))
+            finish()
+            return
+        }
+
         window.statusBarColor = bgDark
         window.navigationBarColor = bgDark
         supportActionBar?.hide()
@@ -128,6 +136,14 @@ class DeviceListActivity : AppCompatActivity() {
         }
         refreshList()
         requestPermsAndScan()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 200 && resultCode == RESULT_OK) {
+            // 语言已切换，重建 Activity 使 UI 刷新
+            recreate()
+        }
     }
 
     override fun onDestroy() {
@@ -170,6 +186,23 @@ class DeviceListActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply { marginEnd = dp(12) }
         }
         titleBar.addView(scanIndicator)
+
+        // 语言切换按钮
+        val langBtn = TextView(this).apply {
+            text = "🌐"
+            textSize = 20f
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(dp(36), dp(36)).apply { marginEnd = dp(8) }
+            setOnClickListener {
+                startActivityForResult(
+                    Intent(this@DeviceListActivity, LanguageActivity::class.java).apply {
+                        putExtra("from_settings", true)
+                    },
+                    200
+                )
+            }
+        }
+        titleBar.addView(langBtn)
 
         // 添加按钮
         val addBtn = TextView(this).apply {

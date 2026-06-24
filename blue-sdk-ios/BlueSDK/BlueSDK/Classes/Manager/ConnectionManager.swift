@@ -22,7 +22,7 @@ final class ConnectionManager {
     private(set) var state: ConnectionState = .disconnected {
         didSet {
             guard state != oldValue else { return }
-            logger.info("连接状态变更：\(oldValue) → \(state)")
+            logger.info(SDKLocale.s("连接状态变更：\(oldValue) → \(state)", "State changed: \(oldValue) → \(state)", "Status geändert: \(oldValue) → \(state)"))
             notifyStateChange(state)
         }
     }
@@ -65,7 +65,7 @@ final class ConnectionManager {
     /// 连接指定设备（使用 BLECentralManager 单例）
     func connect(peripheral: CBPeripheral) {
         guard state == .disconnected else {
-            logger.warn("当前状态 \(state) 不允许发起连接")
+            logger.warn(SDKLocale.s("当前状态 \(state) 不允许发起连接", "Cannot connect in state \(state)", "Verbindung im Status \(state) nicht möglich"))
             return
         }
         self.targetPeripheral = peripheral
@@ -89,7 +89,7 @@ final class ConnectionManager {
         cancelConnectTimeout()
         connectTimeoutTimer = Timer.scheduledTimer(withTimeInterval: ConnectionManager.connectTimeout, repeats: false) { [weak self] _ in
             guard let self = self, self.state == .connecting else { return }
-            self.logger.error("连接超时（\(Int(ConnectionManager.connectTimeout))秒），中止连接")
+            self.logger.error(SDKLocale.s("连接超时（\(Int(ConnectionManager.connectTimeout))秒），中止连接", "Connection timeout (\(Int(ConnectionManager.connectTimeout))s), aborting", "Verbindungs-Timeout (\(Int(ConnectionManager.connectTimeout))s), Abbruch"))
             self.connector.disconnect()
             self.transitionTo(.disconnected)
             CallbackDispatcher.shared.dispatch {
@@ -124,7 +124,7 @@ final class ConnectionManager {
 
     private func startReconnect() {
         guard reconnectAttempts < ConnectionManager.maxReconnectAttempts else {
-            logger.warn("重连次数已达上限（\(ConnectionManager.maxReconnectAttempts)次），停止重连")
+            logger.warn(SDKLocale.s("重连次数已达上限（\(ConnectionManager.maxReconnectAttempts)次），停止重连", "Max reconnect attempts (\(ConnectionManager.maxReconnectAttempts)) reached", "Max. Wiederverbindungsversuche (\(ConnectionManager.maxReconnectAttempts)) erreicht"))
             transitionTo(.disconnected)
             CallbackDispatcher.shared.dispatch { [weak self] in
                 self?.onReconnectFailed?()
@@ -137,7 +137,7 @@ final class ConnectionManager {
         let delay = ConnectionManager.reconnectDelays[delayIndex]
         reconnectAttempts += 1
 
-        logger.info("第 \(reconnectAttempts) 次重连，\(delay) 秒后尝试")
+        logger.info(SDKLocale.s("第 \(reconnectAttempts) 次重连，\(delay) 秒后尝试", "Reconnect attempt \(reconnectAttempts), retrying in \(delay)s", "Wiederverbindung \(reconnectAttempts), erneut in \(delay)s"))
         transitionTo(.reconnecting)
         CallbackDispatcher.shared.dispatch { [weak self] in
             self?.onReconnecting?(self?.reconnectAttempts ?? 0, ConnectionManager.maxReconnectAttempts)

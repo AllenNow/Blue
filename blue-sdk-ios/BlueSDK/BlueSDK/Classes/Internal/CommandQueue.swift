@@ -85,13 +85,18 @@ final class CommandQueue {
     @discardableResult
     func handleResponse(_ frame: ParsedFrame) -> Bool {
         lock.lock()
-        defer { lock.unlock() }
 
-        guard let pending = pendingCommand else { return false }
+        guard let pending = pendingCommand else {
+            lock.unlock()
+            return false
+        }
 
         // CMD 匹配：应答帧 CMD == 发送帧 CMD + 1 或相同
         let cmdMatch = frame.cmd == pending.cmd + 1 || frame.cmd == pending.cmd
-        guard cmdMatch else { return false }
+        guard cmdMatch else {
+            lock.unlock()
+            return false
+        }
 
         // 对于 sendCommand(0x06) 的应答(0x07)，还需匹配 DPID（数据第一字节）
         // 避免设备主动上报帧（如低电 0x75）被错误匹配
@@ -101,16 +106,22 @@ final class CommandQueue {
                 : nil
             let responseDPID = frame.data.first
             if let pDPID = pendingDPID, let rDPID = responseDPID, pDPID != rDPID {
+                lock.unlock()
                 return false
             }
         }
 
         cancelTimeout()
         pendingCommand = nil
+        // 先释放锁，再调用 completion（防止 completion 内再次 enqueue 导致死锁）
+        lock.unlock()
+
         pending.completion(.success(frame))
 
         // 发送队列中的下一条指令
+        lock.lock()
         sendNext()
+        lock.unlock()
         return true
     }
 

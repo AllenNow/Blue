@@ -68,15 +68,20 @@ internal class AlarmManager(private val commandQueue: CommandQueue) {
     }
 
     fun clearAllAlarms(completion: (Result<Unit>) -> Unit) {
-        // DPID 0x70, type=0x01, len=00 01, value=0x01
-        val data = byteArrayOf(DPIDConstants.EMPTY_ALL_ALARMS, 0x01, 0x00, 0x01, 0x01)
-        val frame = FrameBuilder.build(CommandCode.SEND_COMMAND, data)
-        commandQueue.enqueue(CommandCode.SEND_COMMAND, frame) { result ->
-            result.fold(
-                onSuccess = { completion(Result.success(Unit)) },
-                onFailure = { completion(Result.failure(it as BlueError)) }
-            )
+        // 逐个删除 1~7 号闹钟槽位（DPID 0x70 实际是提醒持续时间，非清空闹钟）
+        fun deleteNext(index: Int) {
+            if (index > 7) {
+                completion(Result.success(Unit))
+                return
+            }
+            deleteAlarm(index) { result ->
+                result.fold(
+                    onSuccess = { deleteNext(index + 1) },
+                    onFailure = { completion(Result.failure(it)) }
+                )
+            }
         }
+        deleteNext(1)
     }
 
     companion object {

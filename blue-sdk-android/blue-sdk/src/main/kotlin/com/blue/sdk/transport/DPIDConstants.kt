@@ -30,8 +30,8 @@ internal object DPIDConstants {
     const val EMPTY_ALL_ALARMS: Byte = 0x70.toByte()
     
     // 恢复出厂（只下发）
-    // DPID = 0x71
-    const val RESTORE_FACTORY: Byte = 0x71.toByte()
+    // DPID = 0x76
+    const val RESTORE_FACTORY: Byte = 0x76.toByte()
     
     // 时制（0=12H, 1=24H）
     const val TIME_FORMAT: Byte = 0x73.toByte()

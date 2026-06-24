@@ -78,5 +78,18 @@ internal class AudioManager(private val commandQueue: CommandQueue) {
 
         fun parseTimeFormat(data: ByteArray): TimeFormat? =
             if (data.size >= 5) TimeFormat.values().find { it.protocolValue == data[4] } else null
+
+        /**
+         * 解析提醒持续时间上报（DPID=0x6E）
+         * 帧格式：6E 02 00 04 00 00 XX 00 或 6E 02 00 04 00 00 00 XX
+         * @return 分钟数，解析失败返回 null
+         */
+        fun parseAlertDuration(data: ByteArray): Int? {
+            if (data.size < 8) return null
+            val v1 = data[7].toInt() and 0xFF
+            val v2 = data[6].toInt() and 0xFF
+            val minutes = if (v1 != 0) v1 else v2
+            return if (minutes > 0) minutes else null
+        }
     }
 }

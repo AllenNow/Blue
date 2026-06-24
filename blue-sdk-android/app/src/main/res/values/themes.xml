@@ -5,5 +5,7 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowBackground">?android:attr/colorBackground</item>
+        <!-- 强制深色模式，保证 AlertDialog 等系统控件与手写深色 UI 一致 -->
+        <item name="android:forceDarkAllowed">false</item>
     </style>
 </resources>

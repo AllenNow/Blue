@@ -4,12 +4,22 @@ import java.util.Locale
 
 /**
  * Demo App 多语言字符串管理
- * 跟随系统语言（与 SDK 默认行为一致）
+ * 优先使用用户手动选择的语言，否则跟随系统语言
  */
 object S {
-    private val sysLang get() = Locale.getDefault().language
-    val isZh: Boolean get() = sysLang.startsWith("zh")
-    val isDe: Boolean get() = sysLang.startsWith("de")
+    /** 用户手动选择的语言代码（null 表示未选择，跟随系统） */
+    private var userLang: String? = null
+
+    /** 由 App 启动时从 SharedPreferences 加载 */
+    fun setUserLanguage(lang: String?) {
+        userLang = lang
+    }
+
+    /** 当前生效的语言代码 */
+    private val effectiveLang: String get() = userLang ?: Locale.getDefault().language
+
+    val isZh: Boolean get() = effectiveLang.startsWith("zh")
+    val isDe: Boolean get() = effectiveLang.startsWith("de")
 
     // 主页
     val scan get() = t("扫描", "Scan", "Scannen")
@@ -82,7 +92,13 @@ object S {
     val scanStopped get() = t("扫描已停止", "Scan stopped", "Scan gestoppt")
     val found get() = t("发现", "Found", "Gefunden")
 
-    private fun z(zh: String, en: String) = if (isZh) zh else en
+    // 语言选择页
+    val selectLanguage get() = t("选择语言", "Select Language", "Sprache wählen")
+    val languageSettings get() = t("语言设置", "Language", "Sprache")
+    val langChinese get() = "中文"
+    val langEnglish get() = "English"
+    val langGerman get() = "Deutsch"
+
     private fun t(zh: String, en: String, de: String) = when {
         isZh -> zh
         isDe -> de

@@ -80,7 +80,7 @@ class ViewController: UIViewController {
 
     // MARK: - 功能控件
 
-    private let soundTypeSegment = UISegmentedControl(items: ["A", "B", "C"])
+    private let soundTypeSegment = UISegmentedControl(items: ["A", "B"])
     private let volumeSegment = UISegmentedControl(items: ["低", "中", "高"])
     private let timeFormatSegment = UISegmentedControl(items: ["12H", "24H"])
     private let silenceSwitch = UISwitch()
@@ -490,7 +490,7 @@ class ViewController: UIViewController {
 
     @objc private func soundTypeChanged(_ s: UISegmentedControl) {
         s.isEnabled = false
-        BlueSDK.shared.setSoundType([.typeA, .typeB, .typeC][s.selectedSegmentIndex]) { [weak self] r in
+        BlueSDK.shared.setSoundType([.typeA, .typeB][s.selectedSegmentIndex]) { [weak self] r in
             DispatchQueue.main.async { s.isEnabled = true }
             if case .success = r { self?.log("🔊 铃声已设置") }
             else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
@@ -760,8 +760,7 @@ extension ViewController: BlueSDKDelegate {
             case .typeB:
                 self?.soundTypeSegment.selectedSegmentIndex = 1
                 self?.silenceSwitch.setOn(false, animated: true)
-            case .typeC: break // 预留，界面无对应
-            @unknown default: break
+            default: break
             }
         }
     }

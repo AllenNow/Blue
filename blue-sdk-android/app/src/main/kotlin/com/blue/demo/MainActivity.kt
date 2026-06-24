@@ -502,7 +502,17 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             return
         }
         confirm(S.clearAlarmsTitle, S.clearAlarmsMsg) {
-            sdk.clearAllAlarms { it.fold({ log("⏰ ${S.alarmsCleared}") }, { log("❌ ${(it as BlueError).message}") }) }
+            sdk.clearAllAlarms { result ->
+                runOnUiThread {
+                    result.fold(
+                        onSuccess = {
+                            AlarmStorage.clearAll(this)
+                            log("⏰ ${S.alarmsCleared}")
+                        },
+                        onFailure = { log("❌ ${(it as BlueError).message}") }
+                    )
+                }
+            }
         }
     }
 
