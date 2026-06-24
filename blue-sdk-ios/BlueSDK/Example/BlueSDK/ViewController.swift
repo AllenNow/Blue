@@ -538,8 +538,12 @@ class ViewController: UIViewController {
     @objc private func restoreFactory() {
         confirm(S.restoreFactoryTitle, msg: S.restoreFactoryMsg) {
             BlueSDK.shared.restoreFactory { [weak self] r in
-                if case .success = r { self?.log("✅ 已恢复出厂") }
-                else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
+                if case .success = r {
+                    MedicationDatabase.shared.deleteAll()
+                    self?.log("✅ 已恢复出厂，本地数据已清空")
+                } else if case .failure(let e) = r {
+                    self?.log("❌ \(e.localizedDescription)")
+                }
             }
         }
     }
@@ -549,7 +553,8 @@ class ViewController: UIViewController {
             BlueSDK.shared.clearBinding { [weak self] result in
                 switch result {
                 case .success:
-                    self?.log("✅ 解绑成功，本地密钥已清除")
+                    MedicationDatabase.shared.deleteAll()
+                    self?.log("✅ 解绑成功，本地数据已清空")
                 case .failure(let error):
                     self?.log("❌ 解绑失败：\(error.localizedDescription)")
                 }

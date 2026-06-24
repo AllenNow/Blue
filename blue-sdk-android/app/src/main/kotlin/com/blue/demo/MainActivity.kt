@@ -513,17 +513,35 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
         confirm(S.restoreFactoryTitle, S.restoreFactoryMsg) {
             log("🔄 ${S.restoringFactory}")
-            sdk.restoreFactory { it.fold({ log("✅ ${S.factoryRestored}") }, { log("❌ ${(it as BlueError).message}") }) }
+            sdk.restoreFactory { result ->
+                runOnUiThread {
+                    result.fold(
+                        onSuccess = {
+                            AlarmStorage.clearAll(this)
+                            MedicationDatabase.getInstance(this).deleteAll()
+                            log("✅ ${S.factoryRestored}")
+                        },
+                        onFailure = { log("❌ ${(it as BlueError).message}") }
+                    )
+                }
+            }
         }
     }
 
     private fun clearLocalBinding() {
         confirm(S.clearBindingTitle, S.clearBindingMsg) {
             sdk.clearBinding { result ->
-                result.fold(
-                    onSuccess = { log("✅ 解绑成功") },
-                    onFailure = { log("❌ 解绑失败：${(it as BlueError).message}") }
-                )
+                runOnUiThread {
+                    result.fold(
+                        onSuccess = {
+                            // 清空本地闹钟缓存和用药记录
+                            AlarmStorage.clearAll(this)
+                            MedicationDatabase.getInstance(this).deleteAll()
+                            log("✅ 解绑成功，本地数据已清空")
+                        },
+                        onFailure = { log("❌ 解绑失败：${(it as BlueError).message}") }
+                    )
+                }
             }
         }
     }
@@ -662,13 +680,14 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     override fun onAlarmUpdated(alarm: AlarmInfo) {
         log("⏰ 闹钟${alarm.index} ${String.format("%02d:%02d", alarm.hour, alarm.minute)}")
         // 设备上报闹钟变更，同步更新本地存储
+        val isSet = !alarm.isDeleted
         val slot = AlarmSlot(
             index = alarm.index,
-            isEnabled = true,
+            isEnabled = isSet,
             hour = alarm.hour,
             minute = alarm.minute,
             weekMask = alarm.weekMask,
-            isSet = alarm.hour != 0xFF && alarm.minute != 0xFF
+            isSet = isSet
         )
         AlarmStorage.save(this, slot)
     }

@@ -48,7 +48,8 @@ class AlarmManagerActivity : AppCompatActivity() {
     private val alarmObserver = object : com.blue.sdk.BlueSDKListener {
         override fun onAlarmUpdated(alarm: com.blue.sdk.model.AlarmInfo) {
             runOnUiThread {
-                updateAlarm(alarm.index, alarm.hour, alarm.minute, alarm.weekMask, true, alarm.hour != 0xFF && alarm.minute != 0xFF)
+                val isSet = !alarm.isDeleted
+                updateAlarm(alarm.index, alarm.hour, alarm.minute, alarm.weekMask, isSet, isSet)
             }
         }
     }

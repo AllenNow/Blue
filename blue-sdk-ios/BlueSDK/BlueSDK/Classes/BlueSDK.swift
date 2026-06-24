@@ -246,11 +246,10 @@ import CoreBluetooth
                 guard let self = self else { return }
                 switch result {
                 case .success:
-                    // 设备应答成功，删除本地密钥
-                    KeychainHelper.delete(forKey: BlueSDK.keychainPhoneMacKey)
+                    // 设备应答成功，断开连接（保留本地 phoneMac）
                     self.connectedPeripheral = nil
                     self.connectionManager.disconnect()
-                    self.logger.info("解绑成功，本地密钥已清除")
+                    self.logger.info("解绑成功，连接已断开")
                     completion(.success(()))
                 case .failure(let error):
                     self.logger.error("解绑指令失败：\(error.localizedDescription)")
@@ -258,10 +257,9 @@ import CoreBluetooth
                 }
             }
         } else {
-            // 未连接时仅清除本地
-            KeychainHelper.delete(forKey: BlueSDK.keychainPhoneMacKey)
+            // 未连接时直接完成
             connectedPeripheral = nil
-            logger.info("设备未连接，仅清除本地密钥")
+            logger.info("设备未连接，解绑完成")
             completion(.success(()))
         }
     }

@@ -239,10 +239,10 @@ class BlueSDK private constructor(private val context: Context) {
             connectionManager.commandQueue.enqueue(CommandCode.UNBIND, frame) { result ->
                 result.fold(
                     onSuccess = {
-                        // 设备应答成功，清除本地密钥
+                        // 设备应答成功，断开连接
                         connectedDevice = null
                         connectionManager.disconnect()
-                        BlueLogger.info("解绑成功，本地密钥已清除")
+                        BlueLogger.info("解绑成功，连接已断开")
                         completion(Result.success(Unit))
                     },
                     onFailure = { error ->
@@ -253,7 +253,7 @@ class BlueSDK private constructor(private val context: Context) {
             }
         } else {
             connectedDevice = null
-            BlueLogger.info("设备未连接，仅清除本地状态")
+            BlueLogger.info("设备未连接，解绑完成")
             completion(Result.success(Unit))
         }
     }
