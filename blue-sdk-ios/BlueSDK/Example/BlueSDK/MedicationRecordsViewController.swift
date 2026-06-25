@@ -42,7 +42,7 @@ class MedicationRecordsViewController: UIViewController {
 
     private lazy var emptyLabel: UILabel = {
         let label = UILabel()
-        label.text = "该日期暂无用药记录"
+        label.text = S.noRecordsForDate
         label.font = .systemFont(ofSize: 15)
         label.textColor = .tertiaryLabel
         label.textAlignment = .center
@@ -52,7 +52,7 @@ class MedicationRecordsViewController: UIViewController {
     }()
 
     private lazy var segmentControl: UISegmentedControl = {
-        let seg = UISegmentedControl(items: ["按日期", "全部记录"])
+        let seg = UISegmentedControl(items: [S.byDate, S.allRecords])
         seg.selectedSegmentIndex = 0
         seg.translatesAutoresizingMaskIntoConstraints = false
         seg.addTarget(self, action: #selector(segmentChanged), for: .valueChanged)
@@ -60,7 +60,7 @@ class MedicationRecordsViewController: UIViewController {
     }()
 
     private lazy var deleteButton: UIBarButtonItem = {
-        return UIBarButtonItem(title: "清空", style: .plain, target: self, action: #selector(deleteAll))
+        return UIBarButtonItem(title: S.clearRecords, style: .plain, target: self, action: #selector(deleteAll))
     }()
 
     // MARK: - 状态
@@ -84,7 +84,7 @@ class MedicationRecordsViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "用药记录"
+        title = S.medicationRecords
         view.backgroundColor = .systemBackground
         navigationItem.rightBarButtonItem = deleteButton
         setupUI()
@@ -110,15 +110,15 @@ class MedicationRecordsViewController: UIViewController {
         legendStack.distribution = .fillEqually
         legendStack.translatesAutoresizingMaskIntoConstraints = false
 
-        let legends: [(String, String, String)] = [
-            ("✅", "按时取药", "On time"),
-            ("⏰", "超时取药", "Late"),
-            ("❌", "漏服", "Missed"),
-            ("⏩", "提前取药", "Early"),
+        let legends: [(String, String)] = [
+            ("✅", S.legendTaken),
+            ("⏰", S.legendLate),
+            ("❌", S.legendMissed),
+            ("⏩", S.legendEarly),
         ]
-        for (emoji, zh, en) in legends {
+        for (_, text) in legends {
             let label = UILabel()
-            label.text = "\(emoji) \(SDKLocale.isZh ? zh : en)"
+            label.text = text
             label.font = .systemFont(ofSize: 11)
             label.textColor = .secondaryLabel
             label.textAlignment = .center
@@ -130,9 +130,7 @@ class MedicationRecordsViewController: UIViewController {
         view.addSubview(summaryLabel)
 
         let headerLabel = UILabel()
-        headerLabel.text = SDKLocale.isZh
-            ? "设定时间 → 实际取药时间"
-            : "Scheduled → Actual time"
+        headerLabel.text = S.scheduledVsActual
         headerLabel.font = .systemFont(ofSize: 12, weight: .medium)
         headerLabel.textColor = .tertiaryLabel
         headerLabel.textAlignment = .center
@@ -192,10 +190,10 @@ class MedicationRecordsViewController: UIViewController {
 
         if segmentControl.selectedSegmentIndex == 0 {
             let df = DateFormatter()
-            df.dateFormat = "yyyy年M月d日"
-            summaryLabel.text = "\(df.string(from: datePicker.date)) · \(records.count) 条记录"
+            df.dateFormat = S.isZh ? "yyyy年M月d日" : "MMM d, yyyy"
+            summaryLabel.text = String(format: S.dateRecordsCount, df.string(from: datePicker.date), records.count)
         } else {
-            summaryLabel.text = "共 \(records.count) 条记录"
+            summaryLabel.text = String(format: S.totalRecordsCount, records.count)
         }
     }
 
@@ -217,9 +215,9 @@ class MedicationRecordsViewController: UIViewController {
     }
 
     @objc private func deleteAll() {
-        let alert = UIAlertController(title: "清空记录", message: "确定删除所有用药记录？此操作不可恢复。", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "取消", style: .cancel))
-        alert.addAction(UIAlertAction(title: "删除", style: .destructive) { [weak self] _ in
+        let alert = UIAlertController(title: S.clearRecords, message: S.clearRecordsConfirmMsg, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: S.cancel, style: .cancel))
+        alert.addAction(UIAlertAction(title: S.delete, style: .destructive) { [weak self] _ in
             self?.db.deleteAll()
             self?.records.removeAll()
             self?.updateUI()
@@ -317,15 +315,11 @@ class MedicationRecordCell: UITableViewCell {
 
     func configure(with record: MedicationEntry, dateFormatter: DateFormatter, showDate: Bool) {
         emojiLabel.text = record.statusEmoji
-        titleLabel.text = SDKLocale.isZh
-            ? "闹钟\(record.alarmIndex) · \(record.statusText)"
-            : "Alarm \(record.alarmIndex) · \(record.statusText)"
+        titleLabel.text = String(format: S.recordTitleFormat, record.alarmIndex, record.statusText)
 
         let eventTime = dateFormatter.string(from: record.date)
         if record.alarmHour > 0 || record.alarmMinute > 0 {
-            detailLabel.text = SDKLocale.isZh
-                ? "设定 \(record.alarmTimeString) → 实际 \(eventTime)"
-                : "Scheduled \(record.alarmTimeString) → Actual \(eventTime)"
+            detailLabel.text = String(format: S.scheduledActualFormat, record.alarmTimeString, eventTime)
         } else if showDate {
             let df = DateFormatter()
             df.dateFormat = BlueSDK.shared.currentTimeFormat == .hour12 ? "M/d h:mm a" : "M/d HH:mm"

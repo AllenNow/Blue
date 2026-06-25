@@ -46,7 +46,7 @@ class ProtocolTestActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        supportActionBar?.title = "协议验证"
+        supportActionBar?.title = S.protocolTest
         setContentView(buildRoot())
         buildTestCases()
         setupLogHandler()
@@ -64,7 +64,7 @@ class ProtocolTestActivity : AppCompatActivity() {
         }
 
         statusLabel = TextView(this).apply {
-            text = "点击\"开始测试\"运行全部协议验证"
+            text = S.protocolTestHint
             setTextColor(Color.parseColor("#8E8E93"))
             textSize = 14f
             gravity = Gravity.CENTER
@@ -74,7 +74,7 @@ class ProtocolTestActivity : AppCompatActivity() {
         root.addView(statusLabel)
 
         startButton = Button(this).apply {
-            text = "开始测试"
+            text = S.startTest
             setTextColor(Color.WHITE)
             isAllCaps = false
             textSize = 17f
@@ -109,8 +109,10 @@ class ProtocolTestActivity : AppCompatActivity() {
 
     private fun setupLogHandler() {
         sdk.setLogHandler { level, tag, message ->
-            if (message.contains("发送帧") || message.contains("收到数据") ||
-                message.contains("认证") || message.contains("失败") || message.contains("成功")) {
+            if (message.contains("Send") || message.contains("TX:") || message.contains("RX:") ||
+                message.contains("收到数据") || message.contains("发送帧") ||
+                message.contains("auth") || message.contains("Auth") ||
+                message.contains("failed") || message.contains("success")) {
                 appendLog(message)
             }
         }
@@ -266,8 +268,8 @@ class ProtocolTestActivity : AppCompatActivity() {
             TestItem(i + 1, tc.name, results[i], resultMessages[i])
         })
         startButton.isEnabled = false
-        startButton.text = "测试中..."
-        statusLabel.text = "正在运行协议验证..."
+        startButton.text = S.testing
+        statusLabel.text = S.runningProtocolTest
         runNext()
     }
 
@@ -297,7 +299,7 @@ class ProtocolTestActivity : AppCompatActivity() {
                             results[index] = TestResult.FAILED
                             resultMessages[index] = (e as? BlueError)?.message ?: "未知错误"
                             adapter.updateItem(index, TestItem(index + 1, testCases[index].name, TestResult.FAILED, resultMessages[index]))
-                            statusLabel.text = "[${index + 1}/${testCases.size}] ${testCases[index].name} ❌ 已跳过"
+                            statusLabel.text = "[${index + 1}/${testCases.size}] ${testCases[index].name} ❌ ${S.testSkipped}"
                             statusLabel.setTextColor(Color.parseColor("#FF9500"))
                         }
                     )
@@ -311,17 +313,20 @@ class ProtocolTestActivity : AppCompatActivity() {
     private fun finishTests() {
         isRunning = false
         startButton.isEnabled = true
-        startButton.text = "重新测试"
+        startButton.text = S.retest
 
         val passed = results.count { it == TestResult.PASSED }
         val failed = results.count { it == TestResult.FAILED }
         val total = testCases.size
 
         if (failed == 0) {
-            statusLabel.text = "🎉 全部通过！$passed/$total"
+            statusLabel.text = "${S.allTestsPassed} $passed/$total"
             statusLabel.setTextColor(Color.parseColor("#34C759"))
         } else {
-            statusLabel.text = "完成：通过 $passed · 失败 $failed · 共 $total"
+            statusLabel.text = S.testSummary
+                .replaceFirst("%d", passed.toString())
+                .replaceFirst("%d", failed.toString())
+                .replaceFirst("%d", total.toString())
             statusLabel.setTextColor(Color.parseColor("#FF9500"))
         }
     }

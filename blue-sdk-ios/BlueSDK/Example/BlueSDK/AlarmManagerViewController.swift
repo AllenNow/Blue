@@ -22,12 +22,10 @@ struct AlarmSlot {
 
     var weekDescription: String {
         guard isSet else { return "" }
-        if weekMask == 0x7F { return SDKLocale.s("每天", "Daily") }
-        if weekMask == 0x1F { return SDKLocale.s("工作日", "Weekdays") }
-        if weekMask == 0x60 { return SDKLocale.s("周末", "Weekend") }
-        let days = SDKLocale.isZh
-            ? ["一", "二", "三", "四", "五", "六", "日"]
-            : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        if weekMask == 0x7F { return S.weekdayDaily }
+        if weekMask == 0x1F { return S.weekdayWeekdays }
+        if weekMask == 0x60 { return S.weekdayWeekend }
+        let days = S.weekdays
         var result: [String] = []
         for i in 0..<7 {
             if weekMask & (1 << i) != 0 {
@@ -40,8 +38,8 @@ struct AlarmSlot {
     var runStateText: String {
         switch runState {
         case .idle: return ""
-        case .ringing: return SDKLocale.s("🔔 响铃中", "🔔 Ringing")
-        case .ended: return SDKLocale.s("✅ 已完成", "✅ Done")
+        case .ringing: return "🔔 \(S.alarmRinging)"
+        case .ended: return "✅ \(S.alarmDone)"
         }
     }
 }
@@ -61,7 +59,7 @@ class AlarmManagerViewController: UIViewController {
     }()
 
     private lazy var clearButton: UIBarButtonItem = {
-        UIBarButtonItem(title: "清空全部", style: .plain, target: self, action: #selector(clearAll))
+        UIBarButtonItem(title: S.clearAll, style: .plain, target: self, action: #selector(clearAll))
     }()
 
     // MARK: - 状态
@@ -72,7 +70,7 @@ class AlarmManagerViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "闹钟管理"
+        title = S.alarmManager
         view.backgroundColor = .systemBackground
         navigationItem.rightBarButtonItem = clearButton
         setupUI()
@@ -123,9 +121,9 @@ class AlarmManagerViewController: UIViewController {
     }
 
     @objc private func clearAll() {
-        let alert = UIAlertController(title: "清空闹钟", message: "确定清空所有闹钟设置？", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "取消", style: .cancel))
-        alert.addAction(UIAlertAction(title: "清空", style: .destructive) { [weak self] _ in
+        let alert = UIAlertController(title: S.clearAlarmsTitle, message: S.clearAlarmsMsg, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: S.cancel, style: .cancel))
+        alert.addAction(UIAlertAction(title: S.clear, style: .destructive) { [weak self] _ in
             BlueSDK.shared.clearAllAlarms { result in
                 if case .success = result {
                     DispatchQueue.main.async {
@@ -191,7 +189,7 @@ extension AlarmManagerViewController: UITableViewDataSource, UITableViewDelegate
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let slot = alarms[indexPath.row]
         guard slot.isSet else { return nil }
-        let delete = UIContextualAction(style: .destructive, title: "删除") { [weak self] _, _, completion in
+        let delete = UIContextualAction(style: .destructive, title: S.delete) { [weak self] _, _, completion in
             self?.deleteAlarm(at: slot.index)
             completion(true)
         }
@@ -271,7 +269,7 @@ class AlarmSlotCell: UITableViewCell {
     required init?(coder: NSCoder) { fatalError() }
 
     func configure(with slot: AlarmSlot) {
-        indexLabel.text = "闹钟 \(slot.index)"
+        indexLabel.text = String(format: S.alarmSlotLabel, slot.index)
         timeLabel.text = slot.timeString
         weekLabel.text = slot.weekDescription
 
@@ -280,22 +278,22 @@ class AlarmSlotCell: UITableViewCell {
             // 根据运行状态显示不同标签
             switch slot.runState {
             case .ringing:
-                statusBadge.text = SDKLocale.s(" 🔔 响铃中 ", " 🔔 Ringing ")
+                statusBadge.text = " 🔔 \(S.alarmRinging) "
                 statusBadge.textColor = .systemOrange
                 statusBadge.backgroundColor = UIColor.systemOrange.withAlphaComponent(0.1)
             case .ended:
-                statusBadge.text = SDKLocale.s(" ✅ 已完成 ", " ✅ Done ")
+                statusBadge.text = " ✅ \(S.alarmDone) "
                 statusBadge.textColor = .systemBlue
                 statusBadge.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
             case .idle:
-                statusBadge.text = slot.isEnabled ? SDKLocale.s(" 已开启 ", " On ") : SDKLocale.s(" 已关闭 ", " Off ")
+                statusBadge.text = slot.isEnabled ? " \(S.alarmStatusOn) " : " \(S.alarmStatusOff) "
                 statusBadge.textColor = slot.isEnabled ? .systemGreen : .systemGray
                 statusBadge.backgroundColor = (slot.isEnabled ? UIColor.systemGreen : UIColor.systemGray).withAlphaComponent(0.1)
             @unknown default: break
             }
         } else {
             timeLabel.textColor = .tertiaryLabel
-            statusBadge.text = SDKLocale.s(" 未设置 ", " Empty ")
+            statusBadge.text = " \(S.alarmStatusUnset) "
             statusBadge.textColor = .tertiaryLabel
             statusBadge.backgroundColor = UIColor.systemGray.withAlphaComponent(0.05)
         }

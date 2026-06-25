@@ -77,7 +77,7 @@ final class BLEScanner: NSObject, BLEScannerDelegate {
                 self?.startScanImmediately()
             }
         } else {
-            logger.debug("蓝牙未就绪，等待状态变更")
+            logger.debug("Bluetooth not ready, waiting for state change")
         }
     }
 
@@ -87,7 +87,7 @@ final class BLEScanner: NSObject, BLEScannerDelegate {
         centralManager.centralManager.scanForPeripherals(withServices: nil, options: [
             CBCentralManagerScanOptionAllowDuplicatesKey: false
         ])
-        logger.info("BLE 扫描已启动，过滤前缀：\(BLEScanner.deviceNamePrefix)")
+        logger.info("BLE scan started, prefix filter: \(BLEScanner.deviceNamePrefix)")
     }
 
     /// 停止扫描
@@ -100,7 +100,7 @@ final class BLEScanner: NSObject, BLEScannerDelegate {
         isScanning = false
         onDeviceFound = nil
         onError = nil
-        logger.info("BLE 扫描已停止")
+        logger.info("BLE scan stopped")
     }
 
     // MARK: - 私有方法
@@ -115,15 +115,15 @@ final class BLEScanner: NSObject, BLEScannerDelegate {
     func bleCentralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
-            logger.info("蓝牙已开启")
+            logger.info("Bluetooth powered on")
             startScanIfReady()
         case .poweredOff:
-            logger.warn("蓝牙已关闭")
+            logger.warn("Bluetooth powered off")
             CallbackDispatcher.shared.dispatch { [weak self] in
                 self?.onError?(.bleError(underlying: nil))
             }
         case .unauthorized:
-            logger.warn("蓝牙权限未授权")
+            logger.warn("Bluetooth permission denied")
             CallbackDispatcher.shared.dispatch { [weak self] in
                 self?.onError?(.permissionDenied)
             }
@@ -138,7 +138,7 @@ final class BLEScanner: NSObject, BLEScannerDelegate {
               name.hasPrefix(BLEScanner.deviceNamePrefix) else { return }
 
         let device = ScannedDevice(peripheral: peripheral, rssi: RSSI.intValue)
-        logger.debug("发现设备：\(name)，RSSI：\(RSSI)")
+        logger.debug("Device found: \(name), RSSI: \(RSSI)")
 
         CallbackDispatcher.shared.dispatch { [weak self] in
             self?.onDeviceFound?(device)

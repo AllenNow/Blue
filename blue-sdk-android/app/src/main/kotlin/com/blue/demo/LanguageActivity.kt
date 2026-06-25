@@ -39,7 +39,7 @@ class LanguageActivity : AppCompatActivity() {
         fun applySavedLanguage(context: Context) {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val lang = prefs.getString(KEY_LANGUAGE, null)
-            S.setUserLanguage(lang)
+            S.setUserLanguage(lang, context)
             // 同步 SDK 语言
             val sdkLang = when {
                 lang == null -> BlueSDKLanguage.SYSTEM
@@ -57,7 +57,7 @@ class LanguageActivity : AppCompatActivity() {
                 .putString(KEY_LANGUAGE, langCode)
                 .putBoolean(KEY_LANGUAGE_SET, true)
                 .apply()
-            S.setUserLanguage(langCode)
+            S.setUserLanguage(langCode, context)
             // 同步 SDK 语言
             val sdkLang = when {
                 langCode.startsWith("zh") -> BlueSDKLanguage.ZH

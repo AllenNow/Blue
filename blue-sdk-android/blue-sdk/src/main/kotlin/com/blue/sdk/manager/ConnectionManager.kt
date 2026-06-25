@@ -11,7 +11,6 @@ import com.blue.sdk.enums.ConnectionState
 import com.blue.sdk.error.BlueError
 import com.blue.sdk.internal.BlueLogger
 import com.blue.sdk.internal.CallbackDispatcher
-import com.blue.sdk.internal.SDKLocale
 import com.blue.sdk.internal.CommandQueue
 import com.blue.sdk.transport.BLEConnector
 import com.blue.sdk.transport.BLEConnectorDelegate
@@ -109,7 +108,7 @@ internal class ConnectionManager(private val context: Context) {
     /** 所有状态变更通过此方法（ARCH-07）*/
     fun transitionTo(newState: ConnectionState) {
         if (_state == newState) return
-        BlueLogger.info(SDKLocale.s("连接状态变更：$_state → $newState", "State changed: $_state → $newState", "Status geändert: $_state → $newState"))
+        BlueLogger.info("State changed: $_state → $newState")
         _state = newState
         CallbackDispatcher.dispatch { onStateChanged?.invoke(newState) }
     }
@@ -120,7 +119,7 @@ internal class ConnectionManager(private val context: Context) {
         cancelConnectionTimeout()
         val runnable = Runnable {
             if (_state == ConnectionState.CONNECTING) {
-                BlueLogger.warn(SDKLocale.s("连接超时（${CONNECTION_TIMEOUT_MS}ms），断开连接", "Connection timeout (${CONNECTION_TIMEOUT_MS}ms), disconnecting", "Verbindungs-Timeout (${CONNECTION_TIMEOUT_MS}ms), Trennung"))
+                BlueLogger.warn("Connection timeout (${CONNECTION_TIMEOUT_MS}ms), disconnecting")
                 connector.disconnect()
                 commandQueue.clear()
                 streamParser.reset()
@@ -141,7 +140,7 @@ internal class ConnectionManager(private val context: Context) {
 
     private fun startReconnect() {
         if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-            BlueLogger.warn(SDKLocale.s("重连次数已达上限，停止重连", "Max reconnect attempts reached", "Max. Wiederverbindungsversuche erreicht"))
+            BlueLogger.warn("Max reconnect attempts reached")
             transitionTo(ConnectionState.DISCONNECTED)
             CallbackDispatcher.dispatch { onReconnectFailed?.invoke() }
             CallbackDispatcher.dispatch { onError?.invoke(BlueError.Disconnected) }
@@ -150,7 +149,7 @@ internal class ConnectionManager(private val context: Context) {
         val delayIndex = minOf(reconnectAttempts, RECONNECT_DELAYS.size - 1)
         val delay = RECONNECT_DELAYS[delayIndex]
         reconnectAttempts++
-        BlueLogger.info(SDKLocale.s("第 $reconnectAttempts 次重连，${delay}ms 后尝试", "Reconnect attempt $reconnectAttempts, retrying in ${delay}ms", "Wiederverbindung $reconnectAttempts, erneut in ${delay}ms"))
+        BlueLogger.info("Reconnect attempt $reconnectAttempts, retrying in ${delay}ms")
         transitionTo(ConnectionState.RECONNECTING)
         CallbackDispatcher.dispatch { onReconnecting?.invoke(reconnectAttempts, MAX_RECONNECT_ATTEMPTS) }
         reconnectTimer = Timer()
@@ -164,7 +163,7 @@ internal class ConnectionManager(private val context: Context) {
     /** 取消正在进行的自动重连 */
     fun cancelReconnection() {
         if (_state == ConnectionState.RECONNECTING) {
-            BlueLogger.info(SDKLocale.s("手动取消重连", "Reconnection cancelled", "Wiederverbindung abgebrochen"))
+            BlueLogger.info("Reconnection cancelled")
             cancelReconnect()
             reconnectAttempts = 0
             transitionTo(ConnectionState.DISCONNECTED)

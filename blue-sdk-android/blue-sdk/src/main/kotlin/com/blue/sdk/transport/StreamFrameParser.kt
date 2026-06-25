@@ -41,7 +41,7 @@ internal class StreamFrameParser {
 
             // 防止缓冲区无限增长
             if (buffer.size > MAX_BUFFER_SIZE) {
-                BlueLogger.warn("StreamFrameParser 缓冲区超限（${buffer.size}字节），已清空")
+                BlueLogger.warn("StreamFrameParser buffer overflow (${buffer.size} bytes), cleared")
                 buffer.clear()
                 return
             }
@@ -62,7 +62,7 @@ internal class StreamFrameParser {
             // 查找帧头 0x55 0xAA
             val headerIndex = findHeader() ?: run {
                 if (buffer.isNotEmpty()) {
-                    BlueLogger.debug("StreamFrameParser：未找到帧头，丢弃 ${buffer.size} 字节")
+                    BlueLogger.debug("StreamFrameParser: no header, discarding ${buffer.size} bytes")
                     buffer.clear()
                 }
                 return
@@ -70,7 +70,7 @@ internal class StreamFrameParser {
 
             // 丢弃帧头之前的垃圾数据
             if (headerIndex > 0) {
-                BlueLogger.debug("StreamFrameParser：丢弃帧头前 $headerIndex 字节垃圾数据")
+                BlueLogger.debug("StreamFrameParser: discarding $headerIndex bytes before header")
                 repeat(headerIndex) { buffer.removeAt(0) }
             }
 
@@ -97,7 +97,7 @@ internal class StreamFrameParser {
             if (frame != null) {
                 onFrameParsed?.invoke(frame)
             } else {
-                BlueLogger.warn("StreamFrameParser：帧 CRC 校验失败或格式错误，已丢弃 $frameLength 字节")
+                BlueLogger.warn("StreamFrameParser: CRC failed, discarded $frameLength bytes")
             }
         }
     }

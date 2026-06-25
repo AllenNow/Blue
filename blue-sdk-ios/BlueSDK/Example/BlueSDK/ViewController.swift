@@ -42,7 +42,7 @@ class ViewController: UIViewController {
         container.addSubview(spinner)
 
         let label = UILabel()
-        label.text = "连接认证中..."
+        label.text = S.connectingAuth
         label.font = .systemFont(ofSize: 15)
         label.textColor = .label
         label.textAlignment = .center
@@ -50,7 +50,7 @@ class ViewController: UIViewController {
         self.loadingLabel = label
 
         let cancelBtn = UIButton(type: .system)
-        cancelBtn.setTitle("取消", for: .normal)
+        cancelBtn.setTitle(S.cancel, for: .normal)
         cancelBtn.setTitleColor(.systemRed, for: .normal)
         cancelBtn.titleLabel?.font = .systemFont(ofSize: 15, weight: .medium)
         cancelBtn.addTarget(self, action: #selector(cancelConnection), for: .touchUpInside)
@@ -81,7 +81,7 @@ class ViewController: UIViewController {
     // MARK: - 功能控件
 
     private let soundTypeSegment = UISegmentedControl(items: ["A", "B"])
-    private let volumeSegment = UISegmentedControl(items: ["低", "中", "高"])
+    private let volumeSegment = UISegmentedControl(items: [S.low, S.medium, S.high])
     private let timeFormatSegment = UISegmentedControl(items: ["12H", "24H"])
     private let silenceSwitch = UISwitch()
     private let durationField = UITextField()
@@ -191,9 +191,9 @@ class ViewController: UIViewController {
         let keyRow = UIStackView()
         keyRow.spacing = 6
         keyRow.alignment = .center
-        let keyLabel = makeSmallLabel(SDKLocale.s("密钥", "Key"))
+        let keyLabel = makeSmallLabel(S.authKeyLabel)
         keyLabel.snp.makeConstraints { $0.width.equalTo(30) }
-        phoneMacField.placeholder = SDKLocale.s("输入自定义ID(12位hex)，留空自动", "Custom ID(12 hex), empty=auto")
+        phoneMacField.placeholder = S.customKeyHint
         phoneMacField.font = .monospacedSystemFont(ofSize: 12, weight: .regular)
         phoneMacField.borderStyle = .roundedRect
         phoneMacField.autocapitalizationType = .allCharacters
@@ -247,7 +247,7 @@ class ViewController: UIViewController {
         durationField.snp.makeConstraints { $0.width.equalTo(44) }
 
         let durBtn = UIButton(type: .system)
-        configureCompactButton(durBtn, title: "设置", color: .systemTeal)
+        configureCompactButton(durBtn, title: S.setBtn, color: .systemTeal)
         durBtn.addTarget(self, action: #selector(setDuration), for: .touchUpInside)
 
         let durRow = UIStackView(arrangedSubviews: [makeSmallLabel(S.duration), durationField, makeSmallLabel(S.minutes), durBtn])
@@ -383,14 +383,14 @@ class ViewController: UIViewController {
         statusLabel.text = S.notConnected
         statusDot.backgroundColor = .systemGray
         previousConnectionState = .disconnected
-        log("用户取消连接")
+        log(S.userCancelled)
     }
     
     @objc private func dismissKeyboard() {
         view.endEditing(true)
     }
 
-    private func showLoading(_ text: String = "连接认证中...") {
+    private func showLoading(_ text: String = S.connectingAuth) {
         loadingLabel?.text = text
         loadingOverlay.isHidden = false
     }
@@ -403,22 +403,22 @@ class ViewController: UIViewController {
 
     @objc private func startScan() {
         scanButton.isEnabled = false
-        showLoading("扫描连接中...")
+        showLoading(S.scanConnecting)
 
         // 读取自定义密钥输入框
         let customKey = phoneMacField.text?.trimmingCharacters(in: .whitespaces).uppercased() ?? ""
         if customKey.count == 12 {
             BlueSDK.shared.config.customPhoneMac = customKey
-            log("扫描中...（自定义密钥：\(customKey)）")
+            log(S.scanningCustomKey.replacingOccurrences(of: "%@", with: customKey))
         } else if customKey.count == 4 {
             BlueSDK.shared.fixedAuthKey = customKey
-            log("扫描中...（固定密钥：\(customKey)）")
+            log(S.scanningFixedKey.replacingOccurrences(of: "%@", with: customKey))
         } else {
             BlueSDK.shared.fixedAuthKey = nil
             BlueSDK.shared.config.customPhoneMac = nil
-            log("扫描中...（自动密钥）")
+            log(S.scanningAuto)
         }
-        updateStatus("扫描中...", color: .systemOrange)
+        updateStatus(S.scanning, color: .systemOrange)
         scannedDevices.removeAll()
         BlueSDK.shared.startScan(timeout: 10) { [weak self] event in
             guard let self = self else { return }
@@ -426,8 +426,8 @@ class ViewController: UIViewController {
             case .deviceFound(let device):
                 guard self.scannedDevices.isEmpty else { return }
                 self.scannedDevices.append(device)
-                self.log("发现 \(device.deviceName)")
-                self.showLoading("连接认证中...")
+                self.log("\(S.found) \(device.deviceName)")
+                self.showLoading(S.connectingAuth)
                 BlueSDK.shared.connect(device)
                 BlueSDK.shared.stopScan()
             case .error(let error):
@@ -437,7 +437,7 @@ class ViewController: UIViewController {
                 DispatchQueue.main.async { self.scanButton.isEnabled = true }
             case .stopped:
                 if self.scannedDevices.isEmpty {
-                    self.log("⏹ 扫描超时")
+                    self.log("⏹ \(S.scanTimeout)")
                     self.hideLoading()
                     DispatchQueue.main.async { self.scanButton.isEnabled = true }
                 }
@@ -447,7 +447,7 @@ class ViewController: UIViewController {
 
     @objc private func disconnect() {
         BlueSDK.shared.disconnect()
-        log("已断开")
+        log(S.disconnected)
     }
 
     @objc private func queryDeviceInfo() {
@@ -471,7 +471,7 @@ class ViewController: UIViewController {
         if let nav = navigationController { nav.pushViewController(vc, animated: true) }
         else {
             let nav = UINavigationController(rootViewController: vc)
-            vc.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "返回", style: .plain, target: vc, action: #selector(AlarmManagerViewController.dismissSelf))
+            vc.navigationItem.leftBarButtonItem = UIBarButtonItem(title: S.back, style: .plain, target: vc, action: #selector(AlarmManagerViewController.dismissSelf))
             nav.modalPresentationStyle = .fullScreen
             present(nav, animated: true)
         }
@@ -480,7 +480,7 @@ class ViewController: UIViewController {
     @objc private func clearAllAlarms() {
         confirm(S.clearAlarmsTitle, msg: S.clearAlarmsMsg) {
             BlueSDK.shared.clearAllAlarms { [weak self] r in
-                if case .success = r { self?.log("⏰ 所有闹钟已清空") }
+                if case .success = r { self?.log("⏰ \(S.alarmsCleared)") }
                 else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
             }
         }
@@ -524,7 +524,7 @@ class ViewController: UIViewController {
 
     @objc private func setDuration() {
         guard let t = durationField.text, let m = Int(t), m >= 1, m <= 5 else {
-            log("❌ 响铃时长范围：1~5分钟")
+            log("❌ \(S.durationError)")
             return
         }
         BlueSDK.shared.setAlertDuration(m) { [weak self] r in
@@ -540,7 +540,7 @@ class ViewController: UIViewController {
             BlueSDK.shared.restoreFactory { [weak self] r in
                 if case .success = r {
                     MedicationDatabase.shared.deleteAll()
-                    self?.log("✅ 已恢复出厂，本地数据已清空")
+                    self?.log("✅ \(S.factoryRestored)")
                 } else if case .failure(let e) = r {
                     self?.log("❌ \(e.localizedDescription)")
                 }
@@ -554,9 +554,9 @@ class ViewController: UIViewController {
                 switch result {
                 case .success:
                     MedicationDatabase.shared.deleteAll()
-                    self?.log("✅ 解绑成功，本地数据已清空")
+                    self?.log("✅ \(S.unbindSuccess)")
                 case .failure(let error):
-                    self?.log("❌ 解绑失败：\(error.localizedDescription)")
+                    self?.log("❌ \(S.unbindFailed)：\(error.localizedDescription)")
                 }
             }
         }
@@ -607,14 +607,14 @@ class ViewController: UIViewController {
         loadingIndicator.stopAnimating()
         scanButton.isEnabled = true
         scannedDevices.removeAll()
-        statusLabel.text = "认证失败"
+        statusLabel.text = S.authFailedStatus
         statusDot.backgroundColor = .systemRed
         previousConnectionState = .disconnected
 
         guard presentedViewController == nil else { return }
         log("🔐 认证失败")
-        let a = UIAlertController(title: "认证失败", message: "密钥不一致，请对设备长按按键恢复出厂设置后重试。", preferredStyle: .alert)
-        a.addAction(UIAlertAction(title: "确定", style: .default))
+        let a = UIAlertController(title: S.authFailedTitle, message: S.authFailedMsg, preferredStyle: .alert)
+        a.addAction(UIAlertAction(title: S.confirm, style: .default))
         present(a, animated: true)
     }
 
@@ -628,8 +628,8 @@ class ViewController: UIViewController {
 
     private func confirm(_ title: String, msg: String, action: @escaping () -> Void) {
         let a = UIAlertController(title: title, message: msg, preferredStyle: .alert)
-        a.addAction(UIAlertAction(title: "取消", style: .cancel))
-        a.addAction(UIAlertAction(title: "确定", style: .destructive) { _ in action() })
+        a.addAction(UIAlertAction(title: S.cancel, style: .cancel))
+        a.addAction(UIAlertAction(title: S.confirm, style: .destructive) { _ in action() })
         present(a, animated: true)
     }
 
@@ -672,25 +672,25 @@ extension ViewController: BlueSDKDelegate {
                     }
                     // 设备意外断开弹窗提示
                     if self.previousConnectionState == .authenticated || self.previousConnectionState == .connected {
-                        self.log("⚠️ 设备连接已断开")
+                        self.log("⚠️ \(S.deviceDisconnectedToast)")
                         let alert = UIAlertController(
-                            title: SDKLocale.s("连接断开", "Disconnected"),
-                            message: SDKLocale.s("设备连接已断开，请检查设备状态后重新连接。", "Device disconnected. Check device and reconnect."),
+                            title: S.disconnectedTitle,
+                            message: S.disconnectedMsg,
                             preferredStyle: .alert
                         )
-                        alert.addAction(UIAlertAction(title: SDKLocale.s("确定", "OK"), style: .default))
+                        alert.addAction(UIAlertAction(title: S.ok, style: .default))
                         self.present(alert, animated: true)
                     }
                 }
             case .connecting:
                 self.scanButton.isHidden = true
                 self.disconnectButton.isHidden = true
-                self.updateStatus("连接中...", color: .systemOrange)
+                self.updateStatus(S.connecting, color: .systemOrange)
                 self.loadingIndicator.startAnimating()
             case .connected:
                 self.scanButton.isHidden = true
                 self.disconnectButton.isHidden = true
-                self.updateStatus("认证中...", color: .systemYellow)
+                self.updateStatus(S.authenticating, color: .systemYellow)
                 self.loadingIndicator.startAnimating()
             case .authenticated:
                 self.scanButton.isHidden = true
@@ -701,7 +701,7 @@ extension ViewController: BlueSDKDelegate {
             case .reconnecting:
                 self.scanButton.isHidden = true
                 self.disconnectButton.isHidden = true
-                self.updateStatus("重连中...", color: .systemOrange)
+                self.updateStatus(S.reconnecting, color: .systemOrange)
                 self.loadingIndicator.startAnimating()
             @unknown default: break
             }
@@ -736,13 +736,13 @@ extension ViewController: BlueSDKDelegate {
     func blueSDK(_ sdk: BlueSDK, didAlarmTimeout alarmIndex: Int, alarmInfo: AlarmInfo) { log("⚠️ 闹钟\(alarmIndex)超时") }
 
     func blueSDK(_ sdk: BlueSDK, didReceiveMedicationResult alarmIndex: Int, status: MedicationStatus) {
-        let statusText = SDKLocale.isZh ? status.displayNameZh : status.displayNameEn
+        let statusText = S.isZh ? status.displayNameZh : status.displayNameEn
         log("💊 闹钟\(alarmIndex) \(statusText)")
         // 不入库 — 等 didReceiveMedicationRecord 上报完整记录（含设定时间和实际时间）
     }
 
     func blueSDK(_ sdk: BlueSDK, didReceiveMedicationRecord record: MedicationRecord) {
-        let statusText = SDKLocale.isZh ? record.status.displayNameZh : record.status.displayNameEn
+        let statusText = S.isZh ? record.status.displayNameZh : record.status.displayNameEn
         log("📋 用药记录：闹钟\(record.alarmIndex) \(statusText)")
         MedicationDatabase.shared.insert(timestamp: record.timestamp, alarmIndex: record.alarmIndex, alarmHour: record.alarmHour, alarmMinute: record.alarmMinute, status: record.status.rawValue)
     }
@@ -775,6 +775,12 @@ extension ViewController: BlueSDKDelegate {
         }
     }
     func blueSDKDidReportLowBattery(_ sdk: BlueSDK) { log("🪫 低电") }
+    func blueSDK(_ sdk: BlueSDK, didChangeAlertDuration minutes: Int) {
+        log("⏱ 提醒时长变更：\(minutes)分钟")
+        DispatchQueue.main.async { [weak self] in
+            self?.durationField.text = "\(minutes)"
+        }
+    }
 
     func blueSDK(_ sdk: BlueSDK, didReceiveMedicationNotification type: Int) {
         switch type {
@@ -784,19 +790,19 @@ extension ViewController: BlueSDKDelegate {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 let alert = UIAlertController(
-                    title: SDKLocale.s("💊 闹钟响铃", "💊 Alarm Ringing"),
-                    message: SDKLocale.s("请及时取药", "Please take your medication"),
+                    title: S.alarmRingingTitle,
+                    message: S.alarmRingingMsg,
                     preferredStyle: .alert
                 )
-                alert.addAction(UIAlertAction(title: SDKLocale.s("知道了", "OK"), style: .default))
+                alert.addAction(UIAlertAction(title: S.ok, style: .default))
                 self.present(alert, animated: true)
             }
         case 2:
             log("⚠️ 超时未取药")
             // 推送漏服通知
             let content = UNMutableNotificationContent()
-            content.title = SDKLocale.s("用药提醒", "Medication Reminder")
-            content.body = SDKLocale.s("您已超时未取药，请尽快服药！", "You missed your medication. Please take it now!")
+            content.title = S.missedTitle
+            content.body = S.missedMsg
             content.sound = UNNotificationSound.default()
             let request = UNNotificationRequest(identifier: "missed_\(Date().timeIntervalSince1970)", content: content, trigger: nil)
             UNUserNotificationCenter.current().add(request)
@@ -806,11 +812,11 @@ extension ViewController: BlueSDKDelegate {
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 let alert = UIAlertController(
-                    title: SDKLocale.s("👏 按时服药", "👏 Well Done"),
-                    message: SDKLocale.s("太棒了！坚持按时服药有助于健康。", "Great job! Keep taking your medication on time."),
+                    title: S.takenTitle,
+                    message: S.takenMsg,
                     preferredStyle: .alert
                 )
-                alert.addAction(UIAlertAction(title: SDKLocale.s("好的", "OK"), style: .default))
+                alert.addAction(UIAlertAction(title: S.ok, style: .default))
                 self.present(alert, animated: true)
             }
         default: break

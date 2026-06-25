@@ -16,6 +16,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // 初始化 SDK（在 App 启动时调用一次）
         BlueSDK.shared.initialize()
 
+        // 初始化多语言字符串（从 Locales/*.json 加载）
+        S.initialize()
+
         // 加载用户语言设置（必须在 initialize 之后，否则会被 config.language 覆盖）
         LanguageViewController.applySavedLanguage()
 

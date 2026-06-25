@@ -131,7 +131,7 @@ class BlueSDK private constructor(private val context: Context) {
         BlueLogger.logLevel = config.logLevel
         SDKLocale.setLanguage(config.language)
         isInitialized = true
-        BlueLogger.info(SDKLocale.s("BlueSDK 初始化完成", "BlueSDK initialized", "BlueSDK initialisiert"))
+        BlueLogger.info("BlueSDK initialized")
     }
 
     /** 销毁 SDK，释放所有 BLE 资源（FR33）*/
@@ -141,7 +141,7 @@ class BlueSDK private constructor(private val context: Context) {
         connectedDevice = null
         lastTimeSyncMs = 0L
         isInitialized = false
-        BlueLogger.info(SDKLocale.s("BlueSDK 已销毁", "BlueSDK destroyed", "BlueSDK zerstört"))
+        BlueLogger.info("BlueSDK destroyed")
     }
 
     // MARK: - 日志配置（FR34、FR35）
@@ -242,18 +242,18 @@ class BlueSDK private constructor(private val context: Context) {
                         // 设备应答成功，断开连接
                         connectedDevice = null
                         connectionManager.disconnect()
-                        BlueLogger.info(SDKLocale.s("解绑成功，连接已断开", "Unbind success, disconnected", "Entkopplung erfolgreich, getrennt"))
+                        BlueLogger.info("Unbind success, disconnected")
                         completion(Result.success(Unit))
                     },
                     onFailure = { error ->
-                        BlueLogger.error(SDKLocale.s("解绑指令失败：${(error as BlueError).message}", "Unbind failed: ${(error as BlueError).message}", "Entkopplung fehlgeschlagen: ${(error as BlueError).message}"))
-                        completion(Result.failure(error))
+                        BlueLogger.error("Unbind failed: ${error.message}")
+                        completion(Result.failure(error as BlueError))
                     }
                 )
             }
         } else {
             connectedDevice = null
-            BlueLogger.info(SDKLocale.s("设备未连接，解绑完成", "Device not connected, unbind done", "Gerät nicht verbunden, Entkopplung abgeschlossen"))
+            BlueLogger.info("Device not connected, unbind done")
             completion(Result.success(Unit))
         }
     }
@@ -310,7 +310,7 @@ class BlueSDK private constructor(private val context: Context) {
     ) {
         if (!requireInitR(completion)) return
         val keyBytes = byteArrayOf(keyHigh, keyLow)
-        BlueLogger.info("手动密钥认证：key=${"%02X%02X".format(keyHigh, keyLow)}")
+        BlueLogger.info("Manual key auth: key=${"%02X%02X".format(keyHigh, keyLow)}")
         val frame = FrameBuilder.build(CommandCode.AUTH_KEY, keyBytes)
         connectionManager.commandQueue.enqueue(CommandCode.AUTH_KEY, frame) { result ->
             result.fold(
@@ -480,15 +480,10 @@ class BlueSDK private constructor(private val context: Context) {
         if (!requireInitR(completion) || !requireAuthR(completion)) return
         val data = byteArrayOf(DPIDConstants.RESTORE_FACTORY, 0x01, 0x00, 0x01, 0x01)
         val frame = FrameBuilder.build(CommandCode.SEND_COMMAND, data)
-        connectionManager.commandQueue.enqueue(CommandCode.SEND_COMMAND, frame) { result ->
-            result.fold(
-                onSuccess = {
-                    BlueLogger.info("恢复出厂成功，设备已确认")
-                    completion(Result.success(Unit))
-                },
-                onFailure = { completion(Result.failure(it as BlueError)) }
-            )
-        }
+        // 恢复出厂后设备会立即重启并断开 BLE，不等待应答
+        connectionManager.commandQueue.sendDirect(frame)
+        BlueLogger.info("Factory reset sent (fire-and-forget)")
+        completion(Result.success(Unit))
     }
 
     // MARK: - 内部工具
@@ -566,15 +561,15 @@ class BlueSDK private constructor(private val context: Context) {
      */
     private fun autoAuthenticate() {
         if (!config.autoAuthEnabled) {
-            BlueLogger.debug("自动认证已禁用（config.autoAuthEnabled=false）")
+            BlueLogger.debug("Auto-auth disabled (config.autoAuthEnabled=false)")
             return
         }
         val device = connectedDevice ?: run {
-            BlueLogger.error("自动认证失败：无连接设备")
+            BlueLogger.error("Auto-auth failed: no connected device")
             return
         }
 
-        BlueLogger.info("连接成功，自动发起密钥认证...")
+        BlueLogger.info("Connected, starting auto-auth...")
 
         val fixedKey = config.fixedAuthKey
         if (fixedKey != null && fixedKey.length == 4) {
@@ -583,19 +578,19 @@ class BlueSDK private constructor(private val context: Context) {
             if (keyHigh != null && keyLow != null) {
                 // 固定密钥模式
                 val keyBytes = byteArrayOf(keyHigh, keyLow)
-                BlueLogger.debug("使用固定密钥 $fixedKey 认证")
+                BlueLogger.debug("Using fixed key $fixedKey")
                 val frame = FrameBuilder.build(CommandCode.AUTH_KEY, keyBytes)
                 connectionManager.commandQueue.enqueue(CommandCode.AUTH_KEY, frame) { result ->
                     result.fold(
                         onSuccess = { response ->
                             if (response.data.firstOrNull()?.toInt() == 0x01) {
                                 connectionManager.transitionTo(ConnectionState.AUTHENTICATED)
-                                BlueLogger.info("认证成功（固定密钥）")
+                                BlueLogger.info("Auth success (fixed key)")
                                 CallbackDispatcher.dispatch {
                                     notifyObservers { it.onAuthResult(true, null)}
                                 }
                             } else {
-                                BlueLogger.error("固定密钥认证失败")
+                                BlueLogger.error("Fixed key auth failed")
                                 connectedDevice = null
                                 CallbackDispatcher.dispatch {
                                     notifyObservers { it.onAuthResult(false, BlueError.AuthFailed)}
@@ -604,7 +599,7 @@ class BlueSDK private constructor(private val context: Context) {
                             }
                         },
                         onFailure = { error ->
-                            BlueLogger.error("认证指令发送失败：${error.message}")
+                            BlueLogger.error("Auth command failed: ${error.message}")
                         }
                     )
                 }
@@ -617,8 +612,8 @@ class BlueSDK private constructor(private val context: Context) {
         val deviceMac = getDeviceMac(device.deviceId)
         performAuth(phoneMac, deviceMac) { result ->
             result.fold(
-                onSuccess = { BlueLogger.info("自动认证成功") },
-                onFailure = { BlueLogger.error("自动认证失败：${it.message}") }
+                onSuccess = { BlueLogger.info("Auto-auth success") },
+                onFailure = { BlueLogger.error("Auto-auth failed: ${it.message}") }
             )
         }
     }
@@ -634,7 +629,7 @@ class BlueSDK private constructor(private val context: Context) {
                 },
                 onFailure = { error ->
                     val blueError = error as BlueError
-                    BlueLogger.error("performAuth 失败：${blueError.message}")
+                    BlueLogger.error("performAuth failed: ${blueError.message}")
                     if (blueError == BlueError.AuthFailed) {
                         connectedDevice = null
                     }
@@ -660,7 +655,7 @@ class BlueSDK private constructor(private val context: Context) {
         }
 
         connectionManager.onError = { error ->
-            BlueLogger.error("连接错误：${error.message}")
+            BlueLogger.error("Connection error: ${error.message}")
             CallbackDispatcher.dispatch { notifyObservers { it.onError(error) } }
         }
 
@@ -683,10 +678,10 @@ class BlueSDK private constructor(private val context: Context) {
                 val now = System.currentTimeMillis()
                 if (now - lastTimeSyncMs >= 30000L) {
                     lastTimeSyncMs = now
-                    BlueLogger.info("设备请求时间同步，自动下发")
+                    BlueLogger.info("Device requested time sync, sending")
                     deviceManager.syncTime { _ -> }
                 } else {
-                    BlueLogger.debug("时间同步请求已节流，跳过")
+                    BlueLogger.debug("Time sync throttled, skipped")
                 }
                 CallbackDispatcher.dispatch { notifyObservers { it.onTimeSyncRequested() } }
             }
@@ -746,7 +741,7 @@ class BlueSDK private constructor(private val context: Context) {
             }
             dpid == DPIDConstants.ALERT_DURATION -> {
                 AudioManager.parseAlertDuration(data)?.let { minutes ->
-                    BlueLogger.info("设备上报提醒持续时间变更：${minutes} 分钟")
+                    BlueLogger.info("Device reported alert duration change: ${minutes} min")
                     CallbackDispatcher.dispatch { notifyObservers { it.onAlertDurationChanged(minutes) } }
                 }
             }
@@ -757,18 +752,18 @@ class BlueSDK private constructor(private val context: Context) {
                 }
             }
             dpidInt == (DPIDConstants.LOW_BAT.toInt() and 0xFF) -> {
-                BlueLogger.info("设备上报低电状态")
+                BlueLogger.info("Device reported low battery")
                 CallbackDispatcher.dispatch { notifyObservers { it.onLowBattery() } }
             }
             dpidInt == (DPIDConstants.NOTIFICATION_OF_RESULTS.toInt() and 0xFF) -> {
                 // 用药结果通知：data[4] = 01响铃/02超时/03已取药
                 val notifType = if (data.size >= 5) data[4].toInt() and 0xFF else 0
                 if (notifType in 1..3) {
-                    BlueLogger.info("用药通知：type=$notifType")
+                    BlueLogger.info("Medication notification: type=$notifType")
                     CallbackDispatcher.dispatch { notifyObservers { it.onMedicationNotification(notifType) } }
                 }
             }
-            else -> BlueLogger.debug("未处理的上报 DPID：0x${"%02X".format(dpidInt)}")
+            else -> BlueLogger.debug("Unhandled report DPID: 0x${"%02X".format(dpidInt)}")
         }
     }
 }

@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         setContentView(buildRoot())
         sdk.initialize()
         sdk.listener = this
-        sdk.setLogHandler { level, tag, message ->
+        sdk.setLogHandler { level, _, message ->
             val prefix = when (level) {
                 LogLevel.DEBUG -> "📋"
                 LogLevel.INFO -> "ℹ️"
@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             }
             log("$prefix $message")
         }
-        log("SDK 已启动")
+        log(S.sdkStarted)
         log("🔑 ${sdk.currentAuthKeyDisplay}")
 
         // 如果从设备列表页进入，隐藏扫描相关 UI，显示已连接状态
@@ -175,13 +175,13 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             if (isFromDeviceList) visibility = View.GONE
         }
         keyRow.addView(TextView(this).apply {
-            text = if (S.isZh) "密钥" else "Key"
+            text = S.authKeyLabel
             setTextColor(textGray)
             textSize = 12f
             layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply { marginEnd = dp(8) }
         })
         phoneMacInput = EditText(this).apply {
-            hint = if (S.isZh) "自定义ID(12位hex)，留空自动" else "Custom ID(12 hex), empty=auto"
+            hint = S.customKeyHint
             setTextColor(textWhite)
             setHintTextColor(Color.parseColor("#636366"))
             textSize = 12f
@@ -213,20 +213,20 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             setPadding(dp(12), dp(10), dp(12), dp(10))
         }
 
-        audioCard.addView(segmentRow("铃声", listOf(
+        audioCard.addView(segmentRow(S.soundType, listOf(
             "A" to { sdk.setSoundType(SoundType.TYPE_A) { logR("铃声A", it) } },
             "B" to { sdk.setSoundType(SoundType.TYPE_B) { logR("铃声B", it) } }
         )).also { soundTypeSegment = it.getChildAt(1) as LinearLayout })
         audioCard.addView(gap(6))
 
-        audioCard.addView(segmentRow("音量", listOf(
-            "低" to { sdk.setVolume(VolumeLevel.LOW) { logR("音量低", it) } },
-            "中" to { sdk.setVolume(VolumeLevel.MEDIUM) { logR("音量中", it) } },
-            "高" to { sdk.setVolume(VolumeLevel.HIGH) { logR("音量高", it) } }
+        audioCard.addView(segmentRow(S.volume, listOf(
+            S.low to { sdk.setVolume(VolumeLevel.LOW) { logR("音量低", it) } },
+            S.medium to { sdk.setVolume(VolumeLevel.MEDIUM) { logR("音量中", it) } },
+            S.high to { sdk.setVolume(VolumeLevel.HIGH) { logR("音量高", it) } }
         )))
         audioCard.addView(gap(6))
 
-        audioCard.addView(segmentRow("时制", listOf(
+        audioCard.addView(segmentRow(S.timeFormat, listOf(
             "12H" to { sdk.setTimeFormat(TimeFormat.HOUR_12) { logR("12H", it) } },
             "24H" to { sdk.setTimeFormat(TimeFormat.HOUR_24) { logR("24H", it) } }
         )).also { timeFormatSegment = it.getChildAt(1) as LinearLayout })
@@ -236,7 +236,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
-        silRow.addView(label("静音"))
+        silRow.addView(label(S.silence))
         val sw = Switch(this).apply {
             setOnCheckedChangeListener { _, on ->
                 sdk.setSilence(on) { logR(if (on) "静音开" else "静音关", it) }
@@ -251,7 +251,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
-        durRow.addView(label("持续"))
+        durRow.addView(label(S.duration))
         durationInput = EditText(this).apply {
             setText("2")
             inputType = android.text.InputType.TYPE_CLASS_NUMBER
@@ -268,10 +268,10 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             textSize = 14f
             layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply { marginEnd = dp(12) }
         })
-        durRow.addView(pillBtn("设置", accentCyan) {
+        durRow.addView(pillBtn(S.set, accentCyan) {
             val m = durationInput.text.toString().toIntOrNull() ?: 0
             if (m < 1 || m > 5) {
-                log("❌ 响铃时长范围：1~5分钟")
+                log("❌ ${S.durationError}")
                 return@pillBtn
             }
             sdk.setAlertDuration(m) { logR("持续${m}分", it) }
@@ -418,7 +418,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             if (allGranted) {
                 startScan()
             } else {
-                log("❌ 权限未授予")
+                log("❌ ${S.permDenied}")
                 scanButton.isEnabled = true
             }
         }
@@ -435,11 +435,11 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         if (customKey.length == 12) {
             sdk.config = sdk.config.copy(customPhoneMac = customKey)
             sdk.fixedAuthKey = null
-            log("扫描中...（自定义密钥：$customKey）")
+            log(S.scanningCustomKey.replace("%@", customKey))
         } else if (customKey.length == 4) {
             sdk.fixedAuthKey = customKey
             sdk.config = sdk.config.copy(customPhoneMac = null)
-            log("扫描中...（固定密钥：$customKey）")
+            log(S.scanningFixedKey.replace("%@", customKey))
         } else {
             sdk.fixedAuthKey = null
             sdk.config = sdk.config.copy(customPhoneMac = null)
@@ -484,7 +484,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     }
 
     private fun queryDeviceInfo() {
-        log("📱 查询设备信息...")
+        log("📱 ${S.queryingDevice}")
         sdk.queryDeviceInfo { it.fold(
             { log("📱 MAC:${it.macAddress} v${it.firmwareVersion}") },
             { log("❌ ${(it as BlueError).message}") }
@@ -492,13 +492,13 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     }
 
     private fun syncTime() {
-        log("⏰ 同步时间...")
-        sdk.syncTime { it.fold({ log("⏰ 时间已同步") }, { log("❌ ${(it as BlueError).message}") }) }
+        log("⏰ ${S.syncingTime}")
+        sdk.syncTime { it.fold({ log("⏰ ${S.timeSynced}") }, { log("❌ ${(it as BlueError).message}") }) }
     }
 
     private fun clearAllAlarms() {
         if (sdk.connectionState != ConnectionState.AUTHENTICATED) {
-            log("❌ 请先连接设备")
+            log("❌ ${S.connectFirst}")
             return
         }
         confirm(S.clearAlarmsTitle, S.clearAlarmsMsg) {
@@ -518,7 +518,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
 
     private fun restoreFactory() {
         if (sdk.connectionState != ConnectionState.AUTHENTICATED) {
-            log("❌ 请先连接设备")
+            log("❌ ${S.connectFirst}")
             return
         }
         confirm(S.restoreFactoryTitle, S.restoreFactoryMsg) {
@@ -547,9 +547,9 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                             // 清空本地闹钟缓存和用药记录
                             AlarmStorage.clearAll(this)
                             MedicationDatabase.getInstance(this).deleteAll()
-                            log("✅ 解绑成功，本地数据已清空")
+                            log("✅ ${S.unbindSuccess}")
                         },
-                        onFailure = { log("❌ 解绑失败：${(it as BlueError).message}") }
+                        onFailure = { log("❌ ${S.unbindFailed}：${(it as BlueError).message}") }
                     )
                 }
             }
@@ -568,8 +568,8 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         AlertDialog.Builder(this)
             .setTitle(title)
             .setMessage(msg)
-            .setNegativeButton("取消", null)
-            .setPositiveButton("确定") { _, _ -> action() }
+            .setNegativeButton(S.cancel, null)
+            .setPositiveButton(S.confirm) { _, _ -> action() }
             .show()
     }
 
@@ -580,7 +580,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
     }
 
-    private fun showLoading(text: String = "连接认证中...") {
+    private fun showLoading(text: String = S.connectingAuth) {
         runOnUiThread {
             loadingOverlay.findViewWithTag<TextView>("loading_label")?.text = text
             loadingOverlay.visibility = View.VISIBLE
@@ -601,7 +601,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             scanButton.visibility = View.VISIBLE
             scanButton.isEnabled = true
         }
-        log("用户取消连接")
+        log(S.userCancelled)
     }
 
     override fun onConnectionStateChanged(state: ConnectionState) {
@@ -624,7 +624,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                     // 从设备列表进入时，断开连接自动返回列表页
                     if (isFromDeviceList && !isAuthFailed) {
                         Toast.makeText(this,
-                            if (S.isZh) "设备连接已断开" else "Device disconnected",
+                            S.deviceDisconnectedToast,
                             Toast.LENGTH_SHORT
                         ).show()
                         finish()
@@ -632,10 +632,10 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                     }
                     // 设备意外断开弹窗提示
                     if (!isAuthFailed && !isScanning) {
-                        log("⚠️ 设备连接已断开")
+                        log("⚠️ ${S.deviceDisconnectedToast}")
                         AlertDialog.Builder(this)
-                            .setTitle(if (S.isZh) "连接断开" else "Disconnected")
-                            .setMessage(if (S.isZh) "设备连接已断开，请检查设备状态后重新连接。" else "Device disconnected. Check device and reconnect.")
+                            .setTitle(S.disconnectedTitle)
+                            .setMessage(S.disconnectedMsg)
                             .setPositiveButton(S.confirm, null)
                             .show()
                     }
@@ -672,7 +672,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             log("🔐 认证失败")
             hideLoading()
             runOnUiThread {
-                statusLabel.text = if (S.isZh) "认证失败" else "Auth Failed"
+                statusLabel.text = S.authFailedStatus
                 statusDot.background = roundDrawable(Color.RED, dp(6))
                 scanButton.visibility = View.VISIBLE
                 disconnectButton.visibility = View.GONE
@@ -744,6 +744,10 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         log("🕐 时制变更")
         runOnUiThread { selectSegment(timeFormatSegment, format.ordinal) }
     }
+    override fun onAlertDurationChanged(minutes: Int) {
+        log("⏱ 提醒时长变更：${minutes}分钟")
+        runOnUiThread { durationInput.setText(minutes.toString()) }
+    }
     override fun onLowBattery() { log("🪫 低电") }
 
     override fun onMedicationNotification(type: Int) {
@@ -752,8 +756,8 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                 log("🔔 闹钟响铃，等待取药")
                 runOnUiThread {
                     AlertDialog.Builder(this)
-                        .setTitle("💊 ${if (S.isZh) "闹钟响铃" else "Alarm Ringing"}")
-                        .setMessage(if (S.isZh) "请及时取药" else "Please take your medication")
+                        .setTitle(S.alarmRingingTitle)
+                        .setMessage(S.alarmRingingMsg)
                         .setPositiveButton(S.confirm, null)
                         .show()
                 }
@@ -767,8 +771,8 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                 }
                 val notif = android.app.Notification.Builder(this, "med_alert")
                     .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                    .setContentTitle(if (S.isZh) "用药提醒" else "Medication Reminder")
-                    .setContentText(if (S.isZh) "您已超时未取药，请尽快服药！" else "You missed your medication!")
+                    .setContentTitle(S.missedTitle)
+                    .setContentText(S.missedMsg)
                     .setAutoCancel(true)
                     .build()
                 nm.notify(System.currentTimeMillis().toInt(), notif)
@@ -777,8 +781,8 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                 log("✅ 用户已取药")
                 runOnUiThread {
                     AlertDialog.Builder(this)
-                        .setTitle("👏 ${if (S.isZh) "按时服药" else "Well Done"}")
-                        .setMessage(if (S.isZh) "太棒了！坚持按时服药有助于健康。" else "Great! Keep taking medication on time.")
+                        .setTitle(S.takenTitle)
+                        .setMessage(S.takenMsg)
                         .setPositiveButton(S.confirm, null)
                         .show()
                 }

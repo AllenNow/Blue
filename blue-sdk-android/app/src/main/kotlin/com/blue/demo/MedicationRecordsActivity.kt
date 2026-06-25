@@ -54,7 +54,7 @@ class MedicationRecordsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        supportActionBar?.title = "用药记录"
+        supportActionBar?.title = S.medicationRecords
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
         setContentView(buildRoot())
@@ -82,8 +82,8 @@ class MedicationRecordsActivity : AppCompatActivity() {
         }
 
         segmentControl = ToggleButtonGroup(this).apply {
-            addView(createSegmentBtn("按日期", true))
-            addView(createSegmentBtn("全部记录", false))
+            addView(createSegmentBtn(S.byDate, true))
+            addView(createSegmentBtn(S.allRecords, false))
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
                 setMargins(dp(16), dp(8), dp(16), 0)
             }
@@ -97,10 +97,7 @@ class MedicationRecordsActivity : AppCompatActivity() {
             setPadding(dp(12), dp(6), dp(12), dp(6))
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
         }
-        val legends = if (S.isZh)
-            listOf("✅ 按时取药", "⏰ 超时取药", "❌ 漏服", "⏩ 提前取药")
-        else
-            listOf("✅ On time", "⏰ Late", "❌ Missed", "⏩ Early")
+        val legends = listOf(S.legendTaken, S.legendLate, S.legendMissed, S.legendEarly)
         for (text in legends) {
             legendLayout.addView(TextView(this).apply {
                 this.text = text
@@ -136,7 +133,7 @@ class MedicationRecordsActivity : AppCompatActivity() {
 
         // 标题说明
         root.addView(TextView(this).apply {
-            text = if (S.isZh) "设定时间 → 实际取药时间" else "Scheduled → Actual time"
+            text = S.scheduledVsActual
             textSize = 12f
             setTextColor(Color.parseColor("#636366"))
             gravity = Gravity.CENTER
@@ -152,7 +149,7 @@ class MedicationRecordsActivity : AppCompatActivity() {
         root.addView(recyclerView)
 
         emptyLabel = TextView(this).apply {
-            text = "该日期暂无用药记录"
+            text = S.noRecordsForDate
             textSize = 15f
             setTextColor(Color.parseColor("#636366"))
             gravity = Gravity.CENTER
@@ -164,7 +161,7 @@ class MedicationRecordsActivity : AppCompatActivity() {
         root.addView(emptyLabel)
 
         val deleteBtn = Button(this).apply {
-            text = "清空记录"
+            text = S.clearRecords
             setTextColor(Color.parseColor("#FF3B30"))
             isAllCaps = false
             textSize = 14f
@@ -195,7 +192,7 @@ class MedicationRecordsActivity : AppCompatActivity() {
                 isSelected = true
                 setBackgroundColor(Color.parseColor("#007AFF"))
                 setTextColor(Color.WHITE)
-                showAllRecords = text == "全部记录"
+                showAllRecords = text == S.allRecords
                 datePickerBtn.visibility = if (showAllRecords) View.GONE else View.VISIBLE
                 loadRecords()
             }
@@ -232,18 +229,18 @@ class MedicationRecordsActivity : AppCompatActivity() {
         emptyLabel.visibility = if (records.isEmpty()) View.VISIBLE else View.GONE
 
         if (showAllRecords) {
-            summaryLabel.text = "共 ${records.size} 条记录"
+            summaryLabel.text = S.totalRecordsCount.replace("%d", records.size.toString())
         } else {
-            summaryLabel.text = "${fullDateFormat.format(Date(selectedDate))} · ${records.size} 条记录"
+            summaryLabel.text = S.dateRecordsCount.replace("%@", fullDateFormat.format(Date(selectedDate))).replace("%d", records.size.toString())
         }
     }
 
     private fun showDeleteConfirm() {
         AlertDialog.Builder(this)
-            .setTitle("清空记录")
-            .setMessage("确定删除所有用药记录？此操作不可恢复。")
-            .setNegativeButton("取消", null)
-            .setPositiveButton("删除") { _, _ ->
+            .setTitle(S.clearRecords)
+            .setMessage(S.clearRecordsConfirmMsg)
+            .setNegativeButton(S.cancel, null)
+            .setPositiveButton(S.delete) { _, _ ->
                 db.deleteAll()
                 records = emptyList()
                 updateUI()

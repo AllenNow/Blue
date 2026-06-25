@@ -1,107 +1,243 @@
 package com.blue.demo
 
+import android.content.Context
+import org.json.JSONObject
 import java.util.Locale
 
 /**
  * Demo App 多语言字符串管理
- * 优先使用用户手动选择的语言，否则跟随系统语言
+ * 从 assets/locales/{lang}.json 加载翻译
+ * 加新语言只需新增 JSON 文件 + effectiveLang 加一行判断
  */
 object S {
-    /** 用户手动选择的语言代码（null 表示未选择，跟随系统） */
+    private var strings: JSONObject = JSONObject()
+    private var fallback: JSONObject = JSONObject()
     private var userLang: String? = null
 
-    /** 由 App 启动时从 SharedPreferences 加载 */
-    fun setUserLanguage(lang: String?) {
-        userLang = lang
+    val isZh: Boolean get() = effectiveLang == "zh"
+    val isDe: Boolean get() = effectiveLang == "de"
+
+    /** App 启动时调用，加载翻译文件 */
+    fun init(context: Context) {
+        fallback = loadJson(context, "en")
+        reload(context)
     }
 
-    /** 当前生效的语言代码 */
-    private val effectiveLang: String get() = userLang ?: Locale.getDefault().language
+    /** 设置用户选择的语言 */
+    fun setUserLanguage(lang: String?, context: Context? = null) {
+        userLang = lang
+        context?.let { reload(it) }
+    }
 
-    val isZh: Boolean get() = effectiveLang.startsWith("zh")
-    val isDe: Boolean get() = effectiveLang.startsWith("de")
+    private val effectiveLang: String get() {
+        val lang = userLang ?: Locale.getDefault().language
+        return when {
+            lang.startsWith("zh") -> "zh"
+            lang.startsWith("de") -> "de"
+            else -> "en"
+        }
+    }
+
+    private fun reload(context: Context) {
+        strings = loadJson(context, effectiveLang)
+    }
+
+    private fun loadJson(context: Context, lang: String): JSONObject {
+        return try {
+            val text = context.assets.open("locales/$lang.json")
+                .bufferedReader().use { it.readText() }
+            JSONObject(text)
+        } catch (e: Exception) {
+            JSONObject()
+        }
+    }
+
+    /** 按 key 取字符串，找不到时用英文兜底，再找不到返回 key 本身 */
+    operator fun get(key: String): String {
+        return strings.optString(key, fallback.optString(key, key))
+    }
+
+    // MARK: - 编译期安全属性（调用端保持 S.xxx 不变）
 
     // 主页
-    val scan get() = t("扫描", "Scan", "Scannen")
-    val stopScan get() = t("停止扫描", "Stop Scan", "Stoppen")
-    val disconnect get() = t("断开", "Disconnect", "Trennen")
-    val notConnected get() = t("未连接", "Not Connected", "Nicht verbunden")
-    val connecting get() = t("连接中...", "Connecting...", "Verbinden...")
-    val authenticating get() = t("认证中...", "Authenticating...", "Authentifizieren...")
-    val connected get() = t("已连接", "Connected", "Verbunden")
-    val reconnecting get() = t("重连中...", "Reconnecting...", "Neuverbinden...")
-    val scanning get() = t("扫描中...", "Scanning...", "Scannen...")
-    val scanFailed get() = t("扫描失败", "Scan Failed", "Scan fehlgeschlagen")
-    val connectingAuth get() = t("连接认证中...", "Authenticating...", "Authentifizieren...")
-    val scanConnecting get() = t("扫描连接中...", "Scanning...", "Scannen...")
+    val scan get() = this["scan"]
+    val stopScan get() = this["stop_scan"]
+    val disconnect get() = this["disconnect"]
+    val notConnected get() = this["not_connected"]
+    val connecting get() = this["connecting"]
+    val authenticating get() = this["authenticating"]
+    val connected get() = this["connected"]
+    val reconnecting get() = this["reconnecting"]
+    val scanning get() = this["scanning"]
+    val scanFailed get() = this["scan_failed"]
+    val connectingAuth get() = this["connecting_auth"]
+    val scanConnecting get() = this["scan_connecting"]
 
-    val deviceInfo get() = t("设备信息", "Device Info", "Geräteinfo")
-    val syncTime get() = t("同步时间", "Sync Time", "Zeit sync.")
-    val alarmManager get() = t("闹钟管理", "Alarms", "Alarme")
-    val medicationRecords get() = t("用药记录", "Records", "Aufzeichn.")
-    val protocolTest get() = t("指令验证", "Protocol", "Protokoll")
-    val faq get() = t("常见问题", "FAQ", "FAQ")
-    val clearAlarms get() = t("清空闹钟", "Clear Alarms", "Alarme lösch.")
-    val restoreFactory get() = t("恢复出厂", "Factory Reset", "Werksreset")
-    val clearBinding get() = t("解绑设备", "Unbind", "Entkoppeln")
+    val deviceInfo get() = this["device_info"]
+    val syncTime get() = this["sync_time"]
+    val alarmManager get() = this["alarm_manager"]
+    val medicationRecords get() = this["medication_records"]
+    val protocolTest get() = this["protocol_test"]
+    val faq get() = this["faq"]
+    val clearAlarms get() = this["clear_alarms"]
+    val restoreFactory get() = this["restore_factory"]
+    val clearBinding get() = this["clear_binding"]
 
     // 铃声/音量/时制
-    val soundType get() = t("铃声", "Sound", "Klingelton")
-    val volume get() = t("音量", "Volume", "Lautstärke")
-    val timeFormat get() = t("时制", "Format", "Format")
-    val silence get() = t("静音", "Mute", "Stumm")
-    val duration get() = t("持续", "Duration", "Dauer")
-    val minutes get() = t("分", "min", "Min")
-    val set get() = t("设置", "Set", "Setzen")
-    val low get() = t("低", "Low", "Niedrig")
-    val medium get() = t("中", "Med", "Mittel")
-    val high get() = t("高", "High", "Hoch")
+    val soundType get() = this["sound_type"]
+    val volume get() = this["volume"]
+    val timeFormat get() = this["time_format"]
+    val silence get() = this["silence"]
+    val duration get() = this["duration"]
+    val minutes get() = this["minutes"]
+    val set get() = this["set"]
+    val low get() = this["low"]
+    val medium get() = this["medium"]
+    val high get() = this["high"]
 
     // 日志
-    val log get() = t("日志", "Log", "Protokoll")
-    val clear get() = t("清空", "Clear", "Löschen")
+    val log get() = this["log"]
+    val clear get() = this["clear"]
 
     // 对话框
-    val cancel get() = t("取消", "Cancel", "Abbrechen")
-    val confirm get() = t("确定", "OK", "OK")
-    val clearAlarmsTitle get() = t("清空闹钟", "Clear Alarms", "Alarme löschen")
-    val clearAlarmsMsg get() = t("确定清空所有闹钟？", "Clear all alarms?", "Alle Alarme löschen?")
-    val restoreFactoryTitle get() = t("恢复出厂", "Factory Reset", "Werksreset")
-    val restoreFactoryMsg get() = t("确定恢复出厂设置？", "Confirm factory reset?", "Werkseinstellungen wiederherstellen?")
-    val clearBindingTitle get() = t("解绑设备", "Unbind Device", "Gerät entkoppeln")
-    val clearBindingMsg get() = t("确定解绑设备？解绑后需重新配对。", "Unbind device? Re-pairing required afterwards.", "Gerät entkoppeln? Erneutes Koppeln erforderlich.")
-    val authFailedTitle get() = t("认证失败", "Auth Failed", "Authentifizierung fehlgeschl.")
-    val authFailedMsg get() = t("密钥不一致，请对设备长按按键恢复出厂设置后重试。", "Key mismatch. Long-press device button to factory reset, then retry.", "Schlüssel stimmt nicht überein. Taste am Gerät lang drücken für Werksreset.")
+    val cancel get() = this["cancel"]
+    val confirm get() = this["confirm"]
+    val clearAlarmsTitle get() = this["clear_alarms_title"]
+    val clearAlarmsMsg get() = this["clear_alarms_msg"]
+    val restoreFactoryTitle get() = this["restore_factory_title"]
+    val restoreFactoryMsg get() = this["restore_factory_msg"]
+    val clearBindingTitle get() = this["clear_binding_title"]
+    val clearBindingMsg get() = this["clear_binding_msg"]
+    val authFailedTitle get() = this["auth_failed_title"]
+    val authFailedMsg get() = this["auth_failed_msg"]
 
     // 连接状态
-    val userCancelled get() = t("用户取消连接", "Connection cancelled", "Verbindung abgebrochen")
-    val disconnected get() = t("已断开", "Disconnected", "Getrennt")
-    val connectFirst get() = t("请先连接设备", "Connect device first", "Bitte zuerst Gerät verbinden")
-    val scanningAuto get() = t("扫描中...（自动密钥）", "Scanning... (auto key)", "Scannen... (Auto-Schlüssel)")
+    val userCancelled get() = this["user_cancelled"]
+    val disconnected get() = this["disconnected"]
+    val connectFirst get() = this["connect_first"]
+    val scanningAuto get() = this["scanning_auto"]
 
     // 操作日志
-    val queryingDevice get() = t("查询设备信息...", "Querying device info...", "Geräteinfo abfragen...")
-    val syncingTime get() = t("同步时间...", "Syncing time...", "Zeit synchronisieren...")
-    val timeSynced get() = t("时间已同步", "Time synced", "Zeit synchronisiert")
-    val alarmsCleared get() = t("所有闹钟已清空", "All alarms cleared", "Alle Alarme gelöscht")
-    val restoringFactory get() = t("恢复出厂中...", "Restoring factory...", "Werksreset läuft...")
-    val factoryRestored get() = t("已恢复出厂", "Factory restored", "Werkseinstellungen wiederhergestellt")
-    val bindingCleared get() = t("本地绑定已清除", "Local binding cleared", "Lokale Bindung gelöscht")
-    val sdkStarted get() = t("SDK 已启动", "SDK started", "SDK gestartet")
-    val permDenied get() = t("权限未授予", "Permission denied", "Berechtigung verweigert")
-    val scanStopped get() = t("扫描已停止", "Scan stopped", "Scan gestoppt")
-    val found get() = t("发现", "Found", "Gefunden")
+    val queryingDevice get() = this["querying_device"]
+    val syncingTime get() = this["syncing_time"]
+    val timeSynced get() = this["time_synced"]
+    val alarmsCleared get() = this["alarms_cleared"]
+    val restoringFactory get() = this["restoring_factory"]
+    val factoryRestored get() = this["factory_restored"]
+    val bindingCleared get() = this["binding_cleared"]
+    val sdkStarted get() = this["sdk_started"]
+    val permDenied get() = this["perm_denied"]
+    val scanStopped get() = this["scan_stopped"]
+    val found get() = this["found"]
 
-    // 语言选择页
-    val selectLanguage get() = t("选择语言", "Select Language", "Sprache wählen")
-    val languageSettings get() = t("语言设置", "Language", "Sprache")
+    // 语言选择
+    val selectLanguage get() = this["select_language"]
+    val languageSettings get() = this["language_settings"]
     val langChinese get() = "中文"
     val langEnglish get() = "English"
     val langGerman get() = "Deutsch"
 
-    private fun t(zh: String, en: String, de: String) = when {
-        isZh -> zh
-        isDe -> de
-        else -> en
-    }
+    // 通知
+    val alarmRingingTitle get() = this["alarm_ringing_title"]
+    val alarmRingingMsg get() = this["alarm_ringing_msg"]
+    val missedTitle get() = this["missed_title"]
+    val missedMsg get() = this["missed_msg"]
+    val takenTitle get() = this["taken_title"]
+    val takenMsg get() = this["taken_msg"]
+    val ok get() = this["ok"]
+    val disconnectedTitle get() = this["disconnected_title"]
+    val disconnectedMsg get() = this["disconnected_msg"]
+    val deviceDisconnectedToast get() = this["device_disconnected_toast"]
+    val durationError get() = this["duration_error"]
+
+    // 闹钟管理
+    val clearAll get() = this["clear_all"]
+    val alarmSlotLabel get() = this["alarm_slot_label"]
+    val alarmStatusOn get() = this["alarm_status_on"]
+    val alarmStatusOff get() = this["alarm_status_off"]
+    val alarmStatusUnset get() = this["alarm_status_unset"]
+    val saveAlarm get() = this["save_alarm"]
+    val deleteAlarm get() = this["delete_alarm"]
+    val setAlarmFailed get() = this["set_alarm_failed"]
+    val deleteAlarmFailed get() = this["delete_alarm_failed"]
+    val repeatLabel get() = this["repeat_label"]
+    val weekdayDaily get() = this["weekday_daily"]
+    val weekdayWeekdays get() = this["weekday_weekdays"]
+    val weekdayWeekend get() = this["weekday_weekend"]
+    val delete get() = this["delete"]
+    val back get() = this["back"]
+    val send get() = this["send"]
+    val weekdays: List<String> get() = listOf(
+        this["weekday_mon"], this["weekday_tue"], this["weekday_wed"],
+        this["weekday_thu"], this["weekday_fri"], this["weekday_sat"], this["weekday_sun"]
+    )
+
+    // 设备列表
+    val noBoundDevices get() = this["no_bound_devices"]
+    val noBoundDevicesHint get() = this["no_bound_devices_hint"]
+    val deviceOnline get() = this["device_online"]
+    val deviceOffline get() = this["device_offline"]
+    val deviceNotFound get() = this["device_not_found"]
+    val bluetoothUnavailable get() = this["bluetooth_unavailable"]
+    val connectFailed get() = this["connect_failed"]
+    val removeDeviceTitle get() = this["remove_device_title"]
+    val removeDeviceMsg get() = this["remove_device_msg"]
+    val authKeyLabel get() = this["auth_key_label"]
+    val customKeyHint get() = this["custom_key_hint"]
+    val authFailedStatus get() = this["auth_failed_status"]
+    val unbindSuccess get() = this["unbind_success"]
+    val unbindFailed get() = this["unbind_failed"]
+    val scanningCustomKey get() = this["scanning_custom_key"]
+    val scanningFixedKey get() = this["scanning_fixed_key"]
+    val scanTimeout get() = this["scan_timeout"]
+
+    // 扫描页
+    val scanDevicesTitle get() = this["scan_devices_title"]
+    val searchingNearby get() = this["searching_nearby"]
+    val rescan get() = this["rescan"]
+    val noNewDevices get() = this["no_new_devices"]
+    val devicesFoundCount get() = this["devices_found_count"]
+    val scanningFoundCount get() = this["scanning_found_count"]
+    val scanError get() = this["scan_error"]
+    val bind get() = this["bind"]
+    val bluetoothPermissionRequired get() = this["bluetooth_permission_required"]
+
+    // 用药记录
+    val byDate get() = this["by_date"]
+    val allRecords get() = this["all_records"]
+    val legendTaken get() = this["legend_taken"]
+    val legendLate get() = this["legend_late"]
+    val legendMissed get() = this["legend_missed"]
+    val legendEarly get() = this["legend_early"]
+    val scheduledVsActual get() = this["scheduled_vs_actual"]
+    val noRecordsForDate get() = this["no_records_for_date"]
+    val clearRecords get() = this["clear_records"]
+    val clearRecordsConfirmMsg get() = this["clear_records_confirm_msg"]
+    val totalRecordsCount get() = this["total_records_count"]
+    val dateRecordsCount get() = this["date_records_count"]
+
+    // 协议测试
+    val startTest get() = this["start_test"]
+    val testing get() = this["testing"]
+    val runningProtocolTest get() = this["running_protocol_test"]
+    val testSkipped get() = this["test_skipped"]
+    val retest get() = this["retest"]
+    val allTestsPassed get() = this["all_tests_passed"]
+    val testSummary get() = this["test_summary"]
+    val protocolTestHint get() = this["protocol_test_hint"]
+
+    // 调试面板
+    val debugPanelTitle get() = this["debug_panel_title"]
+    val exportLog get() = this["export_log"]
+    val debugInputHint get() = this["debug_input_hint"]
+    val debugReadyMsg get() = this["debug_ready_msg"]
+    val debugCrcHint get() = this["debug_crc_hint"]
+    val debugErrorEven get() = this["debug_error_even"]
+    val debugErrorInvalidHex get() = this["debug_error_invalid_hex"]
+    val autoCrcLabel get() = this["auto_crc_label"]
+
+    // FAQ
+    val faqTitle get() = this["faq_title"]
+    val searchPlaceholder get() = this["search_placeholder"]
+    val noMatchingQuestions get() = this["no_matching_questions"]
 }

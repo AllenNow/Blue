@@ -86,7 +86,7 @@ class ScanActivity : AppCompatActivity() {
                     pendingBindDevice = null
                     Toast.makeText(
                         this@ScanActivity,
-                        if (S.isZh) "认证失败：${error?.message ?: "未知错误"}" else "Auth failed: ${error?.message ?: "Unknown"}",
+                        "${S.authFailedStatus}：${error?.message ?: ""}",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -138,7 +138,7 @@ class ScanActivity : AppCompatActivity() {
         })
 
         titleBar.addView(TextView(this).apply {
-            text = if (S.isZh) "扫描设备" else "Scan Devices"
+            text = S.scanDevicesTitle
             setTextColor(textWhite)
             textSize = 18f
             typeface = Typeface.DEFAULT_BOLD
@@ -155,7 +155,7 @@ class ScanActivity : AppCompatActivity() {
 
         // 状态提示
         statusText = TextView(this).apply {
-            text = if (S.isZh) "正在搜索附近设备..." else "Searching nearby devices..."
+            text = S.searchingNearby
             setTextColor(textGray)
             textSize = 14f
             gravity = Gravity.CENTER
@@ -183,7 +183,7 @@ class ScanActivity : AppCompatActivity() {
         }
 
         scanButton = Button(this).apply {
-            text = if (S.isZh) "重新扫描" else "Rescan"
+            text = S.rescan
             setTextColor(textWhite)
             isAllCaps = false
             textSize = 15f
@@ -262,7 +262,7 @@ class ScanActivity : AppCompatActivity() {
         if (requestCode == 102 && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
             startDeviceScan()
         } else {
-            statusText.text = if (S.isZh) "需要蓝牙权限才能扫描" else "Bluetooth permission required"
+            statusText.text = S.bluetoothPermissionRequired
             scanButton.visibility = View.VISIBLE
         }
     }
@@ -272,7 +272,7 @@ class ScanActivity : AppCompatActivity() {
         isScanning = true
         discoveredDevices.clear()
         deviceListContainer.removeAllViews()
-        statusText.text = if (S.isZh) "正在搜索附近设备..." else "Searching nearby devices..."
+        statusText.text = S.searchingNearby
         scanButton.visibility = View.GONE
 
         sdk.startScan(timeoutMs = 15000L) { event ->
@@ -296,18 +296,18 @@ class ScanActivity : AppCompatActivity() {
                     isScanning = false
                     handler.post {
                         if (discoveredDevices.isEmpty()) {
-                            statusText.text = if (S.isZh) "未发现新设备" else "No new devices found"
+                            statusText.text = S.noNewDevices
                         } else {
-                            statusText.text = if (S.isZh) "发现 ${discoveredDevices.size} 台设备" else "Found ${discoveredDevices.size} device(s)"
+                            statusText.text = S.devicesFoundCount.replace("%d", discoveredDevices.size.toString())
                         }
                         scanButton.visibility = View.VISIBLE
-                        scanButton.text = if (S.isZh) "重新扫描" else "Rescan"
+                        scanButton.text = S.rescan
                     }
                 }
                 is com.blue.sdk.model.ScanEvent.Error -> {
                     isScanning = false
                     handler.post {
-                        statusText.text = if (S.isZh) "扫描出错" else "Scan error"
+                        statusText.text = S.scanError
                         scanButton.visibility = View.VISIBLE
                     }
                 }
@@ -324,9 +324,9 @@ class ScanActivity : AppCompatActivity() {
             })
         }
         statusText.text = if (isScanning) {
-            if (S.isZh) "搜索中...已发现 ${discoveredDevices.size} 台" else "Scanning... found ${discoveredDevices.size}"
+            S.scanningFoundCount.replace("%d", discoveredDevices.size.toString())
         } else {
-            if (S.isZh) "发现 ${discoveredDevices.size} 台设备" else "Found ${discoveredDevices.size} device(s)"
+            S.devicesFoundCount.replace("%d", discoveredDevices.size.toString())
         }
     }
 
@@ -362,7 +362,7 @@ class ScanActivity : AppCompatActivity() {
 
         // 绑定按钮
         val bindBtn = Button(this).apply {
-            text = if (S.isZh) "绑定" else "Bind"
+            text = S.bind
             setTextColor(textWhite)
             isAllCaps = false
             textSize = 13f

@@ -54,7 +54,7 @@ class AlarmEditorActivity : AppCompatActivity() {
         weekMask = intent.getIntExtra("weekMask", 0x7F)
         isEnabled = intent.getBooleanExtra("isEnabled", true)
         isSet = intent.getBooleanExtra("isSet", false)
-        supportActionBar?.title = "闹钟 $index"
+        supportActionBar?.title = String.format(S.alarmSlotLabel, index)
         // 设置 TimePicker 初始值为传入的当前闹钟时间
         timePicker.hour = hour
         timePicker.minute = minute
@@ -93,7 +93,7 @@ class AlarmEditorActivity : AppCompatActivity() {
         content.addView(gap(24))
 
         val repeatLabel = TextView(this).apply {
-            text = "重复"
+            text = S.repeatLabel
             textSize = 15f
             setTextColor(Color.WHITE)
             layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
@@ -107,7 +107,7 @@ class AlarmEditorActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(36))
         }
 
-        val days = listOf("一", "二", "三", "四", "五", "六", "日")
+        val days = S.weekdays
         weekButtons = mutableListOf()
 
         days.forEachIndexed { i, day ->
@@ -132,7 +132,7 @@ class AlarmEditorActivity : AppCompatActivity() {
         content.addView(gap(40))
 
         val saveBtn = Button(this).apply {
-            text = "保存闹钟"
+            text = S.saveAlarm
             setTextColor(Color.WHITE)
             isAllCaps = false
             textSize = 17f
@@ -149,7 +149,7 @@ class AlarmEditorActivity : AppCompatActivity() {
         content.addView(gap(16))
 
         val deleteBtn = Button(this).apply {
-            text = "删除闹钟"
+            text = S.deleteAlarm
             setTextColor(Color.parseColor("#FF3B30"))
             isAllCaps = false
             textSize = 15f
@@ -201,7 +201,7 @@ class AlarmEditorActivity : AppCompatActivity() {
                     },
                     onFailure = {
                         AlertDialog.Builder(this)
-                            .setTitle(if (S.isZh) "设置失败" else "Failed")
+                            .setTitle(S.setAlarmFailed)
                             .setMessage((it as BlueError).message)
                             .setPositiveButton(S.confirm, null)
                             .show()
@@ -225,9 +225,9 @@ class AlarmEditorActivity : AppCompatActivity() {
                 },
                 onFailure = {
                     AlertDialog.Builder(this)
-                        .setTitle("删除失败")
+                        .setTitle(S.deleteAlarmFailed)
                         .setMessage((it as BlueError).message)
-                        .setPositiveButton("确定", null)
+                        .setPositiveButton(S.confirm, null)
                         .show()
                 }
             )

@@ -91,24 +91,19 @@ final class AlarmManager {
 
     // MARK: - 清空所有闹钟（FR17）
 
-    /// 清空设备上所有闹钟（逐个删除 1~7 号槽位）
-    /// - Parameter completion: 全部完成后结果回调
+    /// 清空设备上所有闹钟（DPID 0x70，单条指令）
+    /// - Parameter completion: 结果回调
     func clearAllAlarms(completion: @escaping (Result<Void, BlueError>) -> Void) {
-        func deleteNext(index: Int) {
-            if index > 7 {
+        let data: [UInt8] = [DPIDConstants.emptyAllAlarms, 0x01, 0x00, 0x01, 0x01]
+        let frame = FrameBuilder.build(cmd: CommandCode.sendCommand, data: data)
+        commandQueue.enqueue(cmd: CommandCode.sendCommand, frame: frame) { result in
+            switch result {
+            case .success:
                 completion(.success(()))
-                return
-            }
-            deleteAlarm(index: index) { result in
-                switch result {
-                case .success:
-                    deleteNext(index: index + 1)
-                case .failure(let error):
-                    completion(.failure(error))
-                }
+            case .failure(let error):
+                completion(.failure(error))
             }
         }
-        deleteNext(index: 1)
     }
 
     // MARK: - 查询闹钟（FR15）

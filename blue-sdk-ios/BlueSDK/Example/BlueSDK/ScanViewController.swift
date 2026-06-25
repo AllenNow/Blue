@@ -72,7 +72,7 @@ class ScanViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = SDKLocale.s("扫描设备", "Scan Devices", "Geräte suchen")
+        title = S.scanDevicesTitle
         view.backgroundColor = .systemBackground
         buildUI()
         BlueSDK.shared.addObserver(self)
@@ -87,7 +87,7 @@ class ScanViewController: UIViewController {
     // MARK: - UI 构建
 
     private func buildUI() {
-        statusLabel.text = SDKLocale.s("正在搜索附近设备...", "Searching nearby devices...", "Suche Geräte in der Nähe...")
+        statusLabel.text = S.searchingNearby
         statusLabel.font = .systemFont(ofSize: 14)
         statusLabel.textColor = .secondaryLabel
         statusLabel.textAlignment = .center
@@ -109,7 +109,7 @@ class ScanViewController: UIViewController {
             $0.bottom.equalTo(view.safeAreaLayoutGuide).offset(-60)
         }
 
-        rescanButton.setTitle(SDKLocale.s("重新扫描", "Rescan", "Erneut suchen"), for: .normal)
+        rescanButton.setTitle(S.rescan, for: .normal)
         rescanButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         rescanButton.setTitleColor(.white, for: .normal)
         rescanButton.backgroundColor = .systemBlue
@@ -134,7 +134,7 @@ class ScanViewController: UIViewController {
         isScanning = true
         discoveredDevices.removeAll()
         tableView.reloadData()
-        statusLabel.text = SDKLocale.s("正在搜索附近设备...", "Searching nearby devices...", "Suche Geräte...")
+        statusLabel.text = S.searchingNearby
         rescanButton.isHidden = true
 
         BlueSDK.shared.startScan(timeout: 15) { [weak self] event in
@@ -154,18 +154,16 @@ class ScanViewController: UIViewController {
                 self.isScanning = false
                 DispatchQueue.main.async {
                     if self.discoveredDevices.isEmpty {
-                        self.statusLabel.text = SDKLocale.s("未发现新设备", "No new devices found", "Keine neuen Geräte")
+                        self.statusLabel.text = S.noNewDevices
                     } else {
-                        self.statusLabel.text = SDKLocale.s("发现 \(self.discoveredDevices.count) 台设备",
-                                                           "Found \(self.discoveredDevices.count) device(s)",
-                                                           "\(self.discoveredDevices.count) Gerät(e) gefunden")
+                        self.statusLabel.text = S.devicesFoundCount.replacingOccurrences(of: "%d", with: "\(self.discoveredDevices.count)")
                     }
                     self.rescanButton.isHidden = false
                 }
             case .error:
                 self.isScanning = false
                 DispatchQueue.main.async {
-                    self.statusLabel.text = SDKLocale.s("扫描出错", "Scan error", "Scan-Fehler")
+                    self.statusLabel.text = S.scanError
                     self.rescanButton.isHidden = false
                 }
             }
@@ -175,9 +173,7 @@ class ScanViewController: UIViewController {
     private func refreshUI() {
         tableView.reloadData()
         if isScanning {
-            statusLabel.text = SDKLocale.s("搜索中...已发现 \(discoveredDevices.count) 台",
-                                          "Scanning... found \(discoveredDevices.count)",
-                                          "Suche... \(discoveredDevices.count) gefunden")
+            statusLabel.text = S.scanningFoundCount.replacingOccurrences(of: "%d", with: "\(discoveredDevices.count)")
         }
     }
 
@@ -274,7 +270,7 @@ extension ScanViewController: BlueSDKDelegate {
             DispatchQueue.main.async { [weak self] in
                 self?.loadingOverlay.isHidden = true
                 self?.pendingBindDevice = nil
-                let msg = SDKLocale.s("认证失败", "Auth failed", "Auth fehlgeschlagen")
+                let msg = S.authFailedStatus
                 let toast = UILabel()
                 toast.text = msg
                 toast.font = .systemFont(ofSize: 14)
@@ -344,12 +340,20 @@ class ScanDeviceCell: UITableViewCell {
             $0.bottom.equalToSuperview().offset(-12)
         }
 
-        bindButton.setTitle(SDKLocale.s("绑定", "Bind", "Binden"), for: .normal)
+        bindButton.setTitle(S.bind, for: .normal)
         bindButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
         bindButton.setTitleColor(.white, for: .normal)
         bindButton.backgroundColor = .systemBlue
         bindButton.layer.cornerRadius = 6
-        bindButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 14, bottom: 6, right: 14)
+        if #available(iOS 15.0, *) {
+            var config = UIButton.Configuration.plain()
+            config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 14, bottom: 6, trailing: 14)
+            bindButton.configuration = config
+            bindButton.configuration?.background.backgroundColor = .systemBlue
+            bindButton.configuration?.baseForegroundColor = .white
+        } else {
+            bindButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 14, bottom: 6, right: 14)
+        }
         bindButton.addTarget(self, action: #selector(bindTapped), for: .touchUpInside)
         cardView.addSubview(bindButton)
         bindButton.snp.makeConstraints {

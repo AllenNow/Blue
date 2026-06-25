@@ -16,7 +16,7 @@ class DebugViewController: UIViewController {
 
     private lazy var inputField: UITextField = {
         let tf = UITextField()
-        tf.placeholder = "输入十六进制帧，如：55 AA 00 01 00 00"
+        tf.placeholder = S.debugInputHint
         tf.font = .monospacedSystemFont(ofSize: 14, weight: .regular)
         tf.borderStyle = .roundedRect
         tf.autocorrectionType = .no
@@ -33,7 +33,7 @@ class DebugViewController: UIViewController {
 
     private lazy var sendButton: UIButton = {
         let btn = UIButton(type: .system)
-        btn.setTitle("发送", for: .normal)
+        btn.setTitle(S.send, for: .normal)
         btn.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
         btn.addTarget(self, action: #selector(sendFrame), for: .touchUpInside)
         return btn
@@ -51,14 +51,14 @@ class DebugViewController: UIViewController {
 
     private lazy var exportButton: UIButton = {
         let btn = UIButton(type: .system)
-        btn.setTitle("导出日志", for: .normal)
+        btn.setTitle(S.exportLog, for: .normal)
         btn.addTarget(self, action: #selector(exportLog), for: .touchUpInside)
         return btn
     }()
 
     private lazy var clearButton: UIButton = {
         let btn = UIButton(type: .system)
-        btn.setTitle("清空", for: .normal)
+        btn.setTitle(S.clear, for: .normal)
         btn.setTitleColor(.systemRed, for: .normal)
         btn.addTarget(self, action: #selector(clearLog), for: .touchUpInside)
         return btn
@@ -68,11 +68,11 @@ class DebugViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "BLE 调试面板"
+        title = S.debugPanelTitle
         view.backgroundColor = .systemBackground
         setupUI()
-        appendLog("调试面板就绪。输入十六进制帧（空格分隔）并点击发送。")
-        appendLog("提示：勾选「自动补CRC」只需输入到数据段末尾。")
+        appendLog(S.debugReadyMsg)
+        appendLog(S.debugCrcHint)
     }
 
     // MARK: - UI 搭建
@@ -98,7 +98,7 @@ class DebugViewController: UIViewController {
 
         // CRC 开关行
         let crcRow = UIStackView(arrangedSubviews: [
-            makeLabel("自动补 CRC8："),
+            makeLabel(S.autoCrcLabel),
             autoCRCSwitch,
             UIView(), // spacer
             exportButton,
@@ -119,7 +119,7 @@ class DebugViewController: UIViewController {
         // 解析十六进制字符串
         let hexString = text.replacingOccurrences(of: " ", with: "")
         guard hexString.count % 2 == 0 else {
-            appendLog("❌ 格式错误：十六进制字符数必须为偶数")
+            appendLog("❌ \(S.debugErrorEven)")
             return
         }
 
@@ -129,7 +129,7 @@ class DebugViewController: UIViewController {
             let nextIndex = hexString.index(index, offsetBy: 2)
             let byteString = String(hexString[index..<nextIndex])
             guard let byte = UInt8(byteString, radix: 16) else {
-                appendLog("❌ 格式错误：\(byteString) 不是有效的十六进制")
+                appendLog("❌ \(S.debugErrorInvalidHex): \(byteString)")
                 return
             }
             bytes.append(byte)

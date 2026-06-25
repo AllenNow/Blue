@@ -79,6 +79,8 @@ class DeviceListViewController: UIViewController {
     private var connectedDeviceId: String?
     /// 认证是否失败（防止 .disconnected 事件触发自动重连循环）
     private var isAuthFailed = false
+    /// 用户是否主动断开（主动断开不触发自动重连）
+    private var isUserDisconnect = false
 
     // MARK: - 生命周期
 
@@ -158,13 +160,13 @@ class DeviceListViewController: UIViewController {
         emptyView.addArrangedSubview(emptyIcon)
 
         let emptyTitle = UILabel()
-        emptyTitle.text = SDKLocale.s("暂无绑定设备", "No bound devices", "Keine Geräte")
+        emptyTitle.text = S.noBoundDevices
         emptyTitle.font = .systemFont(ofSize: 16)
         emptyTitle.textColor = .secondaryLabel
         emptyView.addArrangedSubview(emptyTitle)
 
         let emptySubtitle = UILabel()
-        emptySubtitle.text = SDKLocale.s("点击右上角 ＋ 添加您的第一台设备", "Tap ＋ to add your first device", "Tippen Sie ＋ zum Hinzufügen")
+        emptySubtitle.text = S.noBoundDevicesHint
         emptySubtitle.font = .systemFont(ofSize: 13)
         emptySubtitle.textColor = .tertiaryLabel
         emptyView.addArrangedSubview(emptySubtitle)
@@ -288,9 +290,7 @@ class DeviceListViewController: UIViewController {
                             DispatchQueue.main.async {
                                 self.hideLoading()
                                 self.pendingConnectDevice = nil
-                                self.showToast(SDKLocale.s("未找到设备，请确认设备已开启",
-                                                          "Device not found. Check device is on.",
-                                                          "Gerät nicht gefunden."))
+                                self.showToast(S.deviceNotFound)
                             }
                         }
                     case .error:
@@ -305,6 +305,11 @@ class DeviceListViewController: UIViewController {
     }
 
     private func navigateToControl(device: BoundDevice) {
+        // 防止重复跳转：如果导航栈顶部已经是设备控制页则不再 push
+        if navigationController?.topViewController is ViewController {
+            return
+        }
+        pendingConnectDevice = nil
         let vc = ViewController()
         vc.deviceId = device.deviceId
         vc.deviceName = device.deviceName
@@ -313,16 +318,15 @@ class DeviceListViewController: UIViewController {
 
     @objc private func cancelConnect() {
         BlueSDK.shared.stopScan()
+        isUserDisconnect = true
         BlueSDK.shared.disconnect()
         pendingConnectDevice = nil
         hideLoading()
     }
 
     private func showDeleteAlert(for device: BoundDevice) {
-        let title = SDKLocale.s("删除设备", "Remove Device", "Gerät entfernen")
-        let msg = SDKLocale.s("确定从列表中删除 \(device.deviceName)？",
-                              "Remove \(device.deviceName) from list?",
-                              "\(device.deviceName) entfernen?")
+        let title = S.removeDeviceTitle
+        let msg = S.removeDeviceMsg.replacingOccurrences(of: "%@", with: device.deviceName)
         let alert = UIAlertController(title: title, message: msg, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: S.cancel, style: .cancel))
         alert.addAction(UIAlertAction(title: S.confirm, style: .destructive) { [weak self] _ in
@@ -414,7 +418,7 @@ extension DeviceListViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let device = devices[indexPath.row]
-        let deleteAction = UIContextualAction(style: .destructive, title: SDKLocale.s("删除", "Delete", "Löschen")) { [weak self] _, _, completion in
+        let deleteAction = UIContextualAction(style: .destructive, title: S.delete) { [weak self] _, _, completion in
             self?.showDeleteAlert(for: device)
             completion(true)
         }
@@ -437,8 +441,13 @@ extension DeviceListViewController: BlueSDKDelegate {
                 self.navigateToControl(device: device)
             case .disconnected:
                 self.connectedDeviceId = nil
-                // 认证失败后不自动重连（避免无限循环）
-                if self.isAuthFailed {
+                // 主动断开或认证失败后不自动重连
+                if self.isUserDisconnect {
+                    self.isUserDisconnect = false
+                    self.pendingConnectDevice = nil
+                    self.hideLoading()
+                    self.refreshList()
+                } else if self.isAuthFailed {
                     self.isAuthFailed = false
                     self.pendingConnectDevice = nil
                     self.hideLoading()
@@ -464,9 +473,7 @@ extension DeviceListViewController: BlueSDKDelegate {
                 self?.isAuthFailed = true
                 self?.hideLoading()
                 self?.pendingConnectDevice = nil
-                self?.showToast(SDKLocale.s("认证失败：\(error?.localizedDescription ?? "")",
-                                           "Auth failed: \(error?.localizedDescription ?? "")",
-                                           "Auth fehlgeschlagen"))
+                self?.showToast("\(S.authFailedStatus)：\(error?.localizedDescription ?? "")")
                 self?.refreshList()
             }
         }
@@ -553,12 +560,12 @@ class DeviceCell: UITableViewCell {
             cardView.layer.borderWidth = 1.5
             cardView.layer.borderColor = UIColor.systemBlue.cgColor
         } else if isOnline {
-            statusLabel.text = SDKLocale.s("在线", "Online", "Online")
+            statusLabel.text = S.deviceOnline
             statusLabel.textColor = .systemGreen
             statusLabel.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.1)
             cardView.layer.borderWidth = 0
         } else {
-            statusLabel.text = SDKLocale.s("离线", "Offline", "Offline")
+            statusLabel.text = S.deviceOffline
             statusLabel.textColor = .secondaryLabel
             statusLabel.backgroundColor = UIColor.secondaryLabel.withAlphaComponent(0.1)
             cardView.layer.borderWidth = 0

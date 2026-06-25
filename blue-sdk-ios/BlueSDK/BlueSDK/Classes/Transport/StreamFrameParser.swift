@@ -46,7 +46,7 @@ final class StreamFrameParser {
 
         // 防止缓冲区无限增长（异常保护）
         if buffer.count > StreamFrameParser.maxBufferSize {
-            logger.warn("StreamFrameParser 缓冲区超限（\(buffer.count)字节），已清空")
+            logger.warn("StreamFrameParser buffer overflow (\(buffer.count) bytes), cleared")
             buffer.removeAll()
             return
         }
@@ -70,7 +70,7 @@ final class StreamFrameParser {
             guard let headerIndex = findHeader() else {
                 // 没找到帧头，丢弃所有数据
                 if !buffer.isEmpty {
-                    logger.debug("StreamFrameParser：未找到帧头，丢弃 \(buffer.count) 字节")
+                    logger.debug("StreamFrameParser: no header found, discarding \(buffer.count) bytes")
                     buffer.removeAll()
                 }
                 return
@@ -78,7 +78,7 @@ final class StreamFrameParser {
 
             // 丢弃帧头之前的垃圾数据
             if headerIndex > 0 {
-                logger.debug("StreamFrameParser：丢弃帧头前 \(headerIndex) 字节垃圾数据")
+                logger.debug("StreamFrameParser: discarding \(headerIndex) bytes before header")
                 buffer.removeFirst(headerIndex)
             }
 
@@ -110,7 +110,7 @@ final class StreamFrameParser {
             if let frame = FrameParser.parse(frameBytes) {
                 onFrameParsed?(frame)
             } else {
-                logger.warn("StreamFrameParser：帧 CRC 校验失败或格式错误，已丢弃 \(frameLength) 字节")
+                logger.warn("StreamFrameParser: CRC check failed or invalid format, discarded \(frameLength) bytes")
             }
         }
     }

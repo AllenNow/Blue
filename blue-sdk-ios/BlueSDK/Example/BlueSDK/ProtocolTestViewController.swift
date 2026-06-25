@@ -35,7 +35,7 @@ class ProtocolTestViewController: UIViewController {
 
     private lazy var startButton: UIButton = {
         let btn = UIButton(type: .system)
-        btn.setTitle("开始测试", for: .normal)
+        btn.setTitle(S.startTest, for: .normal)
         btn.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
         btn.backgroundColor = .systemBlue
         btn.setTitleColor(.white, for: .normal)
@@ -50,7 +50,7 @@ class ProtocolTestViewController: UIViewController {
         label.font = .systemFont(ofSize: 14)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
-        label.text = "点击\"开始测试\"运行全部协议验证"
+        label.text = S.protocolTestHint
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -77,7 +77,7 @@ class ProtocolTestViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "协议验证"
+        title = S.protocolTest
         view.backgroundColor = .systemBackground
         setupUI()
         buildTestCases()
@@ -87,8 +87,10 @@ class ProtocolTestViewController: UIViewController {
         BlueSDK.shared.setLogHandler { [weak self] level, tag, message in
             print("[BlueSDK][\(level)][\(tag)] \(message)")
             // 只显示收发帧和关键信息
-            if message.contains("发送帧") || message.contains("收到数据") ||
-               message.contains("认证") || message.contains("失败") || message.contains("成功") {
+            if message.contains("TX:") || message.contains("RX:") ||
+               message.contains("收到数据") || message.contains("发送帧") ||
+               message.contains("auth") || message.contains("Auth") ||
+               message.contains("failed") || message.contains("success") {
                 self?.appendLog(message)
             }
         }
@@ -310,8 +312,8 @@ class ProtocolTestViewController: UIViewController {
         results = Array(repeating: .pending, count: testCases.count)
         tableView.reloadData()
         startButton.isEnabled = false
-        startButton.setTitle("测试中...", for: .normal)
-        statusLabel.text = "正在运行协议验证..."
+        startButton.setTitle(S.testing, for: .normal)
+        statusLabel.text = S.runningProtocolTest
         runNext()
     }
 
@@ -344,7 +346,7 @@ class ProtocolTestViewController: UIViewController {
                         self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
                         // 失败跳过，继续下一条
                         self.currentIndex += 1
-                        self.statusLabel.text = "[\(index + 1)/\(self.testCases.count)] \(self.testCases[index].name) ❌ 已跳过"
+                        self.statusLabel.text = "[\(index + 1)/\(self.testCases.count)] \(self.testCases[index].name) ❌ \(S.testSkipped)"
                         self.statusLabel.textColor = .systemOrange
                         self.runNext()
                     }
@@ -356,17 +358,17 @@ class ProtocolTestViewController: UIViewController {
     private func finishTests(success: Bool) {
         isRunning = false
         startButton.isEnabled = true
-        startButton.setTitle("重新测试", for: .normal)
+        startButton.setTitle(S.retest, for: .normal)
 
         let passed = results.filter { if case .passed = $0 { return true }; return false }.count
         let failed = results.filter { if case .failed = $0 { return true }; return false }.count
         let total = testCases.count
 
         if failed == 0 {
-            statusLabel.text = "🎉 全部通过！\(passed)/\(total)"
+            statusLabel.text = "\(S.allTestsPassed) \(passed)/\(total)"
             statusLabel.textColor = .systemGreen
         } else {
-            statusLabel.text = "完成：通过 \(passed) · 失败 \(failed) · 共 \(total)"
+            statusLabel.text = String(format: S.testSummary, passed, failed, total)
             statusLabel.textColor = .systemOrange
         }
     }

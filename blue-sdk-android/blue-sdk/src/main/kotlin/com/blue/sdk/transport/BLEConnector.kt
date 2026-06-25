@@ -38,14 +38,14 @@ internal class BLEConnector {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
-                    BlueLogger.info("GATT 已连接，开始发现服务")
+                    BlueLogger.info("GATT connected, discovering services")
                     gatt.discoverServices()
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     writeCharacteristic = null
                     val error = if (status != BluetoothGatt.GATT_SUCCESS)
                         Exception("GATT 断开，状态码：$status") else null
-                    BlueLogger.info("GATT 已断开：${error?.message ?: "正常断开"}")
+                    BlueLogger.info("GATT disconnected: ${error?.message ?: "normal"}")
                     delegate?.onDisconnected(error)
                 }
             }
@@ -53,13 +53,13 @@ internal class BLEConnector {
 
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             if (status != BluetoothGatt.GATT_SUCCESS) {
-                BlueLogger.error("服务发现失败，状态码：$status")
+                BlueLogger.error("Service discovery failed, status: $status")
                 delegate?.onDisconnected(Exception("服务发现失败"))
                 return
             }
             val service = gatt.getService(SERVICE_UUID)
             if (service == null) {
-                BlueLogger.error("未找到目标服务：$SERVICE_UUID")
+                BlueLogger.error("Target service not found: $SERVICE_UUID")
                 delegate?.onDisconnected(Exception("未找到目标服务"))
                 return
             }
@@ -73,7 +73,7 @@ internal class BLEConnector {
                 }
             }
             if (writeCharacteristic != null) {
-                BlueLogger.info("GATT 特征就绪，连接完成")
+                BlueLogger.info("GATT characteristics ready, connected")
                 delegate?.onConnected()
             }
         }
@@ -97,13 +97,13 @@ internal class BLEConnector {
 
         override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
             if (status != BluetoothGatt.GATT_SUCCESS) {
-                BlueLogger.error("写入失败，状态码：$status")
+                BlueLogger.error("Write failed, status: $status")
             }
         }
     }
 
     fun connect(context: Context, device: BluetoothDevice) {
-        BlueLogger.info("正在连接设备：${device.address}")
+        BlueLogger.info("Connecting to: ${device.address}")
         gatt = device.connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
     }
 
@@ -112,14 +112,14 @@ internal class BLEConnector {
         gatt?.close()
         gatt = null
         writeCharacteristic = null
-        BlueLogger.info("主动断开连接")
+        BlueLogger.info("Disconnected manually")
     }
 
     fun write(bytes: ByteArray) {
         val char = writeCharacteristic
         val g = gatt
         if (char == null || g == null) {
-            BlueLogger.error("写特征未就绪，无法发送数据")
+            BlueLogger.error("Write characteristic not ready")
             return
         }
         writeCharacteristicCompat(g, char, bytes)

@@ -31,7 +31,7 @@ final class CommandQueue {
     private var pendingCommand: PendingCommand?   // 当前正在等待应答的指令
     private var waitingQueue: [PendingCommand] = [] // 等待发送的指令队列
     private var timeoutTimer: Timer?
-    private let lock = NSLock()
+    private let lock = NSRecursiveLock()
 
     /// 发送指令的实际执行块（由 BLEConnector 注入）
     var sendBlock: (([UInt8]) -> Void)?
@@ -85,18 +85,13 @@ final class CommandQueue {
     @discardableResult
     func handleResponse(_ frame: ParsedFrame) -> Bool {
         lock.lock()
+        defer { lock.unlock() }
 
-        guard let pending = pendingCommand else {
-            lock.unlock()
-            return false
-        }
+        guard let pending = pendingCommand else { return false }
 
         // CMD 匹配：应答帧 CMD == 发送帧 CMD + 1 或相同
         let cmdMatch = frame.cmd == pending.cmd + 1 || frame.cmd == pending.cmd
-        guard cmdMatch else {
-            lock.unlock()
-            return false
-        }
+        guard cmdMatch else { return false }
 
         // 对于 sendCommand(0x06) 的应答(0x07)，还需匹配 DPID（数据第一字节）
         // 避免设备主动上报帧（如低电 0x75）被错误匹配
@@ -106,22 +101,14 @@ final class CommandQueue {
                 : nil
             let responseDPID = frame.data.first
             if let pDPID = pendingDPID, let rDPID = responseDPID, pDPID != rDPID {
-                lock.unlock()
                 return false
             }
         }
 
         cancelTimeout()
         pendingCommand = nil
-        // 先释放锁，再调用 completion（防止 completion 内再次 enqueue 导致死锁）
-        lock.unlock()
-
         pending.completion(.success(frame))
-
-        // 发送队列中的下一条指令
-        lock.lock()
         sendNext()
-        lock.unlock()
         return true
     }
 
@@ -172,10 +159,9 @@ final class CommandQueue {
 
     private func handleTimeout() {
         lock.lock()
-        guard let command = pendingCommand else {
-            lock.unlock()
-            return
-        }
+        defer { lock.unlock() }
+        
+        guard let command = pendingCommand else { return }
 
         if command.retryCount < command.maxRetries {
             let retried = PendingCommand(
@@ -187,16 +173,11 @@ final class CommandQueue {
                 completion: command.completion
             )
             pendingCommand = retried
-            lock.unlock()
             send(retried)
         } else {
             pendingCommand = nil
-            lock.unlock()
             command.completion(.failure(.timeout))
-            // 继续发送队列中的下一条
-            lock.lock()
             sendNext()
-            lock.unlock()
         }
     }
 

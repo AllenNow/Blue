@@ -43,6 +43,9 @@ class LanguageViewController: UIViewController {
     static func saveLanguage(_ langCode: String) {
         UserDefaults.standard.set(langCode, forKey: kLanguageKey)
         UserDefaults.standard.set(true, forKey: kLanguageSet)
+        // 更新 Demo App 字符串
+        S.setLanguage(langCode)
+        // 同步 SDK 语言
         let sdkLang: BlueSDKLanguage
         switch langCode {
         case "zh": sdkLang = .zh

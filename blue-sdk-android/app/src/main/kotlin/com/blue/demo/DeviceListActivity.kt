@@ -61,13 +61,16 @@ class DeviceListActivity : AppCompatActivity() {
     private var isScanning = false
     /** 当前已连接的设备 ID（跟踪连接状态用） */
     private var connectedDeviceId: String? = null
+    /** 用户是否主动断开（主动断开不触发自动重连） */
+    private var isUserDisconnect = false
 
     // SDK 监听器 — 监听连接状态变化
     private val sdkListener = object : BlueSDKListener {
         override fun onConnectionStateChanged(state: ConnectionState) {
             if (state == ConnectionState.AUTHENTICATED) {
-                // 连接认证成功，跳转控制页
+                // 连接认证成功，跳转控制页（防止重复跳转）
                 val device = pendingConnectDevice ?: return
+                pendingConnectDevice = null
                 connectedDeviceId = device.deviceId
                 DeviceStorage.updateLastConnected(this@DeviceListActivity, device.deviceId)
                 handler.post {
@@ -75,18 +78,26 @@ class DeviceListActivity : AppCompatActivity() {
                     val intent = Intent(this@DeviceListActivity, MainActivity::class.java)
                     intent.putExtra("device_id", device.deviceId)
                     intent.putExtra("device_name", device.deviceName)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                     startActivity(intent)
                 }
             } else if (state == ConnectionState.DISCONNECTED) {
                 connectedDeviceId = null
                 handler.post {
-                    // 如果有待连接设备（切换设备场景），断开后延迟发起新连接
-                    val pending = pendingConnectDevice
-                    if (pending != null) {
-                        handler.postDelayed({ performConnect(pending) }, 500)
-                    } else {
+                    // 主动断开或认证失败不自动重连
+                    if (isUserDisconnect) {
+                        isUserDisconnect = false
+                        pendingConnectDevice = null
                         hideLoading()
                         refreshList()
+                    } else {
+                        val pending = pendingConnectDevice
+                        if (pending != null) {
+                            handler.postDelayed({ performConnect(pending) }, 500)
+                        } else {
+                            hideLoading()
+                            refreshList()
+                        }
                     }
                 }
             }
@@ -99,7 +110,7 @@ class DeviceListActivity : AppCompatActivity() {
                     pendingConnectDevice = null
                     Toast.makeText(
                         this@DeviceListActivity,
-                        if (S.isZh) "认证失败：${error?.message ?: "未知错误"}" else "Auth failed: ${error?.message ?: "Unknown"}",
+                        "${S.authFailedStatus}：${error?.message ?: ""}",
                         Toast.LENGTH_SHORT
                     ).show()
                     refreshList()
@@ -179,7 +190,7 @@ class DeviceListActivity : AppCompatActivity() {
         })
 
         scanIndicator = TextView(this).apply {
-            text = if (S.isZh) "扫描中..." else "Scanning..."
+            text = S.scanning
             setTextColor(accentBlue)
             textSize = 13f
             visibility = View.GONE
@@ -249,14 +260,14 @@ class DeviceListActivity : AppCompatActivity() {
             gravity = Gravity.CENTER
         })
         emptyView.addView(TextView(this).apply {
-            text = if (S.isZh) "暂无绑定设备" else "No bound devices"
+            text = S.noBoundDevices
             setTextColor(textGray)
             textSize = 16f
             gravity = Gravity.CENTER
             layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply { topMargin = dp(12) }
         })
         emptyView.addView(TextView(this).apply {
-            text = if (S.isZh) "点击右上角 ＋ 添加您的第一台设备" else "Tap ＋ to add your first device"
+            text = S.noBoundDevicesHint
             setTextColor(textGray)
             textSize = 13f
             gravity = Gravity.CENTER
@@ -377,15 +388,15 @@ class DeviceListActivity : AppCompatActivity() {
         val statusColor: Int
         when {
             isConnected -> {
-                statusText = if (S.isZh) "已连接" else "Connected"
+                statusText = S.connected
                 statusColor = accentBlue
             }
             isOnline -> {
-                statusText = if (S.isZh) "在线" else "Online"
+                statusText = S.deviceOnline
                 statusColor = accentGreen
             }
             else -> {
-                statusText = if (S.isZh) "离线" else "Offline"
+                statusText = S.deviceOffline
                 statusColor = textGray
             }
         }
@@ -475,7 +486,7 @@ class DeviceListActivity : AppCompatActivity() {
             hideLoading()
             pendingConnectDevice = null
             Toast.makeText(this,
-                if (S.isZh) "蓝牙不可用" else "Bluetooth unavailable",
+                S.bluetoothUnavailable,
                 Toast.LENGTH_SHORT
             ).show()
             return
@@ -494,13 +505,14 @@ class DeviceListActivity : AppCompatActivity() {
             hideLoading()
             pendingConnectDevice = null
             Toast.makeText(this,
-                if (S.isZh) "连接失败：${e.message}" else "Connect failed: ${e.message}",
+                "${S.connectFailed}：${e.message}",
                 Toast.LENGTH_SHORT
             ).show()
         }
     }
 
     private fun cancelConnect() {
+        isUserDisconnect = true
         sdk.disconnect()
         pendingConnectDevice = null
         hideLoading()
@@ -508,8 +520,8 @@ class DeviceListActivity : AppCompatActivity() {
 
     private fun showDeleteDialog(device: BoundDevice) {
         AlertDialog.Builder(this)
-            .setTitle(if (S.isZh) "删除设备" else "Remove Device")
-            .setMessage(if (S.isZh) "确定从列表中删除 ${device.deviceName}？" else "Remove ${device.deviceName} from list?")
+            .setTitle(S.removeDeviceTitle)
+            .setMessage(S.removeDeviceMsg.replace("%@", device.deviceName))
             .setNegativeButton(S.cancel, null)
             .setPositiveButton(S.confirm) { _, _ ->
                 // 如果正在连接该设备，先断开

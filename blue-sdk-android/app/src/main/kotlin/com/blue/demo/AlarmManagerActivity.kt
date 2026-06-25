@@ -29,10 +29,10 @@ data class AlarmSlot(
     val timeString: String get() = if (isSet) String.format("%02d:%02d", hour, minute) else "--:--"
     val weekDescription: String get() {
         if (!isSet) return ""
-        if (weekMask == 0x7F) return "每天"
-        if (weekMask == 0x1F) return "工作日"
-        if (weekMask == 0x60) return "周末"
-        val days = listOf("一", "二", "三", "四", "五", "六", "日")
+        if (weekMask == 0x7F) return S.weekdayDaily
+        if (weekMask == 0x1F) return S.weekdayWeekdays
+        if (weekMask == 0x60) return S.weekdayWeekend
+        val days = S.weekdays
         return (0..6).filter { (weekMask and (1 shl it)) != 0 }.map { days[it] }.joinToString(" ")
     }
 }
@@ -59,13 +59,13 @@ class AlarmManagerActivity : AppCompatActivity() {
         alarms = AlarmStorage.loadAll(this).toMutableList()
         // 注册为 SDK 事件观察者，实时接收设备上报的闹钟变更
         sdk.addObserver(alarmObserver)
-        supportActionBar?.title = "闹钟管理"
+        supportActionBar?.title = S.alarmManager
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
         supportActionBar?.setDisplayShowTitleEnabled(true)
         supportActionBar?.setCustomView(android.widget.TextView(this).apply {
-            text = "清空全部"
+            text = S.clearAll
             setTextColor(Color.parseColor("#FF3B30"))
             textSize = 17f
             gravity = Gravity.CENTER
@@ -303,13 +303,13 @@ class AlarmManagerActivity : AppCompatActivity() {
             }
 
             fun bind(slot: AlarmSlot, onClick: (AlarmSlot) -> Unit) {
-                indexLabel.text = "闹钟 ${slot.index}"
+                indexLabel.text = String.format(S.alarmSlotLabel, slot.index)
                 timeLabel.text = slot.timeString
                 weekLabel.text = slot.weekDescription
 
                 if (slot.isSet) {
                     timeLabel.setTextColor(Color.WHITE)
-                    statusBadge.text = if (slot.isEnabled) " 已开启 " else " 已关闭 "
+                    statusBadge.text = if (slot.isEnabled) " ${S.alarmStatusOn} " else " ${S.alarmStatusOff} "
                     val badgeColor = if (slot.isEnabled) Color.parseColor("#34C759") else Color.parseColor("#8E8E93")
                     statusBadge.setTextColor(badgeColor)
                     (statusBadge.background as android.graphics.drawable.GradientDrawable).setColor(
@@ -317,7 +317,7 @@ class AlarmManagerActivity : AppCompatActivity() {
                     )
                 } else {
                     timeLabel.setTextColor(Color.parseColor("#636366"))
-                    statusBadge.text = " 未设置 "
+                    statusBadge.text = " ${S.alarmStatusUnset} "
                     statusBadge.setTextColor(Color.parseColor("#636366"))
                     (statusBadge.background as android.graphics.drawable.GradientDrawable).setColor(
                         adjustAlpha(Color.parseColor("#8E8E93"), 0.05f)

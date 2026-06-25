@@ -53,7 +53,7 @@ final class BLECentralManager: NSObject {
 extension BLECentralManager: CBCentralManagerDelegate {
 
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        logger.info("蓝牙状态变更：\(central.state.rawValue)")
+        logger.info("Bluetooth state changed: \(central.state.rawValue)")
         scanDelegate?.bleCentralManagerDidUpdateState(central)
     }
 

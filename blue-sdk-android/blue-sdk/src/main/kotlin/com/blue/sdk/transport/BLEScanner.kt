@@ -37,12 +37,12 @@ internal class BLEScanner {
                 rssi = result.rssi,
                 bluetoothDevice = result.device
             )
-            BlueLogger.debug("发现设备：$name，RSSI：${result.rssi}")
+            BlueLogger.debug("Device found: $name, RSSI: ${result.rssi}")
             CallbackDispatcher.dispatch { onDeviceFound?.invoke(device) }
         }
 
         override fun onScanFailed(errorCode: Int) {
-            BlueLogger.error("BLE 扫描失败，错误码：$errorCode")
+            BlueLogger.error("BLE scan failed, error: $errorCode")
             CallbackDispatcher.dispatch { onError?.invoke(BlueError.BleError(Exception("Scan failed: $errorCode"))) }
         }
     }
@@ -69,7 +69,7 @@ internal class BLEScanner {
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                 .build()
             adapter.bluetoothLeScanner?.startScan(null, settings, scanCallback)
-            BlueLogger.info("BLE 扫描已启动，过滤前缀：$DEVICE_NAME_PREFIX")
+            BlueLogger.info("BLE scan started, prefix: $DEVICE_NAME_PREFIX")
         }
         pendingScanRunnable = runnable
         handler.postDelayed(runnable, SCAN_DELAY_AFTER_DISCONNECT_MS)
@@ -84,6 +84,6 @@ internal class BLEScanner {
         isScanning = false
         onDeviceFound = null
         onError = null
-        BlueLogger.info("BLE 扫描已停止")
+        BlueLogger.info("BLE scan stopped")
     }
 }

@@ -35,7 +35,7 @@ class AlarmEditorViewController: UIViewController {
 
     private lazy var saveButton: UIButton = {
         let btn = UIButton(type: .system)
-        btn.setTitle("保存闹钟", for: .normal)
+        btn.setTitle(S.saveAlarm, for: .normal)
         btn.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
         btn.backgroundColor = .systemBlue
         btn.setTitleColor(.white, for: .normal)
@@ -47,7 +47,7 @@ class AlarmEditorViewController: UIViewController {
 
     private lazy var deleteButton: UIButton = {
         let btn = UIButton(type: .system)
-        btn.setTitle("删除闹钟", for: .normal)
+        btn.setTitle(S.deleteAlarm, for: .normal)
         btn.titleLabel?.font = .systemFont(ofSize: 15)
         btn.setTitleColor(.systemRed, for: .normal)
         btn.translatesAutoresizingMaskIntoConstraints = false
@@ -75,15 +75,15 @@ class AlarmEditorViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "闹钟 \(slot.index)"
+        title = String(format: S.alarmSlotLabel, slot.index)
         view.backgroundColor = .systemBackground
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "取消", style: .plain, target: self, action: #selector(cancel))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: S.cancel, style: .plain, target: self, action: #selector(cancel))
         setupUI()
         configureInitialValues()
     }
 
     private func setupUI() {
-        let days = ["一", "二", "三", "四", "五", "六", "日"]
+        let days = S.weekdays
         for (i, day) in days.enumerated() {
             let btn = UIButton(type: .system)
             btn.setTitle(day, for: .normal)
@@ -97,7 +97,7 @@ class AlarmEditorViewController: UIViewController {
         }
 
         let repeatLabel = UILabel()
-        repeatLabel.text = "重复"
+        repeatLabel.text = S.repeatLabel
         repeatLabel.font = .systemFont(ofSize: 15, weight: .medium)
         repeatLabel.translatesAutoresizingMaskIntoConstraints = false
 
@@ -183,8 +183,8 @@ class AlarmEditorViewController: UIViewController {
                     self?.onSave?(updated)
                     self?.dismiss(animated: true)
                 case .failure(let error):
-                    let alert = UIAlertController(title: "设置失败", message: error.localizedDescription, preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "确定", style: .default))
+                    let alert = UIAlertController(title: S.setAlarmFailed, message: error.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: S.confirm, style: .default))
                     self?.present(alert, animated: true)
                 }
             }
