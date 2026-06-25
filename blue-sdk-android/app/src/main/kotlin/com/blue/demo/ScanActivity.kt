@@ -67,7 +67,7 @@ class ScanActivity : AppCompatActivity() {
                     val intent = Intent(this@ScanActivity, MainActivity::class.java)
                     intent.putExtra("device_id", device.deviceId)
                     intent.putExtra("device_name", device.deviceName)
-                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                     startActivity(intent)
                     finish()
                 }

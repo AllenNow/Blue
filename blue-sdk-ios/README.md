@@ -193,9 +193,11 @@ BlueSDK.shared.restoreFactory { }
 ## 线程模型
 
 - **所有 `BlueSDKDelegate` 回调在主线程派发**，集成方无需手动切换线程
+- **API 方法的 `completion` 闭包可能在 BLE 线程触发**，如需操作 UI 请使用 `DispatchQueue.main.async`
 - 内部 BLE 操作在 CoreBluetooth 默认队列执行
 - `CommandQueue` 保证同一时刻只有一条指令在等待应答（FIFO 串行）
 - 指令间隔 200ms，超时 5 秒自动重试，最多重试 3 次
+- SDK 本身线程安全，所有公开方法可在任意线程调用
 
 ## 错误处理
 

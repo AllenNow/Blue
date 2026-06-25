@@ -23,8 +23,8 @@ data class AlarmInfo(
     val ringingState: Int = 0,
     val eventStatus: Int = 0
 ) {
-    /** 是否为删除状态（所有字段为 0xFF）/ Whether deleted (all fields 0xFF) */
-    val isDeleted: Boolean get() = hour == 0xFF && minute == 0xFF && weekMask == 0xFF
+    /** 是否为无效/删除状态（hour>23 或 minute>59 或全0xFF）*/
+    val isDeleted: Boolean get() = (hour == 0xFF && minute == 0xFF && weekMask == 0xFF) || hour > 23 || minute > 59
 
     /**
      * 闹钟运行状态

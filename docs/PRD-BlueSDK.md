@@ -173,7 +173,7 @@ DISCONNECTED → CONNECTING → CONNECTED → AUTHENTICATED
 | 0x73 | 时制（0=12H/1=24H） | 双向 |
 | 0x74 | 静音（0=关/1=开） | 双向 |
 | 0x75 | 低电上报 | 上行 |
-| 0x76 | 恢复出厂 | 下行 |
+| 0x71 | 恢复出厂 | 下行 |
 
 ---
 

@@ -46,9 +46,9 @@ import Foundation
     /// 向后兼容旧字段 / Backward compatible
     @objc public var advanceStatus: Int { eventStatus }
 
-    /// 是否为删除状态 / Whether deleted
+    /// 是否为无效/删除状态（hour>23 或 minute>59 或全0xFF）
     @objc public var isDeleted: Bool {
-        return hour == 0xFF && minute == 0xFF && weekMask == 0xFF
+        return (hour == 0xFF && minute == 0xFF && weekMask == 0xFF) || hour > 23 || minute > 59
     }
 
     /// 当前运行状态 / Current running state

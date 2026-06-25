@@ -58,8 +58,8 @@ enum DPIDConstants {
     static let emptyAllAlarms: UInt8 = 0x70
 
     /// 设备恢复出厂配置（只下发）
-    /// DPID = 0x76
-    static let restoreFactory: UInt8 = 0x76
+    /// DPID = 0x71
+    static let restoreFactory: UInt8 = 0x71
 
     /// 时制（可下发可上报）DPID_TIMEFORMAT
     /// 0-12小时制 1-24小时制

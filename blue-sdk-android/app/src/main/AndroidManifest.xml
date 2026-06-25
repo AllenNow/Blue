@@ -31,6 +31,7 @@
             android:label="扫描设备"/>
         <activity
             android:name=".MainActivity"
+            android:launchMode="singleTop"
             android:exported="false"
             android:label="设备控制"/>
         <activity

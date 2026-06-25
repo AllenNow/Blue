@@ -81,14 +81,20 @@ internal class AlarmManager(private val commandQueue: CommandQueue) {
 
     companion object {
         fun parseAlarmInfo(data: ByteArray, index: Int): AlarmInfo? {
-            if (data.size < 11) return null
+            // 最少需要 8 字节才能解析基本闹钟信息（DPID+type/len+enabled+hour+minute+weekMask）
+            if (data.size < 8) return null
+            val hour = data[5].toInt() and 0xFF
+            val minute = data[6].toInt() and 0xFF
+            val weekMask = data[7].toInt() and 0xFF
+            val ringingState = if (data.size > 9) data[9].toInt() and 0xFF else 0
+            val eventStatus = if (data.size > 10) data[10].toInt() and 0xFF else 0
             return AlarmInfo(
                 index = index,
-                hour = data[5].toInt() and 0xFF,
-                minute = data[6].toInt() and 0xFF,
-                weekMask = data[7].toInt() and 0xFF,
-                ringingState = data[9].toInt() and 0xFF,
-                eventStatus = data[10].toInt() and 0xFF
+                hour = hour,
+                minute = minute,
+                weekMask = weekMask,
+                ringingState = ringingState,
+                eventStatus = eventStatus
             )
         }
     }
