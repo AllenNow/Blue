@@ -23,6 +23,8 @@ import Foundation
 @objc public class AlarmInfo: NSObject {
     /// 闹钟槽位索引（1~7）/ Alarm slot index (1~7)
     @objc public let index: Int
+    /// 使能状态（true=开启, false=关闭）/ Enabled state
+    @objc public let isEnabled: Bool
     /// 小时（0~23）/ Hour (0~23)
     @objc public let hour: Int
     /// 分钟（0~59）/ Minute (0~59)
@@ -34,8 +36,9 @@ import Foundation
     /// 事件状态：0=无, 1=响铃中, 2=超时或已取药 / Event status: 0=none, 1=ringing, 2=timeout/taken
     @objc public let eventStatus: Int
 
-    @objc public init(index: Int, hour: Int, minute: Int, weekMask: Int, ringingState: Int = 0, eventStatus: Int = 0) {
+    @objc public init(index: Int, isEnabled: Bool = true, hour: Int, minute: Int, weekMask: Int, ringingState: Int = 0, eventStatus: Int = 0) {
         self.index = index
+        self.isEnabled = isEnabled
         self.hour = hour
         self.minute = minute
         self.weekMask = weekMask
@@ -46,9 +49,9 @@ import Foundation
     /// 向后兼容旧字段 / Backward compatible
     @objc public var advanceStatus: Int { eventStatus }
 
-    /// 是否为无效/删除状态（hour>23 或 minute>59 或全0xFF）
+    /// 是否为无效/删除状态（未使能或时间超出有效范围）
     @objc public var isDeleted: Bool {
-        return (hour == 0xFF && minute == 0xFF && weekMask == 0xFF) || hour > 23 || minute > 59
+        return !isEnabled || hour > 23 || minute > 59
     }
 
     /// 当前运行状态 / Current running state

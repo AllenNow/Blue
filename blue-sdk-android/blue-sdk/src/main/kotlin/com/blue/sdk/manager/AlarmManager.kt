@@ -27,7 +27,7 @@ internal class AlarmManager(private val commandQueue: CommandQueue) {
         val frame = FrameBuilder.build(CommandCode.SEND_COMMAND, data)
         commandQueue.enqueue(CommandCode.SEND_COMMAND, frame) { result ->
             result.fold(
-                onSuccess = { completion(Result.success(AlarmInfo(index, hour, minute, weekMask, 0))) },
+                onSuccess = { completion(Result.success(AlarmInfo(index = index, isEnabled = true, hour = hour, minute = minute, weekMask = weekMask))) },
                 onFailure = { completion(Result.failure(it as BlueError)) }
             )
         }
@@ -81,8 +81,9 @@ internal class AlarmManager(private val commandQueue: CommandQueue) {
 
     companion object {
         fun parseAlarmInfo(data: ByteArray, index: Int): AlarmInfo? {
-            // 最少需要 8 字节才能解析基本闹钟信息（DPID+type/len+enabled+hour+minute+weekMask）
+            // 最少需要 8 字节：[DPID][type1][type2][len][enabled][hour][minute][weekMask]
             if (data.size < 8) return null
+            val enabled = data[4].toInt() and 0xFF  // 0x00=关闭, 0x01=开启
             val hour = data[5].toInt() and 0xFF
             val minute = data[6].toInt() and 0xFF
             val weekMask = data[7].toInt() and 0xFF
@@ -90,6 +91,7 @@ internal class AlarmManager(private val commandQueue: CommandQueue) {
             val eventStatus = if (data.size > 10) data[10].toInt() and 0xFF else 0
             return AlarmInfo(
                 index = index,
+                isEnabled = enabled == 0x01,
                 hour = hour,
                 minute = minute,
                 weekMask = weekMask,

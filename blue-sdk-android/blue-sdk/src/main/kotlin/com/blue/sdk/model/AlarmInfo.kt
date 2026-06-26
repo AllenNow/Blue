@@ -17,14 +17,15 @@ package com.blue.sdk.model
  */
 data class AlarmInfo(
     val index: Int,
+    val isEnabled: Boolean = true,
     val hour: Int,
     val minute: Int,
     val weekMask: Int,
     val ringingState: Int = 0,
     val eventStatus: Int = 0
 ) {
-    /** 是否为无效/删除状态（hour>23 或 minute>59 或全0xFF）*/
-    val isDeleted: Boolean get() = (hour == 0xFF && minute == 0xFF && weekMask == 0xFF) || hour > 23 || minute > 59
+    /** 是否为无效/删除状态（未使能且时间超出有效范围）*/
+    val isDeleted: Boolean get() = !isEnabled || hour > 23 || minute > 59
 
     /**
      * 闹钟运行状态

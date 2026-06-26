@@ -1,6 +1,7 @@
 package com.blue.demo
 
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.Gravity
@@ -90,6 +91,9 @@ class AlarmManagerActivity : AppCompatActivity() {
         sdk.removeObserver(alarmObserver)
     }
 
+    private lateinit var nextAlarmTimeLabel: TextView
+    private lateinit var nextAlarmDescLabel: TextView
+
     private fun buildRoot(): View {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -106,7 +110,95 @@ class AlarmManagerActivity : AppCompatActivity() {
         }
         root.addView(recyclerView)
 
+        // 底部：下一个闹钟卡片
+        val nextCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            setBackgroundColor(Color.parseColor("#2C2C2E"))
+            setPadding(dp(20), dp(16), dp(20), dp(20))
+        }
+
+        nextCard.addView(TextView(this).apply {
+            text = if (S.isZh) "⏰ 下一个闹钟" else "⏰ Next Alarm"
+            setTextColor(Color.parseColor("#8E8E93"))
+            textSize = 13f
+            gravity = Gravity.CENTER
+        })
+
+        nextAlarmTimeLabel = TextView(this).apply {
+            text = "--:--"
+            setTextColor(Color.WHITE)
+            textSize = 36f
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            gravity = Gravity.CENTER
+            setPadding(0, dp(4), 0, dp(4))
+        }
+        nextCard.addView(nextAlarmTimeLabel)
+
+        nextAlarmDescLabel = TextView(this).apply {
+            text = if (S.isZh) "暂无已启用的闹钟" else "No active alarms"
+            setTextColor(Color.parseColor("#8E8E93"))
+            textSize = 14f
+            gravity = Gravity.CENTER
+        }
+        nextCard.addView(nextAlarmDescLabel)
+
+        root.addView(nextCard)
+        updateNextAlarm()
+
         return root
+    }
+
+    /** 根据当前时间和已启用闹钟计算下一个触发的闹钟 */
+    private fun updateNextAlarm() {
+        val now = java.util.Calendar.getInstance()
+        val nowHour = now.get(java.util.Calendar.HOUR_OF_DAY)
+        val nowMinute = now.get(java.util.Calendar.MINUTE)
+        // 当前星期（协议：bit0=周一...bit6=周日）
+        val calDow = now.get(java.util.Calendar.DAY_OF_WEEK) // 1=Sun...7=Sat
+        val todayBit = if (calDow == java.util.Calendar.SUNDAY) 6 else calDow - 2 // 转为 0=Mon...6=Sun
+
+        val activeAlarms = alarms.filter { it.isSet && it.isEnabled }
+        if (activeAlarms.isEmpty()) {
+            nextAlarmTimeLabel.text = "--:--"
+            nextAlarmDescLabel.text = if (S.isZh) "暂无已启用的闹钟" else "No active alarms"
+            return
+        }
+
+        // 计算每个闹钟距离当前的分钟数（考虑周期）
+        data class Candidate(val slot: AlarmSlot, val minutesAway: Int)
+        val candidates = mutableListOf<Candidate>()
+
+        for (alarm in activeAlarms) {
+            for (dayOffset in 0..6) {
+                val checkDay = (todayBit + dayOffset) % 7
+                if (alarm.weekMask and (1 shl checkDay) == 0) continue
+                var minutesAway = dayOffset * 24 * 60 + (alarm.hour - nowHour) * 60 + (alarm.minute - nowMinute)
+                if (dayOffset == 0 && minutesAway <= 0) continue // 今天已过
+                if (minutesAway <= 0) minutesAway += 7 * 24 * 60
+                candidates.add(Candidate(alarm, minutesAway))
+                break // 找到该闹钟最近的一次即可
+            }
+        }
+
+        val next = candidates.minByOrNull { it.minutesAway }
+        if (next == null) {
+            nextAlarmTimeLabel.text = "--:--"
+            nextAlarmDescLabel.text = if (S.isZh) "暂无已启用的闹钟" else "No active alarms"
+            return
+        }
+
+        nextAlarmTimeLabel.text = String.format("%02d:%02d", next.slot.hour, next.slot.minute)
+
+        val hours = next.minutesAway / 60
+        val mins = next.minutesAway % 60
+        nextAlarmDescLabel.text = if (S.isZh) {
+            if (hours > 0) "闹钟${next.slot.index} · ${hours}小时${mins}分钟后"
+            else "闹钟${next.slot.index} · ${mins}分钟后"
+        } else {
+            if (hours > 0) "Alarm ${next.slot.index} · in ${hours}h ${mins}m"
+            else "Alarm ${next.slot.index} · in ${mins}m"
+        }
     }
 
     private fun setupSwipeToDelete() {
@@ -163,6 +255,7 @@ class AlarmManagerActivity : AppCompatActivity() {
         alarms[index - 1] = slot
         AlarmStorage.save(this, slot)
         adapter.notifyItemChanged(index - 1)
+        updateNextAlarm()
     }
 
     private fun deleteAlarmAt(position: Int) {
@@ -174,6 +267,7 @@ class AlarmManagerActivity : AppCompatActivity() {
                         alarms[position] = AlarmSlot(slot.index, false, 0, 0, 0x7F, false)
                         AlarmStorage.clear(this, slot.index)
                         adapter.notifyItemChanged(position)
+                        updateNextAlarm()
                     },
                     onFailure = {
                         adapter.notifyItemChanged(position)
@@ -200,6 +294,7 @@ class AlarmManagerActivity : AppCompatActivity() {
                                 }
                                 AlarmStorage.clearAll(this)
                                 adapter.notifyDataSetChanged()
+                                updateNextAlarm()
                             },
                             onFailure = { android.widget.Toast.makeText(this, (it as BlueError).message, android.widget.Toast.LENGTH_SHORT).show() }
                         )
