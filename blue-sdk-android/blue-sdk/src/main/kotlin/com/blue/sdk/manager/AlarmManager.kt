@@ -81,7 +81,8 @@ internal class AlarmManager(private val commandQueue: CommandQueue) {
 
     companion object {
         fun parseAlarmInfo(data: ByteArray, index: Int): AlarmInfo? {
-            // 最少需要 8 字节：[DPID][type1][type2][len][enabled][hour][minute][weekMask]
+            // 数据格式：[DPID][type1][type2][len][enabled][hour][minute][weekMask][triggerFlag][ringingState][medRecordFlag]
+            // 最少需要 8 字节
             if (data.size < 8) return null
             val enabled = data[4].toInt() and 0xFF  // 0x00=关闭, 0x01=开启
             val hour = data[5].toInt() and 0xFF

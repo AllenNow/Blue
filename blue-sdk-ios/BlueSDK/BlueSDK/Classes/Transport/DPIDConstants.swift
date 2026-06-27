@@ -22,7 +22,7 @@ enum DPIDConstants {
     // MARK: - 闹钟槽位（1~7）
 
     /// 闹钟1（可下发可上报）DPID_ALARM1
-    /// byte0-小时 byte1-分钟 byte2-周期使能(bit0=周一,bit1=周二,bit2=周三,bit3=周四,bit4=周五,bit5=周六,bit6=周日，默认0x7F)
+    /// byte0-小时 byte1-分钟 byte2-周期使能(bit0=周日,bit1=周一,bit2=周二,bit3=周三,bit4=周四,bit5=周五,bit6=周六，默认0x7F)
     /// byte3-提前状态(bit0-当天 bit4-次日)
     static let alarm1: UInt8 = 0x66
     static let alarm2: UInt8 = 0x67

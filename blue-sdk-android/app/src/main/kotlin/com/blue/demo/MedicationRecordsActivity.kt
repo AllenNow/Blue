@@ -32,7 +32,11 @@ class MedicationRecordsActivity : AppCompatActivity() {
         val pattern = if (sdk.currentTimeFormat == com.blue.sdk.enums.TimeFormat.HOUR_12) "h:mm a" else "HH:mm"
         return SimpleDateFormat(pattern, Locale.getDefault())
     }
-    private val fullDateFormat by lazy { SimpleDateFormat("yyyy年M月d日", Locale.getDefault()) }
+    private val fullDateFormat: SimpleDateFormat get() = when {
+        S.isZh -> SimpleDateFormat("yyyy年M月d日", Locale.CHINESE)
+        S.isDe -> SimpleDateFormat("d. MMMM yyyy", Locale.GERMAN)
+        else -> SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH)
+    }
     private val shortDateFormat: SimpleDateFormat get() {
         val pattern = if (sdk.currentTimeFormat == com.blue.sdk.enums.TimeFormat.HOUR_12) "M/d h:mm a" else "M/d HH:mm"
         return SimpleDateFormat(pattern, Locale.getDefault())
@@ -308,15 +312,11 @@ class MedicationRecordsActivity : AppCompatActivity() {
 
             fun bind(entry: MedicationEntry) {
                 emojiLabel.text = entry.statusEmoji
-                titleLabel.text = if (S.isZh)
-                    "闹钟${entry.alarmIndex} · ${entry.statusText}"
-                else "Alarm ${entry.alarmIndex} · ${entry.statusText}"
+                titleLabel.text = String.format(S.alarmIndexStatus, entry.alarmIndex, entry.statusText)
                 val timePattern = if (com.blue.sdk.BlueSDK.getInstance(itemView.context).currentTimeFormat == com.blue.sdk.enums.TimeFormat.HOUR_12) "h:mm a" else "HH:mm"
                 val eventTime = SimpleDateFormat(timePattern, Locale.getDefault()).format(Date(entry.timestamp))
                 if (entry.alarmHour > 0 || entry.alarmMinute > 0) {
-                    detailLabel.text = if (S.isZh)
-                        "设定 ${entry.alarmTimeString} → 实际 $eventTime"
-                    else "Scheduled ${entry.alarmTimeString} → Actual $eventTime"
+                    detailLabel.text = String.format(S.scheduledActualTime, entry.alarmTimeString, eventTime)
                 } else {
                     val datePattern = if (com.blue.sdk.BlueSDK.getInstance(itemView.context).currentTimeFormat == com.blue.sdk.enums.TimeFormat.HOUR_12) "M/d h:mm a" else "M/d HH:mm"
                     detailLabel.text = SimpleDateFormat(datePattern, Locale.getDefault()).format(Date(entry.timestamp))

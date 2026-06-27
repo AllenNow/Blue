@@ -18,13 +18,13 @@ package com.blue.sdk.enums
  * ```
  */
 enum class WeekDay(val mask: Int) {
-    MONDAY(0x01),
-    TUESDAY(0x02),
-    WEDNESDAY(0x04),
-    THURSDAY(0x08),
-    FRIDAY(0x10),
-    SATURDAY(0x20),
-    SUNDAY(0x40);
+    SUNDAY(0x01),
+    MONDAY(0x02),
+    TUESDAY(0x04),
+    WEDNESDAY(0x08),
+    THURSDAY(0x10),
+    FRIDAY(0x20),
+    SATURDAY(0x40);
 
     companion object {
         /** 所有天（每天）/ All days (every day) */

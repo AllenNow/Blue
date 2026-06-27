@@ -213,24 +213,29 @@ class AlarmEditorActivity : AppCompatActivity() {
 
     private fun deleteAlarm() {
         sdk.deleteAlarm(index) { result ->
-            result.fold(
-                onSuccess = {
-                    val intent = android.content.Intent().apply {
-                        putExtra("index", index)
-                        putExtra("isEnabled", false)
-                        putExtra("isSet", false)
+            runOnUiThread {
+                result.fold(
+                    onSuccess = {
+                        val intent = android.content.Intent().apply {
+                            putExtra("index", index)
+                            putExtra("hour", 0)
+                            putExtra("minute", 0)
+                            putExtra("weekMask", 0x7F)
+                            putExtra("isEnabled", false)
+                            putExtra("isSet", false)
+                        }
+                        setResult(RESULT_OK, intent)
+                        finish()
+                    },
+                    onFailure = {
+                        AlertDialog.Builder(this)
+                            .setTitle(S.deleteAlarmFailed)
+                            .setMessage((it as BlueError).message)
+                            .setPositiveButton(S.confirm, null)
+                            .show()
                     }
-                    setResult(RESULT_OK, intent)
-                    finish()
-                },
-                onFailure = {
-                    AlertDialog.Builder(this)
-                        .setTitle(S.deleteAlarmFailed)
-                        .setMessage((it as BlueError).message)
-                        .setPositiveButton(S.confirm, null)
-                        .show()
-                }
-            )
+                )
+            }
         }
     }
 

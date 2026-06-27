@@ -699,39 +699,20 @@ class BlueSDK private constructor(private val context: Context) {
         when {
             dpidInt in a1..a7 -> {
                 val index = dpidInt - a1 + 1
-                if (data.size >= 11) {
-                    // byte9(data[9]) 区分事件类型：0x00=响铃开始, 非0=用药事件
-                    val eventByte = data[9].toInt() and 0xFF
-                    val statusByte = data[10].toInt() and 0xFF
-                    val alarmInfo = AlarmManager.parseAlarmInfo(data, index)
-                    if (alarmInfo != null) {
-                        if (eventByte == 0x00 && statusByte != 0x00) {
-                            // 响铃开始
-                            CallbackDispatcher.dispatch { notifyObservers { it.onAlarmRinging(index, alarmInfo) } }
-                        } else if (eventByte == 0x01) {
-                            // 超时或取药事件
-                            val status = MedicationStatus.fromByte(data[10])
-                            if (status != null) {
-                                CallbackDispatcher.dispatch { notifyObservers { it.onMedicationResult(index, status) } }
-                            } else {
-                                CallbackDispatcher.dispatch { notifyObservers { it.onAlarmTimeout(index, alarmInfo) } }
-                            }
-                        } else {
-                            // 普通闹钟配置变更
-                            CallbackDispatcher.dispatch { notifyObservers { it.onAlarmUpdated(alarmInfo) } }
-                        }
-                    }
-                } else {
-                    // 数据不足 11 字节，解析为普通闹钟配置上报
-                    AlarmManager.parseAlarmInfo(data, index)?.let { alarm ->
-                        CallbackDispatcher.dispatch { notifyObservers { it.onAlarmUpdated(alarm) } }
-                    }
+                // 闹钟 DPID 上报只关注使能位(data[4])和时间位(data[5-7])
+                // 后三位状态(data[8-10])由 0x6F 通知帧和 0x65 记录帧负责
+                AlarmManager.parseAlarmInfo(data, index)?.let { alarm ->
+                    CallbackDispatcher.dispatch { notifyObservers { it.onAlarmUpdated(alarm) } }
                 }
             }
 
             dpid == DPIDConstants.ALARM_RECORD -> {
                 MedicationManager.parseMedicationRecord(data)?.let { record ->
-                    CallbackDispatcher.dispatch { notifyObservers { it.onMedicationRecordReported(record) } }
+                    // 同时触发用药结果回调（带闹钟索引）和完整记录回调
+                    CallbackDispatcher.dispatch {
+                        notifyObservers { it.onMedicationResult(record.alarmIndex, record.status) }
+                        notifyObservers { it.onMedicationRecordReported(record) }
+                    }
                 }
             }
             dpid == DPIDConstants.TYPE_OF_SOUND -> {

@@ -168,8 +168,8 @@ object S {
     val back get() = this["back"]
     val send get() = this["send"]
     val weekdays: List<String> get() = listOf(
-        this["weekday_mon"], this["weekday_tue"], this["weekday_wed"],
-        this["weekday_thu"], this["weekday_fri"], this["weekday_sat"], this["weekday_sun"]
+        this["weekday_sun"], this["weekday_mon"], this["weekday_tue"],
+        this["weekday_wed"], this["weekday_thu"], this["weekday_fri"], this["weekday_sat"]
     )
 
     // 设备列表
@@ -240,4 +240,18 @@ object S {
     val faqTitle get() = this["faq_title"]
     val searchPlaceholder get() = this["search_placeholder"]
     val noMatchingQuestions get() = this["no_matching_questions"]
+
+    // 下一个闹钟 / 用药记录多语言
+    val nextAlarmTitle get() = this["next_alarm_title"]
+    val noActiveAlarms get() = this["no_active_alarms"]
+    val nextAlarmHoursMins get() = this["next_alarm_hours_mins"]
+    val nextAlarmMins get() = this["next_alarm_mins"]
+    val alarmIndexStatus get() = this["alarm_index_status"]
+    val scheduledActualTime get() = this["scheduled_actual_time"]
+    val statusTaken get() = this["status_taken"]
+    val statusLate get() = this["status_late"]
+    val statusMissed get() = this["status_missed"]
+    val statusEarly get() = this["status_early"]
+    val statusUnknown get() = this["status_unknown"]
+    val medRecordLog get() = this["med_record_log"]
 }

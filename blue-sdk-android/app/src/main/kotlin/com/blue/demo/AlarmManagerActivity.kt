@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.blue.sdk.BlueSDK
+import com.blue.sdk.enums.TimeFormat
 import com.blue.sdk.error.BlueError
 
 data class AlarmSlot(
@@ -28,11 +29,28 @@ data class AlarmSlot(
     var isSet: Boolean
 ) {
     val timeString: String get() = if (isSet) String.format("%02d:%02d", hour, minute) else "--:--"
+
+    /** 根据 12/24 小时制格式化时间显示 */
+    fun formatTime(is24Hour: Boolean): String {
+        if (!isSet) return "--:--"
+        return if (is24Hour) {
+            String.format("%02d:%02d", hour, minute)
+        } else {
+            val displayHour = when {
+                hour == 0 -> 12
+                hour > 12 -> hour - 12
+                else -> hour
+            }
+            val amPm = if (hour < 12) "AM" else "PM"
+            String.format("%d:%02d %s", displayHour, minute, amPm)
+        }
+    }
+
     val weekDescription: String get() {
         if (!isSet) return ""
         if (weekMask == 0x7F) return S.weekdayDaily
-        if (weekMask == 0x1F) return S.weekdayWeekdays
-        if (weekMask == 0x60) return S.weekdayWeekend
+        if (weekMask == 0x3E) return S.weekdayWeekdays   // bit1~bit5 = 周一~周五
+        if (weekMask == 0x41) return S.weekdayWeekend    // bit0+bit6 = 周日+周六
         val days = S.weekdays
         return (0..6).filter { (weekMask and (1 shl it)) != 0 }.map { days[it] }.joinToString(" ")
     }
@@ -45,6 +63,9 @@ class AlarmManagerActivity : AppCompatActivity() {
     private lateinit var adapter: AlarmSlotAdapter
 
     private lateinit var alarms: MutableList<AlarmSlot>
+
+    /** 当前是否为 24 小时制 */
+    private val is24Hour: Boolean get() = sdk.currentTimeFormat == TimeFormat.HOUR_24
 
     private val alarmObserver = object : com.blue.sdk.BlueSDKListener {
         override fun onAlarmUpdated(alarm: com.blue.sdk.model.AlarmInfo) {
@@ -86,6 +107,14 @@ class AlarmManagerActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onResume() {
+        super.onResume()
+        // 每次页面恢复时重新计算下一个闹钟（防止时间流逝导致显示过期）
+        if (::nextAlarmTimeLabel.isInitialized) {
+            updateNextAlarm()
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         sdk.removeObserver(alarmObserver)
@@ -119,7 +148,7 @@ class AlarmManagerActivity : AppCompatActivity() {
         }
 
         nextCard.addView(TextView(this).apply {
-            text = if (S.isZh) "⏰ 下一个闹钟" else "⏰ Next Alarm"
+            text = S.nextAlarmTitle
             setTextColor(Color.parseColor("#8E8E93"))
             textSize = 13f
             gravity = Gravity.CENTER
@@ -136,7 +165,7 @@ class AlarmManagerActivity : AppCompatActivity() {
         nextCard.addView(nextAlarmTimeLabel)
 
         nextAlarmDescLabel = TextView(this).apply {
-            text = if (S.isZh) "暂无已启用的闹钟" else "No active alarms"
+            text = S.noActiveAlarms
             setTextColor(Color.parseColor("#8E8E93"))
             textSize = 14f
             gravity = Gravity.CENTER
@@ -154,14 +183,14 @@ class AlarmManagerActivity : AppCompatActivity() {
         val now = java.util.Calendar.getInstance()
         val nowHour = now.get(java.util.Calendar.HOUR_OF_DAY)
         val nowMinute = now.get(java.util.Calendar.MINUTE)
-        // 当前星期（协议：bit0=周一...bit6=周日）
+        // 当前星期（协议：bit0=周日, bit1=周一 ... bit6=周六）
         val calDow = now.get(java.util.Calendar.DAY_OF_WEEK) // 1=Sun...7=Sat
-        val todayBit = if (calDow == java.util.Calendar.SUNDAY) 6 else calDow - 2 // 转为 0=Mon...6=Sun
+        val todayBit = calDow - 1 // 转为 0=Sun, 1=Mon ... 6=Sat
 
         val activeAlarms = alarms.filter { it.isSet && it.isEnabled }
         if (activeAlarms.isEmpty()) {
             nextAlarmTimeLabel.text = "--:--"
-            nextAlarmDescLabel.text = if (S.isZh) "暂无已启用的闹钟" else "No active alarms"
+            nextAlarmDescLabel.text = S.noActiveAlarms
             return
         }
 
@@ -184,7 +213,7 @@ class AlarmManagerActivity : AppCompatActivity() {
         val next = candidates.minByOrNull { it.minutesAway }
         if (next == null) {
             nextAlarmTimeLabel.text = "--:--"
-            nextAlarmDescLabel.text = if (S.isZh) "暂无已启用的闹钟" else "No active alarms"
+            nextAlarmDescLabel.text = S.noActiveAlarms
             return
         }
 
@@ -192,12 +221,10 @@ class AlarmManagerActivity : AppCompatActivity() {
 
         val hours = next.minutesAway / 60
         val mins = next.minutesAway % 60
-        nextAlarmDescLabel.text = if (S.isZh) {
-            if (hours > 0) "闹钟${next.slot.index} · ${hours}小时${mins}分钟后"
-            else "闹钟${next.slot.index} · ${mins}分钟后"
+        nextAlarmDescLabel.text = if (hours > 0) {
+            String.format(S.nextAlarmHoursMins, next.slot.index, hours, mins)
         } else {
-            if (hours > 0) "Alarm ${next.slot.index} · in ${hours}h ${mins}m"
-            else "Alarm ${next.slot.index} · in ${mins}m"
+            String.format(S.nextAlarmMins, next.slot.index, mins)
         }
     }
 

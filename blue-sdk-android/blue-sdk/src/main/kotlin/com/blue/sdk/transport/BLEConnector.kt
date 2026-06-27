@@ -36,6 +36,8 @@ internal class BLEConnector {
 
     private val gattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+            // 忽略非当前 GATT 实例的回调（防止旧连接残留回调导致重复处理）
+            if (gatt != this@BLEConnector.gatt) return
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     BlueLogger.info("GATT connected, discovering services")
@@ -52,6 +54,7 @@ internal class BLEConnector {
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+            if (gatt != this@BLEConnector.gatt) return
             if (status != BluetoothGatt.GATT_SUCCESS) {
                 BlueLogger.error("Service discovery failed, status: $status")
                 delegate?.onDisconnected(Exception("服务发现失败"))
@@ -81,6 +84,7 @@ internal class BLEConnector {
         @Suppress("DEPRECATION")
         @Deprecated("Use onCharacteristicChanged(gatt, characteristic, value) for API 33+")
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+            if (gatt != this@BLEConnector.gatt) return
             // API 33+ 上系统会同时触发新旧两个回调，旧回调的 characteristic.value 可能是过期数据
             // 仅在 API 32 及以下使用此回调
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return
@@ -91,6 +95,7 @@ internal class BLEConnector {
 
         // API 33+ 的新回调
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) {
+            if (gatt != this@BLEConnector.gatt) return
             BlueLogger.debug("收到数据：${value.joinToString(" ") { "%02X".format(it) }}")
             delegate?.onDataReceived(value)
         }
@@ -103,6 +108,13 @@ internal class BLEConnector {
     }
 
     fun connect(context: Context, device: BluetoothDevice) {
+        // 关闭旧的 GATT 连接（避免重复注册 notify 导致数据重复回调）
+        gatt?.let {
+            it.disconnect()
+            it.close()
+        }
+        gatt = null
+        writeCharacteristic = null
         BlueLogger.info("Connecting to: ${device.address}")
         gatt = device.connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
     }

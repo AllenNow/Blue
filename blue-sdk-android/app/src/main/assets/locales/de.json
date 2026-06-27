@@ -150,5 +150,17 @@
   "auto_crc_label": "Auto CRC8:",
   "faq_title": "FAQ",
   "search_placeholder": "Suchen...",
-  "no_matching_questions": "Keine passenden Fragen"
+  "no_matching_questions": "Keine passenden Fragen",
+  "next_alarm_title": "⏰ Nächster Alarm",
+  "no_active_alarms": "Keine aktiven Alarme",
+  "next_alarm_hours_mins": "Alarm %d · in %dh %dm",
+  "next_alarm_mins": "Alarm %d · in %dm",
+  "alarm_index_status": "Alarm %d · %s",
+  "scheduled_actual_time": "Geplant %s → Tatsächlich %s",
+  "status_taken": "Pünktlich eingenommen",
+  "status_late": "Verspätet eingenommen",
+  "status_missed": "Verpasst",
+  "status_early": "Früh eingenommen",
+  "status_unknown": "Unbekannt",
+  "med_record_log": "📋 Medikament: Alarm %d %s"
 }

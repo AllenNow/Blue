@@ -705,13 +705,24 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     override fun onAlarmTimeout(alarmIndex: Int, alarmInfo: AlarmInfo) { log("⚠️ 闹钟${alarmIndex}超时") }
 
     override fun onMedicationResult(alarmIndex: Int, status: MedicationStatus) {
-        log("💊 闹钟${alarmIndex} ${status.displayNameZh}")
+        val statusText = when (status) {
+            MedicationStatus.TAKEN -> S.statusTaken
+            MedicationStatus.TIMEOUT -> S.statusLate
+            MedicationStatus.MISSED -> S.statusMissed
+            MedicationStatus.EARLY -> S.statusEarly
+        }
+        log("💊 ${String.format(S.alarmSlotLabel, alarmIndex)} $statusText")
         // 不入库 — 等 onMedicationRecordReported 上报完整记录（含设定时间和实际时间）
     }
 
     override fun onMedicationRecordReported(record: MedicationRecord) {
-        val statusText = if (S.isZh) record.status.displayNameZh else record.status.displayNameEn
-        log("📋 用药记录：闹钟${record.alarmIndex} $statusText")
+        val statusText = when (record.status) {
+            MedicationStatus.TAKEN -> S.statusTaken
+            MedicationStatus.TIMEOUT -> S.statusLate
+            MedicationStatus.MISSED -> S.statusMissed
+            MedicationStatus.EARLY -> S.statusEarly
+        }
+        log(String.format(S.medRecordLog, record.alarmIndex, statusText))
         val statusInt = when (record.status) {
             MedicationStatus.TAKEN -> 1; MedicationStatus.TIMEOUT -> 2
             MedicationStatus.MISSED -> 3; MedicationStatus.EARLY -> 4

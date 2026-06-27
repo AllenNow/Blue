@@ -150,5 +150,17 @@
   "auto_crc_label": "Auto CRC8:",
   "faq_title": "FAQ",
   "search_placeholder": "Search...",
-  "no_matching_questions": "No matching questions"
+  "no_matching_questions": "No matching questions",
+  "next_alarm_title": "⏰ Next Alarm",
+  "no_active_alarms": "No active alarms",
+  "next_alarm_hours_mins": "Alarm %d · in %dh %dm",
+  "next_alarm_mins": "Alarm %d · in %dm",
+  "alarm_index_status": "Alarm %d · %s",
+  "scheduled_actual_time": "Scheduled %s → Actual %s",
+  "status_taken": "Taken on time",
+  "status_late": "Taken late",
+  "status_missed": "Missed",
+  "status_early": "Taken early",
+  "status_unknown": "Unknown",
+  "med_record_log": "📋 Med record: Alarm %d %s"
 }

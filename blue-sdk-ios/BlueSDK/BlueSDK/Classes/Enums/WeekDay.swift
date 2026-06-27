@@ -25,23 +25,23 @@ public struct WeekDays: OptionSet, Sendable {
         self.rawValue = rawValue
     }
 
-    /// 周一 / Monday
-    public static let monday    = WeekDays(rawValue: 0x01)
-    /// 周二 / Tuesday
-    public static let tuesday   = WeekDays(rawValue: 0x02)
-    /// 周三 / Wednesday
-    public static let wednesday = WeekDays(rawValue: 0x04)
-    /// 周四 / Thursday
-    public static let thursday  = WeekDays(rawValue: 0x08)
-    /// 周五 / Friday
-    public static let friday    = WeekDays(rawValue: 0x10)
-    /// 周六 / Saturday
-    public static let saturday  = WeekDays(rawValue: 0x20)
     /// 周日 / Sunday
-    public static let sunday    = WeekDays(rawValue: 0x40)
+    public static let sunday    = WeekDays(rawValue: 0x01)
+    /// 周一 / Monday
+    public static let monday    = WeekDays(rawValue: 0x02)
+    /// 周二 / Tuesday
+    public static let tuesday   = WeekDays(rawValue: 0x04)
+    /// 周三 / Wednesday
+    public static let wednesday = WeekDays(rawValue: 0x08)
+    /// 周四 / Thursday
+    public static let thursday  = WeekDays(rawValue: 0x10)
+    /// 周五 / Friday
+    public static let friday    = WeekDays(rawValue: 0x20)
+    /// 周六 / Saturday
+    public static let saturday  = WeekDays(rawValue: 0x40)
 
     /// 每天 / Every day
-    public static let all: WeekDays = [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
+    public static let all: WeekDays = [.sunday, .monday, .tuesday, .wednesday, .thursday, .friday, .saturday]
 
     /// 工作日（周一至周五）/ Weekdays (Mon-Fri)
     public static let weekdays: WeekDays = [.monday, .tuesday, .wednesday, .thursday, .friday]

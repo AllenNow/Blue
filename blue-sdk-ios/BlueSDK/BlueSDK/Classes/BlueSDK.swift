@@ -761,42 +761,21 @@ import CoreBluetooth
                 }
                 return
             }
-            // byte9(data[9]) 区分事件类型：0x00=响铃开始, 非0=用药事件
-            let eventByte = data[9]
-            let statusByte = data[10]
+            // 闹钟 DPID 上报只关注使能位(data[4])和时间位(data[5-7])
+            // 后三位状态(data[8-10])由 0x6F 通知帧和 0x65 记录帧负责
             if let alarm = AlarmManager.parseAlarmInfo(from: data, index: index) {
-                if eventByte == 0x00 && statusByte != 0x00 {
-                    // 响铃开始（byte9=0x00, byte10=闹钟编号标识）
-                    CallbackDispatcher.shared.dispatch { [weak self] in
-                        guard let self = self else { return }
-                        self.notifyObservers { $0.blueSDK(self, didAlarmRinging: index, alarmInfo: alarm)}
-                    }
-                } else if eventByte == 0x01 {
-                    // 超时或取药事件
-                    if let status = MedicationStatus.from(byte: statusByte) {
-                        CallbackDispatcher.shared.dispatch { [weak self] in
-                            guard let self = self else { return }
-                            self.notifyObservers { $0.blueSDK(self, didReceiveMedicationResult: index, status: status)}
-                        }
-                    } else {
-                        CallbackDispatcher.shared.dispatch { [weak self] in
-                            guard let self = self else { return }
-                            self.notifyObservers { $0.blueSDK(self, didAlarmTimeout: index, alarmInfo: alarm)}
-                        }
-                    }
-                } else {
-                    // 普通闹钟配置变更
-                    CallbackDispatcher.shared.dispatch { [weak self] in
-                        guard let self = self else { return }
-                        self.notifyObservers { $0.blueSDK(self, didUpdateAlarm: alarm)}
-                    }
+                CallbackDispatcher.shared.dispatch { [weak self] in
+                    guard let self = self else { return }
+                    self.notifyObservers { $0.blueSDK(self, didUpdateAlarm: alarm)}
                 }
             }
 
         case DPIDConstants.alarmRecord:
             if let record = MedicationManager.parseMedicationRecord(from: data) {
+                // 同时触发用药结果回调（带闹钟索引）和完整记录回调
                 CallbackDispatcher.shared.dispatch { [weak self] in
                     guard let self = self else { return }
+                    self.notifyObservers { $0.blueSDK(self, didReceiveMedicationResult: record.alarmIndex, status: record.status)}
                     self.notifyObservers { $0.blueSDK(self, didReceiveMedicationRecord: record)}
                 }
             }

@@ -96,8 +96,8 @@ data class MedicationEntry(
     val status: Int
 ) {
     val statusEmoji: String get() = when (status) { 1 -> "✅"; 2 -> "⏰"; 3 -> "❌"; 4 -> "⏩"; else -> "❓" }
-    val statusText: String get() = if (S.isZh)
-        when (status) { 1 -> "按时取药"; 2 -> "超时取药"; 3 -> "漏服"; 4 -> "提前取药"; else -> "未知" }
-        else when (status) { 1 -> "Taken on time"; 2 -> "Taken late"; 3 -> "Missed"; 4 -> "Taken early"; else -> "Unknown" }
+    val statusText: String get() = when (status) {
+        1 -> S.statusTaken; 2 -> S.statusLate; 3 -> S.statusMissed; 4 -> S.statusEarly; else -> S.statusUnknown
+    }
     val alarmTimeString: String get() = "%02d:%02d".format(alarmHour, alarmMinute)
 }

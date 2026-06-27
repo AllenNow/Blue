@@ -143,7 +143,7 @@ final class AlarmManager {
     ///   - index: 闹钟槽位索引
     /// - Returns: 解析后的 AlarmInfo，格式错误返回 nil
     static func parseAlarmInfo(from data: [UInt8], index: Int) -> AlarmInfo? {
-        // 数据格式：[DPID][type1][type2][len][enabled][hour][minute][weekMask][...][ringingState][eventStatus]
+        // 数据格式：[DPID][type1][type2][len][enabled][hour][minute][weekMask][triggerFlag][ringingState][medRecordFlag]
         // 最少 8 字节
         guard data.count >= 8 else { return nil }
         let enabled      = data[4] == 0x01
