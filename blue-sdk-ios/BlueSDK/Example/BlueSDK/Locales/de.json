@@ -150,5 +150,11 @@
   "auto_crc_label": "Auto CRC8:",
   "faq_title": "FAQ",
   "search_placeholder": "Suchen...",
-  "no_matching_questions": "Keine passenden Fragen"
+  "no_matching_questions": "Keine passenden Fragen",
+  "next_alarm_title": "⏰ Nächster Alarm",
+  "no_active_alarms": "Keine aktiven Alarme",
+  "next_alarm_hours_mins": "Alarm %d · in %dh %dm",
+  "next_alarm_mins": "Alarm %d · in %dm",
+  "alarm_ringing": "Klingelt",
+  "alarm_done": "Fertig"
 }

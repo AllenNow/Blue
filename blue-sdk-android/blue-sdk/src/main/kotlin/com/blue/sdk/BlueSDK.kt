@@ -467,7 +467,12 @@ class BlueSDK private constructor(private val context: Context) {
     /** 设置时间格式（FR30）*/
     fun setTimeFormat(format: TimeFormat, completion: (Result<Unit>) -> Unit) {
         if (!requireInitR(completion) || !requireAuthR(completion)) return
-        audioManager.setTimeFormat(format, completion)
+        audioManager.setTimeFormat(format) { result ->
+            if (result.isSuccess) {
+                currentTimeFormat = format
+            }
+            completion(result)
+        }
     }
 
     // MARK: - 系统控制（Epic 9）

@@ -15,6 +15,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.blue.sdk.BlueSDK
+import com.blue.sdk.enums.TimeFormat
 import com.blue.sdk.error.BlueError
 
 class AlarmEditorActivity : AppCompatActivity() {
@@ -78,7 +79,7 @@ class AlarmEditorActivity : AppCompatActivity() {
         }
 
         timePicker = android.widget.TimePicker(this).apply {
-            setIs24HourView(true)
+            setIs24HourView(sdk.currentTimeFormat == TimeFormat.HOUR_24)
             hour = this@AlarmEditorActivity.hour
             minute = this@AlarmEditorActivity.minute
             setOnTimeChangedListener { _, h, m ->

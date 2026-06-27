@@ -265,9 +265,9 @@ class MedicationRecordsActivity : AppCompatActivity() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             return ViewHolder(LinearLayout(parent.context).apply {
-                orientation = LinearLayout.VERTICAL
-                gravity = Gravity.CENTER_HORIZONTAL
-                setPadding(16, 12, 16, 12)
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(dp(16, parent.context), dp(12, parent.context), dp(16, parent.context), dp(12, parent.context))
                 layoutParams = RecyclerView.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             })
         }
@@ -282,22 +282,24 @@ class MedicationRecordsActivity : AppCompatActivity() {
 
         class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             private val emojiLabel = TextView(itemView.context).apply {
-                textSize = 20f
+                textSize = 24f
                 gravity = Gravity.CENTER
-                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+                layoutParams = LinearLayout.LayoutParams(dp(40, itemView.context), dp(40, itemView.context)).apply {
+                    marginEnd = dp(12, itemView.context)
+                }
+            }
+            private val textColumn = LinearLayout(itemView.context).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
             }
             private val titleLabel = TextView(itemView.context).apply {
                 textSize = 14f
                 setTextColor(Color.WHITE)
-                gravity = Gravity.CENTER
-                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
-                    topMargin = dp(4, itemView.context)
-                }
+                layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             }
             private val detailLabel = TextView(itemView.context).apply {
                 textSize = 12f
                 setTextColor(Color.parseColor("#8E8E93"))
-                gravity = Gravity.CENTER
                 layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
                     topMargin = dp(2, itemView.context)
                 }
@@ -305,9 +307,10 @@ class MedicationRecordsActivity : AppCompatActivity() {
 
             init {
                 val linearLayout = itemView as LinearLayout
+                textColumn.addView(titleLabel)
+                textColumn.addView(detailLabel)
                 linearLayout.addView(emojiLabel)
-                linearLayout.addView(titleLabel)
-                linearLayout.addView(detailLabel)
+                linearLayout.addView(textColumn)
             }
 
             fun bind(entry: MedicationEntry) {

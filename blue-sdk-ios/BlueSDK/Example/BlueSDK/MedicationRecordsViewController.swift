@@ -286,12 +286,10 @@ class MedicationRecordCell: UITableViewCell {
         emojiLabel.translatesAutoresizingMaskIntoConstraints = false
 
         titleLabel.font = .systemFont(ofSize: 15, weight: .medium)
-        titleLabel.textAlignment = .center
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
         detailLabel.font = .monospacedDigitSystemFont(ofSize: 13, weight: .regular)
         detailLabel.textColor = .secondaryLabel
-        detailLabel.textAlignment = .center
         detailLabel.translatesAutoresizingMaskIntoConstraints = false
 
         contentView.addSubview(emojiLabel)
@@ -299,15 +297,17 @@ class MedicationRecordCell: UITableViewCell {
         contentView.addSubview(detailLabel)
 
         NSLayoutConstraint.activate([
-            emojiLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            emojiLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            emojiLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            emojiLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            emojiLabel.widthAnchor.constraint(equalToConstant: 40),
 
-            titleLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            titleLabel.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 4),
+            titleLabel.leadingAnchor.constraint(equalTo: emojiLabel.trailingAnchor, constant: 12),
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
 
-            detailLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            detailLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
-            detailLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
+            detailLabel.leadingAnchor.constraint(equalTo: emojiLabel.trailingAnchor, constant: 12),
+            detailLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 2),
+            detailLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
+            detailLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -16),
         ])
     }
 

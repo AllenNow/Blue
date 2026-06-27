@@ -15,6 +15,14 @@ class AlarmEditorViewController: UIViewController {
     private lazy var timePicker: UIDatePicker = {
         let picker = UIDatePicker()
         picker.datePickerMode = .time
+        // 跟随设备 12/24 小时制设置
+        let locale: Locale
+        if BlueSDK.shared.currentTimeFormat == .hour12 {
+            locale = Locale(identifier: "en_US")
+        } else {
+            locale = Locale(identifier: "en_GB") // 24 小时制
+        }
+        picker.locale = locale
         if #available(iOS 13.4, *) {
             picker.preferredDatePickerStyle = .wheels
         }

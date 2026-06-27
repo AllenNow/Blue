@@ -150,5 +150,11 @@
   "auto_crc_label": "自动补 CRC8：",
   "faq_title": "常见问题",
   "search_placeholder": "搜索问题...",
-  "no_matching_questions": "没有匹配的问题"
+  "no_matching_questions": "没有匹配的问题",
+  "next_alarm_title": "⏰ 下一个闹钟",
+  "no_active_alarms": "暂无活跃闹钟",
+  "next_alarm_hours_mins": "闹钟%d · %d小时%d分钟后",
+  "next_alarm_mins": "闹钟%d · %d分钟后",
+  "alarm_ringing": "响铃中",
+  "alarm_done": "已完成"
 }

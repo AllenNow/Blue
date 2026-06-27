@@ -74,6 +74,14 @@ class AlarmManagerActivity : AppCompatActivity() {
                 updateAlarm(alarm.index, alarm.hour, alarm.minute, alarm.weekMask, isSet, isSet)
             }
         }
+
+        override fun onTimeFormatChanged(format: com.blue.sdk.enums.TimeFormat) {
+            runOnUiThread {
+                // 时间格式切换时刷新整个列表和下一个闹钟显示
+                adapter.notifyDataSetChanged()
+                updateNextAlarm()
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -109,8 +117,9 @@ class AlarmManagerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // 每次页面恢复时重新计算下一个闹钟（防止时间流逝导致显示过期）
+        // 每次页面恢复时刷新列表（时间格式可能已切换）并重新计算下一个闹钟
         if (::nextAlarmTimeLabel.isInitialized) {
+            adapter.notifyDataSetChanged()
             updateNextAlarm()
         }
     }
@@ -130,21 +139,12 @@ class AlarmManagerActivity : AppCompatActivity() {
             layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         }
 
-        recyclerView = RecyclerView(this).apply {
-            layoutManager = LinearLayoutManager(this@AlarmManagerActivity)
-            adapter = AlarmSlotAdapter(alarms) { slot ->
-                showEditor(slot)
-            }.also { this@AlarmManagerActivity.adapter = it }
-            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f)
-        }
-        root.addView(recyclerView)
-
-        // 底部：下一个闹钟卡片
+        // 顶部：下一个闹钟卡片
         val nextCard = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             setBackgroundColor(Color.parseColor("#2C2C2E"))
-            setPadding(dp(20), dp(16), dp(20), dp(20))
+            setPadding(dp(20), dp(16), dp(20), dp(16))
         }
 
         nextCard.addView(TextView(this).apply {
@@ -173,6 +173,16 @@ class AlarmManagerActivity : AppCompatActivity() {
         nextCard.addView(nextAlarmDescLabel)
 
         root.addView(nextCard)
+
+        recyclerView = RecyclerView(this).apply {
+            layoutManager = LinearLayoutManager(this@AlarmManagerActivity)
+            adapter = AlarmSlotAdapter(alarms, { is24Hour }) { slot ->
+                showEditor(slot)
+            }.also { this@AlarmManagerActivity.adapter = it }
+            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f)
+        }
+        root.addView(recyclerView)
+
         updateNextAlarm()
 
         return root
@@ -217,7 +227,17 @@ class AlarmManagerActivity : AppCompatActivity() {
             return
         }
 
-        nextAlarmTimeLabel.text = String.format("%02d:%02d", next.slot.hour, next.slot.minute)
+        nextAlarmTimeLabel.text = if (is24Hour) {
+            String.format("%02d:%02d", next.slot.hour, next.slot.minute)
+        } else {
+            val displayHour = when {
+                next.slot.hour == 0 -> 12
+                next.slot.hour > 12 -> next.slot.hour - 12
+                else -> next.slot.hour
+            }
+            val amPm = if (next.slot.hour < 12) "AM" else "PM"
+            String.format("%d:%02d %s", displayHour, next.slot.minute, amPm)
+        }
 
         val hours = next.minutesAway / 60
         val mins = next.minutesAway % 60
@@ -335,6 +355,7 @@ class AlarmManagerActivity : AppCompatActivity() {
 
     class AlarmSlotAdapter(
         private var items: MutableList<AlarmSlot>,
+        private val is24HourProvider: () -> Boolean,
         private val onItemClick: (AlarmSlot) -> Unit
     ) : RecyclerView.Adapter<AlarmSlotAdapter.ViewHolder>() {
 
@@ -361,7 +382,7 @@ class AlarmManagerActivity : AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.bind(items[position], onItemClick)
+            holder.bind(items[position], is24HourProvider(), onItemClick)
         }
 
         override fun getItemCount() = items.size
@@ -424,9 +445,9 @@ class AlarmManagerActivity : AppCompatActivity() {
                 (itemView as LinearLayout).addView(rightColumn)
             }
 
-            fun bind(slot: AlarmSlot, onClick: (AlarmSlot) -> Unit) {
+            fun bind(slot: AlarmSlot, is24Hour: Boolean, onClick: (AlarmSlot) -> Unit) {
                 indexLabel.text = String.format(S.alarmSlotLabel, slot.index)
-                timeLabel.text = slot.timeString
+                timeLabel.text = slot.formatTime(is24Hour)
                 weekLabel.text = slot.weekDescription
 
                 if (slot.isSet) {

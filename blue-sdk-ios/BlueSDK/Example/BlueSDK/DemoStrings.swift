@@ -159,6 +159,10 @@ enum S {
     static var send: String { self["send"] }
     static var alarmRinging: String { self["alarm_ringing"] }
     static var alarmDone: String { self["alarm_done"] }
+    static var nextAlarmTitle: String { self["next_alarm_title"] }
+    static var noActiveAlarms: String { self["no_active_alarms"] }
+    static var nextAlarmHoursMins: String { self["next_alarm_hours_mins"] }
+    static var nextAlarmMins: String { self["next_alarm_mins"] }
     static var weekdays: [String] {
         [self["weekday_mon"], self["weekday_tue"], self["weekday_wed"],
          self["weekday_thu"], self["weekday_fri"], self["weekday_sat"], self["weekday_sun"]]
