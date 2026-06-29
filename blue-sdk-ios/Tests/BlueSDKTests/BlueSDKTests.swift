@@ -13,6 +13,6 @@ final class BlueSDKTests: XCTestCase {
 
     func testSDKSharedInstanceNotNil() {
         // Story 1.8 实现后此测试将有实际意义
-        XCTAssertNotNil(BlueSDK.shared)
+        XCTAssertNotNil(BlueSDKManager.shared)
     }
 }

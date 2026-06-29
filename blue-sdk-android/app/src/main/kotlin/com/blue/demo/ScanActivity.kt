@@ -25,7 +25,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.blue.sdk.BlueSDK
+import com.blue.sdk.BlueSDKManager
 import com.blue.sdk.BlueSDKListener
 import com.blue.sdk.enums.ConnectionState
 import com.blue.sdk.error.BlueError
@@ -50,7 +50,7 @@ class ScanActivity : AppCompatActivity() {
     private var loadingOverlay: FrameLayout? = null
     private val handler = Handler(Looper.getMainLooper())
 
-    private val sdk get() = BlueSDK.getInstance(this)
+    private val sdk get() = BlueSDKManager.getInstance(this)
     private val discoveredDevices = mutableListOf<ScannedDevice>()
     private var isScanning = false
     private var pendingBindDevice: ScannedDevice? = null

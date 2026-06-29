@@ -1,0 +1,343 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5CC59AAE03634B0C16116BDC /* BlueSDKConfig.swift */ = {isa = PBXBuildFile; fileRef = 53DA87860C6CEE965F2ED46E /* BlueSDKConfig.swift */; };
+		39E4630A8E6CBDA5A15EFD96 /* BlueSDKDelegate.swift */ = {isa = PBXBuildFile; fileRef = 5DC138B7C4BBA9CE74A5CABB /* BlueSDKDelegate.swift */; };
+		7C517BD1B8DB22766558766E /* BlueSDKManager.swift */ = {isa = PBXBuildFile; fileRef = 7A1E9905B0768DC27B29197A /* BlueSDKManager.swift */; };
+		152C01D7BFD7D24367F871AC /* BLECentralManager.swift */ = {isa = PBXBuildFile; fileRef = 7F6E8C7D1550E7E48DC8D3A4 /* BLECentralManager.swift */; };
+		949AB96CE2BAA516FEB66D79 /* BLEConnector.swift */ = {isa = PBXBuildFile; fileRef = 1F7F9EB9F83D690030D35B6E /* BLEConnector.swift */; };
+		C67C603F82D58E034F9E2F35 /* BLEScanner.swift */ = {isa = PBXBuildFile; fileRef = 497D4028AF6EFEB625DFE764 /* BLEScanner.swift */; };
+		61676E27183890B96F78C9C8 /* CRC8Calculator.swift */ = {isa = PBXBuildFile; fileRef = 2696B3225CE64ADA768C1BA6 /* CRC8Calculator.swift */; };
+		E53207A7E2EC22060AA2DD86 /* CommandCode.swift */ = {isa = PBXBuildFile; fileRef = 80D751767B7EB5AFC019002D /* CommandCode.swift */; };
+		B9A83120F6B2ACA8B8AC2E10 /* DPIDConstants.swift */ = {isa = PBXBuildFile; fileRef = D25F64D465EB0B5838207F90 /* DPIDConstants.swift */; };
+		0D4F1F92ABC72A595EFFF6D9 /* FrameBuilder.swift */ = {isa = PBXBuildFile; fileRef = 4A68A31D177AFC079BD72F53 /* FrameBuilder.swift */; };
+		66D7C30879C0C1C63852F0CD /* FrameConstants.swift */ = {isa = PBXBuildFile; fileRef = CA057F5B2635C6F2CAE21DFA /* FrameConstants.swift */; };
+		040D50DC58B79ADF6DE5AA18 /* FrameParser.swift */ = {isa = PBXBuildFile; fileRef = 8FE2A6AE31E3FA41A1242252 /* FrameParser.swift */; };
+		4AADB01BB688F69B21EB8EB4 /* StreamFrameParser.swift */ = {isa = PBXBuildFile; fileRef = A06CA6F6FFF3E690BAC5EF1B /* StreamFrameParser.swift */; };
+		3DF0A501ECCECFCC38DC6042 /* ConnectionState.swift */ = {isa = PBXBuildFile; fileRef = 1113C4DAB2E2E39284039678 /* ConnectionState.swift */; };
+		BB84F7CADF6696AB9276A7A8 /* LogLevel.swift */ = {isa = PBXBuildFile; fileRef = 53EA50FE0BAE64A5E2DF7DC4 /* LogLevel.swift */; };
+		28D8FA656445EBCF77B89CAA /* MedicationNotificationType.swift */ = {isa = PBXBuildFile; fileRef = 78FFAD847F88332D0A613437 /* MedicationNotificationType.swift */; };
+		B7B5E54A74B2F9F6BBFC9836 /* MedicationStatus.swift */ = {isa = PBXBuildFile; fileRef = 33CA19D2947FC37EFD68BA28 /* MedicationStatus.swift */; };
+		3980F7B36DEFE0E4E0DF0FD3 /* PermissionStatus.swift */ = {isa = PBXBuildFile; fileRef = B575DE4C3988CEC3C298D239 /* PermissionStatus.swift */; };
+		B876506FC308A56849D31B27 /* SoundType.swift */ = {isa = PBXBuildFile; fileRef = DF50FAC62B556B3942509E1E /* SoundType.swift */; };
+		75DBD2A4D83C52200FDD4F77 /* TimeFormat.swift */ = {isa = PBXBuildFile; fileRef = F8E078BDBFDB5F0904873B56 /* TimeFormat.swift */; };
+		AA8217A122E8EEDD372D9DD7 /* VolumeLevel.swift */ = {isa = PBXBuildFile; fileRef = 88688CA4DB315375896411B2 /* VolumeLevel.swift */; };
+		C6D6A1A999E009E7E5E40EA4 /* WeekDay.swift */ = {isa = PBXBuildFile; fileRef = D6F9F2F348A037BE77C0BED8 /* WeekDay.swift */; };
+		B492B0EF6DBB6E670B54D606 /* BlueLogger.swift */ = {isa = PBXBuildFile; fileRef = 9BF43E494441EACCEA7EB5FC /* BlueLogger.swift */; };
+		510B425741CD090B47D245E6 /* CallbackDispatcher.swift */ = {isa = PBXBuildFile; fileRef = 373A2CCCEFDB601CF51C85B8 /* CallbackDispatcher.swift */; };
+		84438A855ECE20EAE95450A2 /* CommandQueue.swift */ = {isa = PBXBuildFile; fileRef = B1EFDF6D53FA6C5D7214879D /* CommandQueue.swift */; };
+		93E8713C7D8146D3238D81C5 /* KeychainHelper.swift */ = {isa = PBXBuildFile; fileRef = BF021690CAD6E0F9BD822556 /* KeychainHelper.swift */; };
+		768C04429F65D3A9E84AA7C0 /* LogFormatter.swift */ = {isa = PBXBuildFile; fileRef = 10916A420FD5C5130037A19F /* LogFormatter.swift */; };
+		AE9E5F7F21EDC934DA42E8B1 /* AlarmManager.swift */ = {isa = PBXBuildFile; fileRef = 176CA8357133F37691402124 /* AlarmManager.swift */; };
+		6FDC037C59918F0BA2B4DBA4 /* AudioManager.swift */ = {isa = PBXBuildFile; fileRef = CC13E37B168B23126CC61EC0 /* AudioManager.swift */; };
+		01067F85592C086784B02BCB /* AuthManager.swift */ = {isa = PBXBuildFile; fileRef = 6F2648E899039EC929B55F8B /* AuthManager.swift */; };
+		479234391A4EF772C3D21877 /* ConnectionManager.swift */ = {isa = PBXBuildFile; fileRef = 4969618F5BBDA4A91E1D0535 /* ConnectionManager.swift */; };
+		0C40EC714BC923839480EC2C /* DeviceManager.swift */ = {isa = PBXBuildFile; fileRef = B4201984A7F478D621598FBB /* DeviceManager.swift */; };
+		ABD35735A28EC9918A92F832 /* MedicationManager.swift */ = {isa = PBXBuildFile; fileRef = 630F2BF24123AFA8150AA985 /* MedicationManager.swift */; };
+		FA777E70A708F7C0E9DFFB88 /* PermissionManager.swift */ = {isa = PBXBuildFile; fileRef = 362C1A5E5BE1C3679EF9630E /* PermissionManager.swift */; };
+		3F6ED6CD3F17ED8FA1317CEF /* AlarmConfig.swift */ = {isa = PBXBuildFile; fileRef = BA332DE004BD9956075D21F0 /* AlarmConfig.swift */; };
+		D4F21B42B55F092DCA90FF3B /* AlarmInfo.swift */ = {isa = PBXBuildFile; fileRef = C75C1D853FE80FA660092166 /* AlarmInfo.swift */; };
+		2B47AC8B791DA7C0CA1E585A /* DeviceInfo.swift */ = {isa = PBXBuildFile; fileRef = 03471B644DEED83DC3E18605 /* DeviceInfo.swift */; };
+		E5107AD9387AFCA30FFD6F17 /* MedicationRecord.swift */ = {isa = PBXBuildFile; fileRef = 3279E42865E86137CC0D6229 /* MedicationRecord.swift */; };
+		AD9D1935B042273C61AD32FF /* ScanEvent.swift */ = {isa = PBXBuildFile; fileRef = 79EB190F96B1A86C6A6A5183 /* ScanEvent.swift */; };
+		62B612C6C6F43A0BB76E64A6 /* BlueError.swift */ = {isa = PBXBuildFile; fileRef = 3107D447C50E58D31774E066 /* BlueError.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		53DA87860C6CEE965F2ED46E /* BlueSDKConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/BlueSDKConfig.swift"; sourceTree = SOURCE_ROOT; };
+		5DC138B7C4BBA9CE74A5CABB /* BlueSDKDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/BlueSDKDelegate.swift"; sourceTree = SOURCE_ROOT; };
+		7A1E9905B0768DC27B29197A /* BlueSDKManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/BlueSDKManager.swift"; sourceTree = SOURCE_ROOT; };
+		7F6E8C7D1550E7E48DC8D3A4 /* BLECentralManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Transport/BLECentralManager.swift"; sourceTree = SOURCE_ROOT; };
+		1F7F9EB9F83D690030D35B6E /* BLEConnector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Transport/BLEConnector.swift"; sourceTree = SOURCE_ROOT; };
+		497D4028AF6EFEB625DFE764 /* BLEScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Transport/BLEScanner.swift"; sourceTree = SOURCE_ROOT; };
+		2696B3225CE64ADA768C1BA6 /* CRC8Calculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Transport/CRC8Calculator.swift"; sourceTree = SOURCE_ROOT; };
+		80D751767B7EB5AFC019002D /* CommandCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Transport/CommandCode.swift"; sourceTree = SOURCE_ROOT; };
+		D25F64D465EB0B5838207F90 /* DPIDConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Transport/DPIDConstants.swift"; sourceTree = SOURCE_ROOT; };
+		4A68A31D177AFC079BD72F53 /* FrameBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Transport/FrameBuilder.swift"; sourceTree = SOURCE_ROOT; };
+		CA057F5B2635C6F2CAE21DFA /* FrameConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Transport/FrameConstants.swift"; sourceTree = SOURCE_ROOT; };
+		8FE2A6AE31E3FA41A1242252 /* FrameParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Transport/FrameParser.swift"; sourceTree = SOURCE_ROOT; };
+		A06CA6F6FFF3E690BAC5EF1B /* StreamFrameParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Transport/StreamFrameParser.swift"; sourceTree = SOURCE_ROOT; };
+		1113C4DAB2E2E39284039678 /* ConnectionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Enums/ConnectionState.swift"; sourceTree = SOURCE_ROOT; };
+		53EA50FE0BAE64A5E2DF7DC4 /* LogLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Enums/LogLevel.swift"; sourceTree = SOURCE_ROOT; };
+		78FFAD847F88332D0A613437 /* MedicationNotificationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Enums/MedicationNotificationType.swift"; sourceTree = SOURCE_ROOT; };
+		33CA19D2947FC37EFD68BA28 /* MedicationStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Enums/MedicationStatus.swift"; sourceTree = SOURCE_ROOT; };
+		B575DE4C3988CEC3C298D239 /* PermissionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Enums/PermissionStatus.swift"; sourceTree = SOURCE_ROOT; };
+		DF50FAC62B556B3942509E1E /* SoundType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Enums/SoundType.swift"; sourceTree = SOURCE_ROOT; };
+		F8E078BDBFDB5F0904873B56 /* TimeFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Enums/TimeFormat.swift"; sourceTree = SOURCE_ROOT; };
+		88688CA4DB315375896411B2 /* VolumeLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Enums/VolumeLevel.swift"; sourceTree = SOURCE_ROOT; };
+		D6F9F2F348A037BE77C0BED8 /* WeekDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Enums/WeekDay.swift"; sourceTree = SOURCE_ROOT; };
+		9BF43E494441EACCEA7EB5FC /* BlueLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Internal/BlueLogger.swift"; sourceTree = SOURCE_ROOT; };
+		373A2CCCEFDB601CF51C85B8 /* CallbackDispatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Internal/CallbackDispatcher.swift"; sourceTree = SOURCE_ROOT; };
+		B1EFDF6D53FA6C5D7214879D /* CommandQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Internal/CommandQueue.swift"; sourceTree = SOURCE_ROOT; };
+		BF021690CAD6E0F9BD822556 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Internal/KeychainHelper.swift"; sourceTree = SOURCE_ROOT; };
+		10916A420FD5C5130037A19F /* LogFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Internal/LogFormatter.swift"; sourceTree = SOURCE_ROOT; };
+		176CA8357133F37691402124 /* AlarmManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Manager/AlarmManager.swift"; sourceTree = SOURCE_ROOT; };
+		CC13E37B168B23126CC61EC0 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Manager/AudioManager.swift"; sourceTree = SOURCE_ROOT; };
+		6F2648E899039EC929B55F8B /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Manager/AuthManager.swift"; sourceTree = SOURCE_ROOT; };
+		4969618F5BBDA4A91E1D0535 /* ConnectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Manager/ConnectionManager.swift"; sourceTree = SOURCE_ROOT; };
+		B4201984A7F478D621598FBB /* DeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Manager/DeviceManager.swift"; sourceTree = SOURCE_ROOT; };
+		630F2BF24123AFA8150AA985 /* MedicationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Manager/MedicationManager.swift"; sourceTree = SOURCE_ROOT; };
+		362C1A5E5BE1C3679EF9630E /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Manager/PermissionManager.swift"; sourceTree = SOURCE_ROOT; };
+		BA332DE004BD9956075D21F0 /* AlarmConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Model/AlarmConfig.swift"; sourceTree = SOURCE_ROOT; };
+		C75C1D853FE80FA660092166 /* AlarmInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Model/AlarmInfo.swift"; sourceTree = SOURCE_ROOT; };
+		03471B644DEED83DC3E18605 /* DeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Model/DeviceInfo.swift"; sourceTree = SOURCE_ROOT; };
+		3279E42865E86137CC0D6229 /* MedicationRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Model/MedicationRecord.swift"; sourceTree = SOURCE_ROOT; };
+		79EB190F96B1A86C6A6A5183 /* ScanEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Model/ScanEvent.swift"; sourceTree = SOURCE_ROOT; };
+		3107D447C50E58D31774E066 /* BlueError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlueSDK/BlueSDK/Classes/Error/BlueError.swift"; sourceTree = SOURCE_ROOT; };
+		000000000000000000000012 /* BlueSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BlueSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		000000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000002 /* Sources */,
+				000000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		000000000000000000000002 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				53DA87860C6CEE965F2ED46E /* BlueSDKConfig.swift */,
+				5DC138B7C4BBA9CE74A5CABB /* BlueSDKDelegate.swift */,
+				7A1E9905B0768DC27B29197A /* BlueSDKManager.swift */,
+				7F6E8C7D1550E7E48DC8D3A4 /* BLECentralManager.swift */,
+				1F7F9EB9F83D690030D35B6E /* BLEConnector.swift */,
+				497D4028AF6EFEB625DFE764 /* BLEScanner.swift */,
+				2696B3225CE64ADA768C1BA6 /* CRC8Calculator.swift */,
+				80D751767B7EB5AFC019002D /* CommandCode.swift */,
+				D25F64D465EB0B5838207F90 /* DPIDConstants.swift */,
+				4A68A31D177AFC079BD72F53 /* FrameBuilder.swift */,
+				CA057F5B2635C6F2CAE21DFA /* FrameConstants.swift */,
+				8FE2A6AE31E3FA41A1242252 /* FrameParser.swift */,
+				A06CA6F6FFF3E690BAC5EF1B /* StreamFrameParser.swift */,
+				1113C4DAB2E2E39284039678 /* ConnectionState.swift */,
+				53EA50FE0BAE64A5E2DF7DC4 /* LogLevel.swift */,
+				78FFAD847F88332D0A613437 /* MedicationNotificationType.swift */,
+				33CA19D2947FC37EFD68BA28 /* MedicationStatus.swift */,
+				B575DE4C3988CEC3C298D239 /* PermissionStatus.swift */,
+				DF50FAC62B556B3942509E1E /* SoundType.swift */,
+				F8E078BDBFDB5F0904873B56 /* TimeFormat.swift */,
+				88688CA4DB315375896411B2 /* VolumeLevel.swift */,
+				D6F9F2F348A037BE77C0BED8 /* WeekDay.swift */,
+				9BF43E494441EACCEA7EB5FC /* BlueLogger.swift */,
+				373A2CCCEFDB601CF51C85B8 /* CallbackDispatcher.swift */,
+				B1EFDF6D53FA6C5D7214879D /* CommandQueue.swift */,
+				BF021690CAD6E0F9BD822556 /* KeychainHelper.swift */,
+				10916A420FD5C5130037A19F /* LogFormatter.swift */,
+				176CA8357133F37691402124 /* AlarmManager.swift */,
+				CC13E37B168B23126CC61EC0 /* AudioManager.swift */,
+				6F2648E899039EC929B55F8B /* AuthManager.swift */,
+				4969618F5BBDA4A91E1D0535 /* ConnectionManager.swift */,
+				B4201984A7F478D621598FBB /* DeviceManager.swift */,
+				630F2BF24123AFA8150AA985 /* MedicationManager.swift */,
+				362C1A5E5BE1C3679EF9630E /* PermissionManager.swift */,
+				BA332DE004BD9956075D21F0 /* AlarmConfig.swift */,
+				C75C1D853FE80FA660092166 /* AlarmInfo.swift */,
+				03471B644DEED83DC3E18605 /* DeviceInfo.swift */,
+				3279E42865E86137CC0D6229 /* MedicationRecord.swift */,
+				79EB190F96B1A86C6A6A5183 /* ScanEvent.swift */,
+				3107D447C50E58D31774E066 /* BlueError.swift */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		000000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000012 /* BlueSDK.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		000000000000000000000010 /* BlueSDK */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000031;
+			buildPhases = (
+				000000000000000000000020 /* Sources */,
+				000000000000000000000021 /* Frameworks */,
+			);
+			buildRules = ();
+			dependencies = ();
+			name = BlueSDK;
+			productName = BlueSDK;
+			productReference = 000000000000000000000012 /* BlueSDK.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000000000000000000000050 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 000000000000000000000030;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base);
+			mainGroup = 000000000000000000000001;
+			productRefGroup = 000000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				000000000000000000000010 /* BlueSDK */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		000000000000000000000020 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5CC59AAE03634B0C16116BDC /* BlueSDKConfig.swift */,
+				39E4630A8E6CBDA5A15EFD96 /* BlueSDKDelegate.swift */,
+				7C517BD1B8DB22766558766E /* BlueSDKManager.swift */,
+				152C01D7BFD7D24367F871AC /* BLECentralManager.swift */,
+				949AB96CE2BAA516FEB66D79 /* BLEConnector.swift */,
+				C67C603F82D58E034F9E2F35 /* BLEScanner.swift */,
+				61676E27183890B96F78C9C8 /* CRC8Calculator.swift */,
+				E53207A7E2EC22060AA2DD86 /* CommandCode.swift */,
+				B9A83120F6B2ACA8B8AC2E10 /* DPIDConstants.swift */,
+				0D4F1F92ABC72A595EFFF6D9 /* FrameBuilder.swift */,
+				66D7C30879C0C1C63852F0CD /* FrameConstants.swift */,
+				040D50DC58B79ADF6DE5AA18 /* FrameParser.swift */,
+				4AADB01BB688F69B21EB8EB4 /* StreamFrameParser.swift */,
+				3DF0A501ECCECFCC38DC6042 /* ConnectionState.swift */,
+				BB84F7CADF6696AB9276A7A8 /* LogLevel.swift */,
+				28D8FA656445EBCF77B89CAA /* MedicationNotificationType.swift */,
+				B7B5E54A74B2F9F6BBFC9836 /* MedicationStatus.swift */,
+				3980F7B36DEFE0E4E0DF0FD3 /* PermissionStatus.swift */,
+				B876506FC308A56849D31B27 /* SoundType.swift */,
+				75DBD2A4D83C52200FDD4F77 /* TimeFormat.swift */,
+				AA8217A122E8EEDD372D9DD7 /* VolumeLevel.swift */,
+				C6D6A1A999E009E7E5E40EA4 /* WeekDay.swift */,
+				B492B0EF6DBB6E670B54D606 /* BlueLogger.swift */,
+				510B425741CD090B47D245E6 /* CallbackDispatcher.swift */,
+				84438A855ECE20EAE95450A2 /* CommandQueue.swift */,
+				93E8713C7D8146D3238D81C5 /* KeychainHelper.swift */,
+				768C04429F65D3A9E84AA7C0 /* LogFormatter.swift */,
+				AE9E5F7F21EDC934DA42E8B1 /* AlarmManager.swift */,
+				6FDC037C59918F0BA2B4DBA4 /* AudioManager.swift */,
+				01067F85592C086784B02BCB /* AuthManager.swift */,
+				479234391A4EF772C3D21877 /* ConnectionManager.swift */,
+				0C40EC714BC923839480EC2C /* DeviceManager.swift */,
+				ABD35735A28EC9918A92F832 /* MedicationManager.swift */,
+				FA777E70A708F7C0E9DFFB88 /* PermissionManager.swift */,
+				3F6ED6CD3F17ED8FA1317CEF /* AlarmConfig.swift */,
+				D4F21B42B55F092DCA90FF3B /* AlarmInfo.swift */,
+				2B47AC8B791DA7C0CA1E585A /* DeviceInfo.swift */,
+				E5107AD9387AFCA30FFD6F17 /* MedicationRecord.swift */,
+				AD9D1935B042273C61AD32FF /* ScanEvent.swift */,
+				62B612C6C6F43A0BB76E64A6 /* BlueError.swift */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		000000000000000000000021 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = ();
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		000000000000000000000040 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		000000000000000000000041 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		000000000000000000000042 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				INFOPLIST_FILE = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.blue.sdk;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		000000000000000000000043 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				INFOPLIST_FILE = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.blue.sdk;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		000000000000000000000030 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000040 /* Debug */,
+				000000000000000000000041 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000031 = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000042 /* Debug */,
+				000000000000000000000043 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 000000000000000000000050 /* Project object */;
+}

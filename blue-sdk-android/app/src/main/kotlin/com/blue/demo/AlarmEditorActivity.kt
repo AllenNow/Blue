@@ -14,13 +14,13 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.blue.sdk.BlueSDK
+import com.blue.sdk.BlueSDKManager
 import com.blue.sdk.enums.TimeFormat
 import com.blue.sdk.error.BlueError
 
 class AlarmEditorActivity : AppCompatActivity() {
 
-    private val sdk get() = BlueSDK.getInstance(this)
+    private val sdk get() = BlueSDKManager.getInstance(this)
 
     private lateinit var weekButtons: MutableList<Button>
     private lateinit var timePicker: android.widget.TimePicker
@@ -86,7 +86,7 @@ class AlarmEditorActivity : AppCompatActivity() {
         }
 
         timePicker = android.widget.TimePicker(this).apply {
-            setIs24HourView(sdk.currentTimeFormat == TimeFormat.HOUR_24)
+            setIs24HourView(true)  // 协议使用 24H（hour 0~23），编辑器统一 24H 避免混淆
             // 初始值在 loadExtras() 中设置，这里不设 listener 避免初始化时误触发
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(400))
             setBackgroundColor(Color.parseColor("#2C2C2E"))

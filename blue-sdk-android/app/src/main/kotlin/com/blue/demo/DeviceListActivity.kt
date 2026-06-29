@@ -27,7 +27,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.blue.sdk.BlueSDK
+import com.blue.sdk.BlueSDKManager
 import com.blue.sdk.BlueSDKListener
 import com.blue.sdk.enums.ConnectionState
 import com.blue.sdk.error.BlueError
@@ -53,7 +53,7 @@ class DeviceListActivity : AppCompatActivity() {
     private lateinit var scanIndicator: TextView
     private val handler = Handler(Looper.getMainLooper())
 
-    private val sdk get() = BlueSDK.getInstance(this)
+    private val sdk get() = BlueSDKManager.getInstance(this)
 
     // 运行时在线状态
     private val onlineDevices = mutableSetOf<String>()

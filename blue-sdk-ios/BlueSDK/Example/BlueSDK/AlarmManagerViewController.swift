@@ -132,7 +132,7 @@ class AlarmManagerViewController: UIViewController {
 
     /// 当前是否为 24 小时制
     private var is24Hour: Bool {
-        return BlueSDK.shared.currentTimeFormat == .hour24
+        return BlueSDKManager.shared.currentTimeFormat == .hour24
     }
 
     // MARK: - 生命周期
@@ -144,7 +144,7 @@ class AlarmManagerViewController: UIViewController {
         navigationItem.rightBarButtonItem = clearButton
         setupUI()
         // 注册为 SDK 事件观察者，实时接收设备上报的闹钟变更
-        BlueSDK.shared.addObserver(self)
+        BlueSDKManager.shared.addObserver(self)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -269,7 +269,7 @@ class AlarmManagerViewController: UIViewController {
         let alert = UIAlertController(title: S.clearAlarmsTitle, message: S.clearAlarmsMsg, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: S.cancel, style: .cancel))
         alert.addAction(UIAlertAction(title: S.clear, style: .destructive) { [weak self] _ in
-            BlueSDK.shared.clearAllAlarms { result in
+            BlueSDKManager.shared.clearAllAlarms { result in
                 if case .success = result {
                     DispatchQueue.main.async {
                         self?.alarms = (1...7).map {
@@ -301,7 +301,7 @@ class AlarmManagerViewController: UIViewController {
     }
 
     private func deleteAlarm(at index: Int) {
-        BlueSDK.shared.deleteAlarm(index: index) { [weak self] result in
+        BlueSDKManager.shared.deleteAlarm(index: index) { [weak self] result in
             if case .success = result {
                 DispatchQueue.main.async {
                     self?.alarms[index - 1] = AlarmSlot(
@@ -347,7 +347,7 @@ extension AlarmManagerViewController: UITableViewDataSource, UITableViewDelegate
 // MARK: - BlueSDKDelegate（实时接收设备上报闹钟变更和时间格式变更）
 
 extension AlarmManagerViewController: BlueSDKDelegate {
-    func blueSDK(_ sdk: BlueSDK, didUpdateAlarm alarm: AlarmInfo) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didUpdateAlarm alarm: AlarmInfo) {
         DispatchQueue.main.async { [weak self] in
             self?.updateAlarm(
                 index: alarm.index,
@@ -360,7 +360,7 @@ extension AlarmManagerViewController: BlueSDKDelegate {
         }
     }
 
-    func blueSDK(_ sdk: BlueSDK, didChangeTimeFormat format: TimeFormat) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didChangeTimeFormat format: TimeFormat) {
         DispatchQueue.main.async { [weak self] in
             // 时间格式切换时刷新整个列表和下一个闹钟显示
             self?.tableView.reloadData()

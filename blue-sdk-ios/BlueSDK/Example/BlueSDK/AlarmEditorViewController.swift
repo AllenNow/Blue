@@ -17,7 +17,7 @@ class AlarmEditorViewController: UIViewController {
         picker.datePickerMode = .time
         // 跟随设备 12/24 小时制设置
         let locale: Locale
-        if BlueSDK.shared.currentTimeFormat == .hour12 {
+        if BlueSDKManager.shared.currentTimeFormat == .hour12 {
             locale = Locale(identifier: "en_US")
         } else {
             locale = Locale(identifier: "en_GB") // 24 小时制
@@ -175,7 +175,7 @@ class AlarmEditorViewController: UIViewController {
         let minute = comps.minute ?? 0
 
         saveButton.isEnabled = false
-        BlueSDK.shared.setAlarm(index: slot.index, hour: hour, minute: minute, days: WeekDays(rawValue: selectedWeekMask)) { [weak self] result in
+        BlueSDKManager.shared.setAlarm(index: slot.index, hour: hour, minute: minute, days: WeekDays(rawValue: selectedWeekMask)) { [weak self] result in
             DispatchQueue.main.async {
                 self?.saveButton.isEnabled = true
                 switch result {
@@ -200,7 +200,7 @@ class AlarmEditorViewController: UIViewController {
     }
 
     @objc private func deleteAlarm() {
-        BlueSDK.shared.deleteAlarm(index: slot.index) { [weak self] result in
+        BlueSDKManager.shared.deleteAlarm(index: slot.index) { [weak self] result in
             DispatchQueue.main.async {
                 if case .success = result {
                     guard let self = self else { return }

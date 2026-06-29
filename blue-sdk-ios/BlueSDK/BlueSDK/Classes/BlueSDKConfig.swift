@@ -5,8 +5,8 @@
 // SDK 初始化配置
 // SDK initialization configuration
 //
-// 通过 BlueSDK.shared.initialize(config:) 传入
-// Pass via BlueSDK.shared.initialize(config:)
+// 通过 BlueSDKManager.shared.initialize(config:) 传入
+// Pass via BlueSDKManager.shared.initialize(config:)
 
 import Foundation
 
@@ -26,7 +26,7 @@ public enum BlueSDKLanguage {
 /// 使用示例 / Usage:
 /// ```swift
 /// let config = BlueSDKConfig(fixedAuthKey: "05FA")
-/// BlueSDK.shared.initialize(config: config)
+/// BlueSDKManager.shared.initialize(config: config)
 /// ```
 public struct BlueSDKConfig {
 

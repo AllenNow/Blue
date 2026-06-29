@@ -1,16 +1,17 @@
 #!/bin/bash
-# build-xcframework.sh
-# BlueSDK - 生成 XCFramework 分发包
+# ============================================================
+# BlueSDK - 生成 XCFramework
+# 使用 xcodebuild 从 Package.swift 构建，无需 workspace
 #
 # 用法：./scripts/build-xcframework.sh
 # 产物：build/BlueSDK.xcframework
+# ============================================================
 
 set -e
 
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="$PROJECT_DIR/build"
 FRAMEWORK_NAME="BlueSDK"
-SCHEME="BlueSDK"
 
 echo "=== BlueSDK XCFramework 构建 ==="
 echo "项目目录：$PROJECT_DIR"
@@ -20,44 +21,55 @@ echo ""
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
+DERIVED_DATA="$BUILD_DIR/DerivedData"
+
 # 构建 iOS 真机（arm64）
 echo "▶ 构建 iOS 真机 (arm64)..."
-xcodebuild archive \
-    -workspace "$PROJECT_DIR/BlueSDK/Example/BlueSDK.xcworkspace" \
-    -scheme "$SCHEME" \
+xcrun xcodebuild build \
+    -scheme "$FRAMEWORK_NAME" \
     -configuration Release \
     -destination "generic/platform=iOS" \
-    -archivePath "$BUILD_DIR/ios-device.xcarchive" \
-    SKIP_INSTALL=NO \
+    -derivedDataPath "$DERIVED_DATA" \
+    -packagePath "$PROJECT_DIR" \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-    ONLY_ACTIVE_ARCH=NO \
-    2>&1 | tail -5
+    SKIP_INSTALL=NO \
+    -quiet
 
 # 构建 iOS 模拟器（arm64 + x86_64）
 echo "▶ 构建 iOS 模拟器 (arm64 + x86_64)..."
-xcodebuild archive \
-    -workspace "$PROJECT_DIR/BlueSDK/Example/BlueSDK.xcworkspace" \
-    -scheme "$SCHEME" \
+xcrun xcodebuild build \
+    -scheme "$FRAMEWORK_NAME" \
     -configuration Release \
     -destination "generic/platform=iOS Simulator" \
-    -archivePath "$BUILD_DIR/ios-simulator.xcarchive" \
-    SKIP_INSTALL=NO \
+    -derivedDataPath "$DERIVED_DATA" \
+    -packagePath "$PROJECT_DIR" \
     BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-    ONLY_ACTIVE_ARCH=NO \
-    2>&1 | tail -5
+    SKIP_INSTALL=NO \
+    -quiet
+
+# 查找 framework 路径
+DEVICE_FW=$(find "$DERIVED_DATA" -path "*Release-iphoneos/$FRAMEWORK_NAME.framework" -type d | head -1)
+SIM_FW=$(find "$DERIVED_DATA" -path "*Release-iphonesimulator/$FRAMEWORK_NAME.framework" -type d | head -1)
+
+if [ -z "$DEVICE_FW" ] || [ -z "$SIM_FW" ]; then
+    echo "❌ Framework 未找到，尝试从 .o 构建静态库..."
+    # fallback: 用 swift build 生成静态库
+    echo "▶ swift build (iOS arm64)..."
+    cd "$PROJECT_DIR"
+    swift build -c release --triple arm64-apple-ios13.0 \
+        --build-path "$BUILD_DIR/swift-build" 2>/dev/null || true
+    echo "⚠️ 请在 Xcode 中打开项目手动 Archive，或使用 CocoaPods 分发"
+    exit 1
+fi
 
 # 生成 XCFramework
 echo "▶ 生成 XCFramework..."
-xcodebuild -create-xcframework \
-    -framework "$BUILD_DIR/ios-device.xcarchive/Products/Library/Frameworks/$FRAMEWORK_NAME.framework" \
-    -framework "$BUILD_DIR/ios-simulator.xcarchive/Products/Library/Frameworks/$FRAMEWORK_NAME.framework" \
+xcrun xcodebuild -create-xcframework \
+    -framework "$DEVICE_FW" \
+    -framework "$SIM_FW" \
     -output "$BUILD_DIR/$FRAMEWORK_NAME.xcframework"
 
 echo ""
-echo "=== 构建完成 ==="
+echo "=== ✅ 构建完成 ==="
 echo "产物：$BUILD_DIR/$FRAMEWORK_NAME.xcframework"
 echo "大小：$(du -sh "$BUILD_DIR/$FRAMEWORK_NAME.xcframework" | cut -f1)"
-echo ""
-echo "集成方式："
-echo "  将 $FRAMEWORK_NAME.xcframework 拖入 Xcode 项目"
-echo "  Target → General → Frameworks, Libraries → 添加"

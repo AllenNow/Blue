@@ -2,7 +2,7 @@ package com.blue.demo
 
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
-import com.blue.sdk.BlueSDK
+import com.blue.sdk.BlueSDKManager
 import com.blue.sdk.enums.LogLevel
 
 class DemoApplication : Application() {
@@ -15,13 +15,13 @@ class DemoApplication : Application() {
         // 加载用户语言设置
         LanguageActivity.applySavedLanguage(this)
         // 初始化 SDK（在 Application 中调用一次）
-        BlueSDK.getInstance(this).initialize()
+        BlueSDKManager.getInstance(this).initialize()
         // 开发阶段开启 DEBUG 日志
-        BlueSDK.getInstance(this).setLogLevel(LogLevel.DEBUG)
+        BlueSDKManager.getInstance(this).setLogLevel(LogLevel.DEBUG)
     }
 
     override fun onTerminate() {
         super.onTerminate()
-        BlueSDK.getInstance(this).destroy()
+        BlueSDKManager.getInstance(this).destroy()
     }
 }

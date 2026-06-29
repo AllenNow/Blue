@@ -10,6 +10,6 @@ import BlueSDK
 class BlueSDKExampleTests: XCTestCase {
 
     func testSDKSharedInstanceNotNil() {
-        XCTAssertNotNil(BlueSDK.shared)
+        XCTAssertNotNil(BlueSDKManager.shared)
     }
 }

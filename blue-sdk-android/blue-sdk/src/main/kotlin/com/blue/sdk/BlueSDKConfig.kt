@@ -23,8 +23,8 @@ enum class BlueSDKLanguage {
  * SDK 初始化配置
  * SDK initialization configuration
  *
- * 通过 BlueSDK.getInstance(context).initialize(config) 传入
- * Pass via BlueSDK.getInstance(context).initialize(config)
+ * 通过 BlueSDKManager.getInstance(context).initialize(config) 传入
+ * Pass via BlueSDKManager.getInstance(context).initialize(config)
  */
 data class BlueSDKConfig(
     /**

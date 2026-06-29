@@ -45,7 +45,7 @@ class MedicationRecordsActivity : AppCompatActivity() {
     private var selectedDate = System.currentTimeMillis()
     private var showAllRecords = false
 
-    private val sdk get() = com.blue.sdk.BlueSDK.getInstance(this)
+    private val sdk get() = com.blue.sdk.BlueSDKManager.getInstance(this)
 
     private val medicationObserver = object : com.blue.sdk.BlueSDKListener {
         override fun onMedicationRecordReported(record: com.blue.sdk.model.MedicationRecord) {
@@ -316,13 +316,15 @@ class MedicationRecordsActivity : AppCompatActivity() {
             fun bind(entry: MedicationEntry) {
                 emojiLabel.text = entry.statusEmoji
                 titleLabel.text = String.format(S.alarmIndexStatus, entry.alarmIndex, entry.statusText)
-                val timePattern = if (com.blue.sdk.BlueSDK.getInstance(itemView.context).currentTimeFormat == com.blue.sdk.enums.TimeFormat.HOUR_12) "h:mm a" else "HH:mm"
-                val eventTime = SimpleDateFormat(timePattern, Locale.getDefault()).format(Date(entry.timestamp))
+                val eventDate = Date(entry.timestamp)
+                val timeFmt = SimpleDateFormat("HH:mm", Locale.getDefault())
+                val dateFmt = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val eventTime = timeFmt.format(eventDate)
+                val eventDateStr = dateFmt.format(eventDate)
                 if (entry.alarmHour > 0 || entry.alarmMinute > 0) {
-                    detailLabel.text = String.format(S.scheduledActualTime, entry.alarmTimeString, eventTime)
+                    detailLabel.text = "$eventDateStr  ${entry.alarmTimeString} → $eventTime"
                 } else {
-                    val datePattern = if (com.blue.sdk.BlueSDK.getInstance(itemView.context).currentTimeFormat == com.blue.sdk.enums.TimeFormat.HOUR_12) "M/d h:mm a" else "M/d HH:mm"
-                    detailLabel.text = SimpleDateFormat(datePattern, Locale.getDefault()).format(Date(entry.timestamp))
+                    detailLabel.text = "$eventDateStr  $eventTime"
                 }
             }
 

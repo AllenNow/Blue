@@ -17,7 +17,7 @@ import Foundation
 ///     AlarmConfig(index: 2, hour: 12, minute: 30, days: .weekdays),
 ///     AlarmConfig(index: 3, hour: 20, minute: 0, days: .weekend)
 /// ]
-/// BlueSDK.shared.setAlarms(alarms) { result in ... }
+/// BlueSDKManager.shared.setAlarms(alarms) { result in ... }
 /// ```
 public struct AlarmConfig {
     /// 闹钟槽位（1~7）/ Alarm slot (1~7)

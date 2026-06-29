@@ -15,8 +15,8 @@ import Foundation
 ///
 /// 使用示例 / Usage:
 /// ```swift
-/// BlueSDK.shared.setAlarm(index: 1, hour: 8, minute: 0, days: .weekdays) { ... }
-/// BlueSDK.shared.setAlarm(index: 2, hour: 9, minute: 0, days: [.saturday, .sunday]) { ... }
+/// BlueSDKManager.shared.setAlarm(index: 1, hour: 8, minute: 0, days: .weekdays) { ... }
+/// BlueSDKManager.shared.setAlarm(index: 2, hour: 9, minute: 0, days: [.saturday, .sunday]) { ... }
 /// ```
 public struct WeekDays: OptionSet, Sendable {
     public let rawValue: Int

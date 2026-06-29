@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.blue.sdk.BlueSDK
+import com.blue.sdk.BlueSDKManager
 import com.blue.sdk.enums.TimeFormat
 import com.blue.sdk.error.BlueError
 
@@ -58,7 +58,7 @@ data class AlarmSlot(
 
 class AlarmManagerActivity : AppCompatActivity() {
 
-    private val sdk get() = BlueSDK.getInstance(this)
+    private val sdk get() = BlueSDKManager.getInstance(this)
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: AlarmSlotAdapter
 

@@ -14,7 +14,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.blue.sdk.BlueSDK
+import com.blue.sdk.BlueSDKManager
 import com.blue.sdk.BlueSDKLanguage
 
 /**
@@ -47,7 +47,7 @@ class LanguageActivity : AppCompatActivity() {
                 lang.startsWith("de") -> BlueSDKLanguage.DE
                 else -> BlueSDKLanguage.EN
             }
-            try { BlueSDK.getInstance(context).setLanguage(sdkLang) } catch (_: Exception) {}
+            try { BlueSDKManager.getInstance(context).setLanguage(sdkLang) } catch (_: Exception) {}
         }
 
         /** 保存语言选择 */
@@ -64,7 +64,7 @@ class LanguageActivity : AppCompatActivity() {
                 langCode.startsWith("de") -> BlueSDKLanguage.DE
                 else -> BlueSDKLanguage.EN
             }
-            try { BlueSDK.getInstance(context).setLanguage(sdkLang) } catch (_: Exception) {}
+            try { BlueSDKManager.getInstance(context).setLanguage(sdkLang) } catch (_: Exception) {}
         }
     }
 

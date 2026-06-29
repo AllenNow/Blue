@@ -89,13 +89,13 @@ class DeviceListViewController: UIViewController {
         view.backgroundColor = .systemBackground
         navigationItem.title = "Blue SDK Demo"
         buildUI()
-        BlueSDK.shared.addObserver(self)
+        BlueSDKManager.shared.addObserver(self)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // 同步当前连接状态（从控制页返回时可能仍已连接或已断开）
-        if BlueSDK.shared.connectionState != .authenticated {
+        if BlueSDKManager.shared.connectionState != .authenticated {
             connectedDeviceId = nil
         }
         refreshList()
@@ -105,13 +105,13 @@ class DeviceListViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         if isScanning {
-            BlueSDK.shared.stopScan()
+            BlueSDKManager.shared.stopScan()
             isScanning = false
         }
     }
 
     deinit {
-        BlueSDK.shared.removeObserver(self)
+        BlueSDKManager.shared.removeObserver(self)
     }
 
     // MARK: - UI 构建
@@ -201,7 +201,7 @@ class DeviceListViewController: UIViewController {
         rssiMap.removeAll()
         scanIndicator.isHidden = false
 
-        BlueSDK.shared.startScan(timeout: 5) { [weak self] event in
+        BlueSDKManager.shared.startScan(timeout: 5) { [weak self] event in
             guard let self = self else { return }
             switch event {
             case .deviceFound(let device):
@@ -244,7 +244,7 @@ class DeviceListViewController: UIViewController {
 
     private func connectDevice(_ device: BoundDevice) {
         // 如果已经连接认证到该设备，直接跳转
-        if BlueSDK.shared.connectionState == .authenticated && connectedDeviceId == device.deviceId {
+        if BlueSDKManager.shared.connectionState == .authenticated && connectedDeviceId == device.deviceId {
             navigateToControl(device: device)
             return
         }
@@ -253,9 +253,9 @@ class DeviceListViewController: UIViewController {
         showLoading()
 
         // 如果当前有连接，先断开，等断开回调后再连新设备
-        if BlueSDK.shared.connectionState != .disconnected {
+        if BlueSDKManager.shared.connectionState != .disconnected {
             // 标记等待断开后自动连接
-            BlueSDK.shared.disconnect()
+            BlueSDKManager.shared.disconnect()
             // delegate 中 .disconnected 会触发 reconnectPending
             return
         }
@@ -268,22 +268,22 @@ class DeviceListViewController: UIViewController {
         isAuthFailed = false  // 重置认证失败标记
         // 优先使用缓存的 ScannedDevice（扫描到的设备可直接连接）
         if let cached = scannedDeviceCache[device.deviceId] {
-            BlueSDK.shared.connect(cached)
+            BlueSDKManager.shared.connect(cached)
             return
         }
 
         // 没有缓存时，通过 UUID 直接连接
-        BlueSDK.shared.connect(byIdentifier: device.deviceId) { [weak self] error in
+        BlueSDKManager.shared.connect(byIdentifier: device.deviceId) { [weak self] error in
             if let _ = error {
                 // UUID 连接失败，回退到扫描方式
-                BlueSDK.shared.startScan(timeout: 8) { [weak self] event in
+                BlueSDKManager.shared.startScan(timeout: 8) { [weak self] event in
                     guard let self = self else { return }
                     switch event {
                     case .deviceFound(let scanned):
                         if scanned.deviceId == device.deviceId {
-                            BlueSDK.shared.stopScan()
+                            BlueSDKManager.shared.stopScan()
                             self.scannedDeviceCache[device.deviceId] = scanned
-                            BlueSDK.shared.connect(scanned)
+                            BlueSDKManager.shared.connect(scanned)
                         }
                     case .stopped:
                         if self.pendingConnectDevice != nil {
@@ -317,9 +317,9 @@ class DeviceListViewController: UIViewController {
     }
 
     @objc private func cancelConnect() {
-        BlueSDK.shared.stopScan()
+        BlueSDKManager.shared.stopScan()
         isUserDisconnect = true
-        BlueSDK.shared.disconnect()
+        BlueSDKManager.shared.disconnect()
         pendingConnectDevice = nil
         hideLoading()
     }
@@ -331,7 +331,7 @@ class DeviceListViewController: UIViewController {
         alert.addAction(UIAlertAction(title: S.cancel, style: .cancel))
         alert.addAction(UIAlertAction(title: S.confirm, style: .destructive) { [weak self] _ in
             if self?.pendingConnectDevice?.deviceId == device.deviceId {
-                BlueSDK.shared.disconnect()
+                BlueSDKManager.shared.disconnect()
                 self?.pendingConnectDevice = nil
             }
             DeviceStorage.shared.remove(deviceId: device.deviceId)
@@ -388,7 +388,7 @@ extension DeviceListViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "DeviceCell", for: indexPath) as! DeviceCell
         let device = devices[indexPath.row]
-        let isConnected = BlueSDK.shared.connectionState == .authenticated &&
+        let isConnected = BlueSDKManager.shared.connectionState == .authenticated &&
             connectedDeviceId == device.deviceId
         // 已连接的设备视为在线
         let isOnline = isConnected || onlineDevices.contains(device.deviceId)
@@ -400,7 +400,7 @@ extension DeviceListViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let device = devices[indexPath.row]
-        let isConnected = BlueSDK.shared.connectionState == .authenticated &&
+        let isConnected = BlueSDKManager.shared.connectionState == .authenticated &&
             connectedDeviceId == device.deviceId
         let isOnline = isConnected || onlineDevices.contains(device.deviceId)
 
@@ -429,7 +429,7 @@ extension DeviceListViewController: UITableViewDataSource, UITableViewDelegate {
 // MARK: - BlueSDKDelegate
 
 extension DeviceListViewController: BlueSDKDelegate {
-    func blueSDK(_ sdk: BlueSDK, didChangeConnectionState state: ConnectionState) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didChangeConnectionState state: ConnectionState) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             switch state {
@@ -467,7 +467,7 @@ extension DeviceListViewController: BlueSDKDelegate {
         }
     }
 
-    func blueSDK(_ sdk: BlueSDK, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
         if !success {
             DispatchQueue.main.async { [weak self] in
                 self?.isAuthFailed = true

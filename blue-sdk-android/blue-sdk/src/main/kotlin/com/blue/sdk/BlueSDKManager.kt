@@ -2,7 +2,7 @@
 // BlueSDK - LX-PD02 智能药盒蓝牙通信 SDK
 //
 // SDK 公开 API 入口（单例）
-// 使用方式：BlueSDK.getInstance(context).initialize()
+// 使用方式：BlueSDKManager.getInstance(context).initialize()
 // 连接成功后自动完成密钥认证（phoneMac 持久化存储在 KeystoreHelper）
 
 package com.blue.sdk
@@ -44,7 +44,7 @@ import java.util.UUID
 /**
  * BlueSDK 主入口，采用单例模式
  */
-class BlueSDK private constructor(private val context: Context) {
+class BlueSDKManager private constructor(private val context: Context) {
 
     companion object {
         @Volatile private var instance: BlueSDK? = null
@@ -53,7 +53,7 @@ class BlueSDK private constructor(private val context: Context) {
         @JvmStatic
         fun getInstance(context: Context): BlueSDK {
             return instance ?: synchronized(this) {
-                instance ?: BlueSDK(context.applicationContext).also { instance = it }
+                instance ?: BlueSDKManager(context.applicationContext).also { instance = it }
             }
         }
     }

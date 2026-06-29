@@ -1,0 +1,12 @@
+use_frameworks!
+
+platform :ios, '13.0'
+
+target 'BlueSDK_Example' do
+  pod 'BlueSDK', :path => '../'
+  pod 'SnapKit', '~> 5.6'
+
+  target 'BlueSDK_Tests' do
+    inherit! :search_paths
+  end
+end

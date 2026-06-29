@@ -105,15 +105,15 @@ class ViewController: UIViewController {
         scanButton.isHidden = false
         disconnectButton.isHidden = true
         
-        BlueSDK.shared.initialize()
-        BlueSDK.shared.delegate = self
+        BlueSDKManager.shared.initialize()
+        BlueSDKManager.shared.delegate = self
         
         // 如果从设备列表进入，隐藏扫描相关 UI
         if isFromDeviceList {
             scanButton.isHidden = true
             phoneMacField.isHidden = true
             title = deviceName ?? "BlueSDK"
-            if BlueSDK.shared.connectionState == .authenticated {
+            if BlueSDKManager.shared.connectionState == .authenticated {
                 disconnectButton.isHidden = false
                 updateStatus(S.connected, color: .systemGreen)
             }
@@ -123,7 +123,7 @@ class ViewController: UIViewController {
         tap.cancelsTouchesInView = false
         view.addGestureRecognizer(tap)
         // 将 SDK 内部所有日志（含收发数据）转发到界面日志窗口，同时保留终端输出
-        BlueSDK.shared.setLogHandler { [weak self] level, tag, message in
+        BlueSDKManager.shared.setLogHandler { [weak self] level, tag, message in
             // 保留终端打印
             print("[BlueSDK][\(level)][\(tag)] \(message)")
             // 转发到界面
@@ -138,7 +138,7 @@ class ViewController: UIViewController {
             self?.log("\(prefix) \(message)")
         }
         log(S.sdkStarted)
-        log("🔑 \(BlueSDK.shared.currentAuthKeyDisplay)")
+        log("🔑 \(BlueSDKManager.shared.currentAuthKeyDisplay)")
     }
 
     // MARK: - UI 构建
@@ -373,8 +373,8 @@ class ViewController: UIViewController {
     }
 
     @objc private func cancelConnection() {
-        BlueSDK.shared.stopScan()
-        BlueSDK.shared.disconnect()
+        BlueSDKManager.shared.stopScan()
+        BlueSDKManager.shared.disconnect()
         // 立即同步更新 UI（不依赖 delegate 回调）
         loadingOverlay.isHidden = true
         loadingIndicator.stopAnimating()
@@ -408,19 +408,19 @@ class ViewController: UIViewController {
         // 读取自定义密钥输入框
         let customKey = phoneMacField.text?.trimmingCharacters(in: .whitespaces).uppercased() ?? ""
         if customKey.count == 12 {
-            BlueSDK.shared.config.customPhoneMac = customKey
+            BlueSDKManager.shared.config.customPhoneMac = customKey
             log(S.scanningCustomKey.replacingOccurrences(of: "%@", with: customKey))
         } else if customKey.count == 4 {
-            BlueSDK.shared.fixedAuthKey = customKey
+            BlueSDKManager.shared.fixedAuthKey = customKey
             log(S.scanningFixedKey.replacingOccurrences(of: "%@", with: customKey))
         } else {
-            BlueSDK.shared.fixedAuthKey = nil
-            BlueSDK.shared.config.customPhoneMac = nil
+            BlueSDKManager.shared.fixedAuthKey = nil
+            BlueSDKManager.shared.config.customPhoneMac = nil
             log(S.scanningAuto)
         }
         updateStatus(S.scanning, color: .systemOrange)
         scannedDevices.removeAll()
-        BlueSDK.shared.startScan(timeout: 10) { [weak self] event in
+        BlueSDKManager.shared.startScan(timeout: 10) { [weak self] event in
             guard let self = self else { return }
             switch event {
             case .deviceFound(let device):
@@ -428,8 +428,8 @@ class ViewController: UIViewController {
                 self.scannedDevices.append(device)
                 self.log("\(S.found) \(device.deviceName)")
                 self.showLoading(S.connectingAuth)
-                BlueSDK.shared.connect(device)
-                BlueSDK.shared.stopScan()
+                BlueSDKManager.shared.connect(device)
+                BlueSDKManager.shared.stopScan()
             case .error(let error):
                 self.log("❌ \(error.localizedDescription)")
                 self.updateStatus(S.scanFailed, color: .systemRed)
@@ -446,12 +446,12 @@ class ViewController: UIViewController {
     }
 
     @objc private func disconnect() {
-        BlueSDK.shared.disconnect()
+        BlueSDKManager.shared.disconnect()
         log(S.disconnected)
     }
 
     @objc private func queryDeviceInfo() {
-        BlueSDK.shared.queryDeviceInfo { [weak self] r in
+        BlueSDKManager.shared.queryDeviceInfo { [weak self] r in
             switch r {
             case .success(let info): self?.log("📱 MAC:\(info.macAddressString) v\(info.firmwareVersion)")
             case .failure(let e): self?.log("❌ \(e.localizedDescription)")
@@ -460,7 +460,7 @@ class ViewController: UIViewController {
     }
 
     @objc private func syncTime() {
-        BlueSDK.shared.syncTime { [weak self] r in
+        BlueSDKManager.shared.syncTime { [weak self] r in
             if case .success = r { self?.log("⏰ 时间已同步") }
             else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
         }
@@ -479,7 +479,7 @@ class ViewController: UIViewController {
 
     @objc private func clearAllAlarms() {
         confirm(S.clearAlarmsTitle, msg: S.clearAlarmsMsg) {
-            BlueSDK.shared.clearAllAlarms { [weak self] r in
+            BlueSDKManager.shared.clearAllAlarms { [weak self] r in
                 if case .success = r { self?.log("⏰ \(S.alarmsCleared)") }
                 else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
             }
@@ -490,7 +490,7 @@ class ViewController: UIViewController {
 
     @objc private func soundTypeChanged(_ s: UISegmentedControl) {
         s.isEnabled = false
-        BlueSDK.shared.setSoundType([.typeA, .typeB][s.selectedSegmentIndex]) { [weak self] r in
+        BlueSDKManager.shared.setSoundType([.typeA, .typeB][s.selectedSegmentIndex]) { [weak self] r in
             DispatchQueue.main.async { s.isEnabled = true }
             if case .success = r { self?.log("🔊 铃声已设置") }
             else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
@@ -499,7 +499,7 @@ class ViewController: UIViewController {
 
     @objc private func volumeChanged(_ s: UISegmentedControl) {
         s.isEnabled = false
-        BlueSDK.shared.setVolume([.low, .medium, .high][s.selectedSegmentIndex]) { [weak self] r in
+        BlueSDKManager.shared.setVolume([.low, .medium, .high][s.selectedSegmentIndex]) { [weak self] r in
             DispatchQueue.main.async { s.isEnabled = true }
             if case .success = r { self?.log("🔈 音量已设置") }
             else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
@@ -508,7 +508,7 @@ class ViewController: UIViewController {
 
     @objc private func timeFormatChanged(_ s: UISegmentedControl) {
         s.isEnabled = false
-        BlueSDK.shared.setTimeFormat(s.selectedSegmentIndex == 0 ? .hour12 : .hour24) { [weak self] r in
+        BlueSDKManager.shared.setTimeFormat(s.selectedSegmentIndex == 0 ? .hour12 : .hour24) { [weak self] r in
             DispatchQueue.main.async { s.isEnabled = true }
             if case .success = r { self?.log("🕐 时制已设置") }
             else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
@@ -516,7 +516,7 @@ class ViewController: UIViewController {
     }
 
     @objc private func silenceChanged(_ s: UISwitch) {
-        BlueSDK.shared.setSilence(s.isOn) { [weak self] r in
+        BlueSDKManager.shared.setSilence(s.isOn) { [weak self] r in
             if case .success = r { self?.log(s.isOn ? "🔇 静音开" : "🔔 静音关") }
             else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
         }
@@ -527,7 +527,7 @@ class ViewController: UIViewController {
             log("❌ \(S.durationError)")
             return
         }
-        BlueSDK.shared.setAlertDuration(m) { [weak self] r in
+        BlueSDKManager.shared.setAlertDuration(m) { [weak self] r in
             if case .success = r { self?.log("⏱ 持续 \(m)分") }
             else if case .failure(let e) = r { self?.log("❌ \(e.localizedDescription)") }
         }
@@ -537,7 +537,7 @@ class ViewController: UIViewController {
 
     @objc private func restoreFactory() {
         confirm(S.restoreFactoryTitle, msg: S.restoreFactoryMsg) {
-            BlueSDK.shared.restoreFactory { [weak self] r in
+            BlueSDKManager.shared.restoreFactory { [weak self] r in
                 if case .success = r {
                     MedicationDatabase.shared.deleteAll()
                     self?.log("✅ \(S.factoryRestored)")
@@ -550,7 +550,7 @@ class ViewController: UIViewController {
 
     @objc private func clearLocalBinding() {
         confirm(S.clearBindingTitle, msg: S.clearBindingMsg) {
-            BlueSDK.shared.clearBinding { [weak self] result in
+            BlueSDKManager.shared.clearBinding { [weak self] result in
                 switch result {
                 case .success:
                     MedicationDatabase.shared.deleteAll()
@@ -649,7 +649,7 @@ class ViewController: UIViewController {
 // MARK: - BlueSDKDelegate
 
 extension ViewController: BlueSDKDelegate {
-    func blueSDK(_ sdk: BlueSDK, didChangeConnectionState state: ConnectionState) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didChangeConnectionState state: ConnectionState) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             switch state {
@@ -711,15 +711,15 @@ extension ViewController: BlueSDKDelegate {
         }
     }
 
-    func blueSDK(_ sdk: BlueSDK, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
         if !success {
             log("🔐 认证失败")
             handleAuthFailed()
         }
     }
     
-    func blueSDKDidRequestTimeSync(_ sdk: BlueSDK) { log("⏰ 时间同步（已自动处理）") }
-    func blueSDK(_ sdk: BlueSDK, didUpdateAlarm alarm: AlarmInfo) {
+    func blueSDKDidRequestTimeSync(_ sdk: BlueSDKManager) { log("⏰ 时间同步（已自动处理）") }
+    func blueSDK(_ sdk: BlueSDKManagerManager, didUpdateAlarm alarm: AlarmInfo) {
         log("⏰ 闹钟\(alarm.index) \(String(format: "%02d:%02d", alarm.hour, alarm.minute))")
         // 设备上报闹钟变更，同步更新本地存储
         let slot = AlarmSlot(
@@ -732,22 +732,22 @@ extension ViewController: BlueSDKDelegate {
         )
         AlarmStorage.shared.save(slot: slot)
     }
-    func blueSDK(_ sdk: BlueSDK, didAlarmRinging alarmIndex: Int, alarmInfo: AlarmInfo) { log("🔔 闹钟\(alarmIndex)响铃") }
-    func blueSDK(_ sdk: BlueSDK, didAlarmTimeout alarmIndex: Int, alarmInfo: AlarmInfo) { log("⚠️ 闹钟\(alarmIndex)超时") }
+    func blueSDK(_ sdk: BlueSDKManagerManager, didAlarmRinging alarmIndex: Int, alarmInfo: AlarmInfo) { log("🔔 闹钟\(alarmIndex)响铃") }
+    func blueSDK(_ sdk: BlueSDKManagerManager, didAlarmTimeout alarmIndex: Int, alarmInfo: AlarmInfo) { log("⚠️ 闹钟\(alarmIndex)超时") }
 
-    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationResult alarmIndex: Int, status: MedicationStatus) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didReceiveMedicationResult alarmIndex: Int, status: MedicationStatus) {
         let statusText = S.isZh ? status.displayNameZh : status.displayNameEn
         log("💊 闹钟\(alarmIndex) \(statusText)")
         // 不入库 — 等 didReceiveMedicationRecord 上报完整记录（含设定时间和实际时间）
     }
 
-    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationRecord record: MedicationRecord) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didReceiveMedicationRecord record: MedicationRecord) {
         let statusText = S.isZh ? record.status.displayNameZh : record.status.displayNameEn
         log("📋 用药记录：闹钟\(record.alarmIndex) \(statusText)")
         MedicationDatabase.shared.insert(timestamp: record.timestamp, alarmIndex: record.alarmIndex, alarmHour: record.alarmHour, alarmMinute: record.alarmMinute, status: record.status.rawValue)
     }
 
-    func blueSDK(_ sdk: BlueSDK, didChangeSoundType type: SoundType) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didChangeSoundType type: SoundType) {
         log("🔊 铃声变更: \(type)")
         DispatchQueue.main.async { [weak self] in
             switch type {
@@ -764,7 +764,7 @@ extension ViewController: BlueSDKDelegate {
             }
         }
     }
-    func blueSDK(_ sdk: BlueSDK, didChangeTimeFormat format: TimeFormat) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didChangeTimeFormat format: TimeFormat) {
         log("🕐 时制变更")
         DispatchQueue.main.async { [weak self] in
             switch format {
@@ -774,15 +774,15 @@ extension ViewController: BlueSDKDelegate {
             }
         }
     }
-    func blueSDKDidReportLowBattery(_ sdk: BlueSDK) { log("🪫 低电") }
-    func blueSDK(_ sdk: BlueSDK, didChangeAlertDuration minutes: Int) {
+    func blueSDKDidReportLowBattery(_ sdk: BlueSDKManager) { log("🪫 低电") }
+    func blueSDK(_ sdk: BlueSDKManagerManager, didChangeAlertDuration minutes: Int) {
         log("⏱ 提醒时长变更：\(minutes)分钟")
         DispatchQueue.main.async { [weak self] in
             self?.durationField.text = "\(minutes)"
         }
     }
 
-    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationNotification type: MedicationNotificationType) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didReceiveMedicationNotification type: MedicationNotificationType) {
         switch type {
         case .ringing:
             log("🔔 闹钟响铃，等待取药")
@@ -822,7 +822,7 @@ extension ViewController: BlueSDKDelegate {
         @unknown default: break
         }
     }
-    func blueSDK(_ sdk: BlueSDK, didEncounterError error: BlueError) { log("⚠️ \(error.localizedDescription)") }
+    func blueSDK(_ sdk: BlueSDKManagerManager, didEncounterError error: BlueError) { log("⚠️ \(error.localizedDescription)") }
 }
 
 // MARK: - DismissableVC Protocol

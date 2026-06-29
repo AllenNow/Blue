@@ -84,7 +84,7 @@ class ProtocolTestViewController: UIViewController {
         results = Array(repeating: .pending, count: testCases.count)
 
         // 监听 SDK 日志，显示收发数据
-        BlueSDK.shared.setLogHandler { [weak self] level, tag, message in
+        BlueSDKManager.shared.setLogHandler { [weak self] level, tag, message in
             print("[BlueSDK][\(level)][\(tag)] \(message)")
             // 只显示收发帧和关键信息
             if message.contains("TX:") || message.contains("RX:") ||
@@ -99,7 +99,7 @@ class ProtocolTestViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         // 恢复主页的 logHandler
-        BlueSDK.shared.setLogHandler(nil)
+        BlueSDKManager.shared.setLogHandler(nil)
     }
 
     @objc func dismissSelf() {
@@ -149,7 +149,7 @@ class ProtocolTestViewController: UIViewController {
         testCases = [
             // 1. 查询设备信息
             TestCase(name: "查询设备信息 (CMD=0x01)") { completion in
-                BlueSDK.shared.queryDeviceInfo { result in
+                BlueSDKManager.shared.queryDeviceInfo { result in
                     switch result {
                     case .success(let info):
                         completion(.success("MAC=\(info.macAddressString) v\(info.firmwareVersion)"))
@@ -161,7 +161,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 2. 时间同步
             TestCase(name: "同步时间 (CMD=0xE1)") { completion in
-                BlueSDK.shared.syncTime { result in
+                BlueSDKManager.shared.syncTime { result in
                     switch result {
                     case .success: completion(.success("已下发"))
                     case .failure(let error): completion(.failure(error))
@@ -171,7 +171,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 3. 设置闹钟1
             TestCase(name: "设置闹钟1 08:00 (DPID=0x66)") { completion in
-                BlueSDK.shared.setAlarm(index: 1, hour: 8, minute: 0, days: .all) { result in
+                BlueSDKManager.shared.setAlarm(index: 1, hour: 8, minute: 0, days: .all) { result in
                     switch result {
                     case .success(let a): completion(.success("\(String(format: "%02d:%02d", a.hour, a.minute)) 每天"))
                     case .failure(let e): completion(.failure(e))
@@ -181,7 +181,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 4. 设置闹钟2
             TestCase(name: "设置闹钟2 12:30 (DPID=0x67)") { completion in
-                BlueSDK.shared.setAlarm(index: 2, hour: 12, minute: 30, days: .weekdays) { result in
+                BlueSDKManager.shared.setAlarm(index: 2, hour: 12, minute: 30, days: .weekdays) { result in
                     switch result {
                     case .success(let a): completion(.success("\(String(format: "%02d:%02d", a.hour, a.minute)) 工作日"))
                     case .failure(let e): completion(.failure(e))
@@ -191,7 +191,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 5. 删除闹钟2
             TestCase(name: "删除闹钟2 (DPID=0x67 FF)") { completion in
-                BlueSDK.shared.deleteAlarm(index: 2) { result in
+                BlueSDKManager.shared.deleteAlarm(index: 2) { result in
                     switch result {
                     case .success: completion(.success("已删除"))
                     case .failure(let e): completion(.failure(e))
@@ -201,7 +201,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 6. 设置铃声类型A
             TestCase(name: "设置铃声-类型A (DPID=0x6F val=01)") { completion in
-                BlueSDK.shared.setSoundType(.typeA) { result in
+                BlueSDKManager.shared.setSoundType(.typeA) { result in
                     switch result {
                     case .success: completion(.success("类型A"))
                     case .failure(let e): completion(.failure(e))
@@ -211,7 +211,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 7. 设置铃声类型B
             TestCase(name: "设置铃声-类型B (DPID=0x6F val=02)") { completion in
-                BlueSDK.shared.setSoundType(.typeB) { result in
+                BlueSDKManager.shared.setSoundType(.typeB) { result in
                     switch result {
                     case .success: completion(.success("类型B"))
                     case .failure(let e): completion(.failure(e))
@@ -221,7 +221,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 8. 设置时间格式24H
             TestCase(name: "设置时间格式-24H (DPID=0x73 val=01)") { completion in
-                BlueSDK.shared.setTimeFormat(.hour24) { result in
+                BlueSDKManager.shared.setTimeFormat(.hour24) { result in
                     switch result {
                     case .success: completion(.success("24小时制"))
                     case .failure(let e): completion(.failure(e))
@@ -231,7 +231,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 9. 设置时间格式12H
             TestCase(name: "设置时间格式-12H (DPID=0x73 val=00)") { completion in
-                BlueSDK.shared.setTimeFormat(.hour12) { result in
+                BlueSDKManager.shared.setTimeFormat(.hour12) { result in
                     switch result {
                     case .success: completion(.success("12小时制"))
                     case .failure(let e): completion(.failure(e))
@@ -241,7 +241,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 10. 清空所有闹钟
             TestCase(name: "清空所有闹钟 (DPID=0x70)") { completion in
-                BlueSDK.shared.clearAllAlarms { result in
+                BlueSDKManager.shared.clearAllAlarms { result in
                     switch result {
                     case .success: completion(.success("已清空"))
                     case .failure(let e): completion(.failure(e))
@@ -253,7 +253,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 11. 设置音量-低
             TestCase(name: "⚡设置音量-低 (DPID=0x6E val=01)") { completion in
-                BlueSDK.shared.setVolume(.low) { result in
+                BlueSDKManager.shared.setVolume(.low) { result in
                     switch result {
                     case .success: completion(.success("低音量"))
                     case .failure(let e): completion(.failure(e))
@@ -263,7 +263,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 12. 设置音量-高
             TestCase(name: "⚡设置音量-高 (DPID=0x6E val=03)") { completion in
-                BlueSDK.shared.setVolume(.high) { result in
+                BlueSDKManager.shared.setVolume(.high) { result in
                     switch result {
                     case .success: completion(.success("高音量"))
                     case .failure(let e): completion(.failure(e))
@@ -273,7 +273,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 13. 静音开
             TestCase(name: "⚡静音开 (DPID=0x74 val=01)") { completion in
-                BlueSDK.shared.setSilence(true) { result in
+                BlueSDKManager.shared.setSilence(true) { result in
                     switch result {
                     case .success: completion(.success("静音已开"))
                     case .failure(let e): completion(.failure(e))
@@ -283,7 +283,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 14. 静音关
             TestCase(name: "⚡静音关 (DPID=0x74 val=00)") { completion in
-                BlueSDK.shared.setSilence(false) { result in
+                BlueSDKManager.shared.setSilence(false) { result in
                     switch result {
                     case .success: completion(.success("静音已关"))
                     case .failure(let e): completion(.failure(e))
@@ -293,7 +293,7 @@ class ProtocolTestViewController: UIViewController {
 
             // 15. 设置提醒持续时间
             TestCase(name: "⚡提醒持续时间5分钟 (DPID=0x70)") { completion in
-                BlueSDK.shared.setAlertDuration(5) { result in
+                BlueSDKManager.shared.setAlertDuration(5) { result in
                     switch result {
                     case .success: completion(.success("5分钟"))
                     case .failure(let e): completion(.failure(e))

@@ -15,7 +15,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.blue.sdk.BlueSDK
+import com.blue.sdk.BlueSDKManager
 import com.blue.sdk.error.BlueError
 import com.blue.sdk.enums.LogLevel
 import com.blue.sdk.enums.SoundType
@@ -30,7 +30,7 @@ enum class TestResult {
 
 class ProtocolTestActivity : AppCompatActivity() {
 
-    private val sdk get() = BlueSDK.getInstance(this)
+    private val sdk get() = BlueSDKManager.getInstance(this)
 
     private lateinit var statusLabel: TextView
     private lateinit var startButton: Button

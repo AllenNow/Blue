@@ -78,9 +78,9 @@ public enum BlueError: Error, Equatable {
     public var recoverySuggestion: String {
         switch self {
         case .notInitialized:
-            return SDKLocale.s("请在调用任何 SDK 方法前先执行 BlueSDK.shared.initialize()",
-                               "Call BlueSDK.shared.initialize() before using any SDK method",
-                               "Rufen Sie BlueSDK.shared.initialize() auf, bevor Sie SDK-Methoden verwenden")
+            return SDKLocale.s("请在调用任何 SDK 方法前先执行 BlueSDKManager.shared.initialize()",
+                               "Call BlueSDKManager.shared.initialize() before using any SDK method",
+                               "Rufen Sie BlueSDKManager.shared.initialize() auf, bevor Sie SDK-Methoden verwenden")
         case .notAuthenticated:
             return SDKLocale.s("请等待连接成功后 SDK 自动认证完成，或检查 fixedAuthKey 配置是否正确",
                                "Wait for SDK auto-authentication after connection, or check fixedAuthKey configuration",

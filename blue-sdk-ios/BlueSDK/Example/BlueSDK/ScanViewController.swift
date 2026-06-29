@@ -75,13 +75,13 @@ class ScanViewController: UIViewController {
         title = S.scanDevicesTitle
         view.backgroundColor = .systemBackground
         buildUI()
-        BlueSDK.shared.addObserver(self)
+        BlueSDKManager.shared.addObserver(self)
         startDeviceScan()
     }
 
     deinit {
-        BlueSDK.shared.removeObserver(self)
-        if isScanning { BlueSDK.shared.stopScan() }
+        BlueSDKManager.shared.removeObserver(self)
+        if isScanning { BlueSDKManager.shared.stopScan() }
     }
 
     // MARK: - UI 构建
@@ -137,7 +137,7 @@ class ScanViewController: UIViewController {
         statusLabel.text = S.searchingNearby
         rescanButton.isHidden = true
 
-        BlueSDK.shared.startScan(timeout: 15) { [weak self] event in
+        BlueSDKManager.shared.startScan(timeout: 15) { [weak self] event in
             guard let self = self else { return }
             switch event {
             case .deviceFound(let device):
@@ -185,7 +185,7 @@ class ScanViewController: UIViewController {
 
     private func bindDevice(_ device: ScannedDevice) {
         if isScanning {
-            BlueSDK.shared.stopScan()
+            BlueSDKManager.shared.stopScan()
             isScanning = false
         }
 
@@ -201,11 +201,11 @@ class ScanViewController: UIViewController {
         // 自动连接
         pendingBindDevice = device
         loadingOverlay.isHidden = false
-        BlueSDK.shared.connect(device)
+        BlueSDKManager.shared.connect(device)
     }
 
     @objc private func cancelBind() {
-        BlueSDK.shared.disconnect()
+        BlueSDKManager.shared.disconnect()
         pendingBindDevice = nil
         loadingOverlay.isHidden = true
     }
@@ -236,7 +236,7 @@ extension ScanViewController: UITableViewDataSource, UITableViewDelegate {
 // MARK: - BlueSDKDelegate
 
 extension ScanViewController: BlueSDKDelegate {
-    func blueSDK(_ sdk: BlueSDK, didChangeConnectionState state: ConnectionState) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didChangeConnectionState state: ConnectionState) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             switch state {
@@ -265,7 +265,7 @@ extension ScanViewController: BlueSDKDelegate {
         }
     }
 
-    func blueSDK(_ sdk: BlueSDK, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
+    func blueSDK(_ sdk: BlueSDKManagerManager, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
         if !success {
             DispatchQueue.main.async { [weak self] in
                 self?.loadingOverlay.isHidden = true

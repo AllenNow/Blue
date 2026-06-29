@@ -88,9 +88,9 @@ sealed class BlueError(message: String) : Exception(message) {
         val disconnectedMsg get() = SDKLocale.s("设备已断开连接", "Device disconnected", "Gerät getrennt")
 
         val notInitializedSuggestion get() = SDKLocale.s(
-            "请在调用任何 SDK 方法前先执行 BlueSDK.getInstance(context).initialize()",
-            "Call BlueSDK.getInstance(context).initialize() before using any SDK method",
-            "Rufen Sie BlueSDK.getInstance(context).initialize() auf, bevor Sie SDK-Methoden verwenden")
+            "请在调用任何 SDK 方法前先执行 BlueSDKManager.getInstance(context).initialize()",
+            "Call BlueSDKManager.getInstance(context).initialize() before using any SDK method",
+            "Rufen Sie BlueSDKManager.getInstance(context).initialize() auf, bevor Sie SDK-Methoden verwenden")
         val notAuthenticatedSuggestion get() = SDKLocale.s(
             "请等待连接成功后 SDK 自动认证完成，或检查 fixedAuthKey 配置是否正确",
             "Wait for SDK auto-authentication after connection, or check fixedAuthKey configuration",

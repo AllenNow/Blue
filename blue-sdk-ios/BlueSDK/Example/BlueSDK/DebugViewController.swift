@@ -155,15 +155,15 @@ class DebugViewController: UIViewController {
     }
 
     @objc private func exportLog() {
-        let log = BlueSDK.shared.exportLog()
+        let log = BlueSDKManager.shared.exportLog()
         let ac = UIActivityViewController(activityItems: [log], applicationActivities: nil)
         present(ac, animated: true)
-        appendLog("📋 日志已导出（\(BlueSDK.shared.exportLog(maxLines: 1).count) 字符）")
+        appendLog("📋 日志已导出（\(BlueSDKManager.shared.exportLog(maxLines: 1).count) 字符）")
     }
 
     @objc private func clearLog() {
         logTextView.text = ""
-        BlueSDK.shared.clearLogBuffer()
+        BlueSDKManager.shared.clearLogBuffer()
         appendLog("🗑️ 日志已清空")
     }
 

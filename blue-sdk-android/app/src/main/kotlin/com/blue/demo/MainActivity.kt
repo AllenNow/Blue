@@ -17,7 +17,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.blue.sdk.BlueSDK
+import com.blue.sdk.BlueSDKManager
 import com.blue.sdk.BlueSDKListener
 import com.blue.sdk.enums.*
 import com.blue.sdk.error.BlueError
@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     /** 是否从设备列表页进入（新流程） */
     private val isFromDeviceList: Boolean get() = deviceId != null
 
-    private val sdk get() = BlueSDK.getInstance(this)
+    private val sdk get() = BlueSDKManager.getInstance(this)
     private val timeFmt = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
     private val bgDark = Color.parseColor("#1C1C1E")

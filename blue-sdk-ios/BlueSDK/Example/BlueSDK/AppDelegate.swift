@@ -14,7 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         // 初始化 SDK（在 App 启动时调用一次）
-        BlueSDK.shared.initialize()
+        BlueSDKManager.shared.initialize()
 
         // 初始化多语言字符串（从 Locales/*.json 加载）
         S.initialize()
@@ -23,7 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         LanguageViewController.applySavedLanguage()
 
         // 开发阶段开启 DEBUG 日志，生产环境改为 .none
-        BlueSDK.shared.setLogLevel(.debug)
+        BlueSDKManager.shared.setLogLevel(.debug)
 
         // 设置根视图
         window = UIWindow(frame: UIScreen.main.bounds)
@@ -46,6 +46,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         // App 退出时销毁 SDK，释放 BLE 资源
-        BlueSDK.shared.destroy()
+        BlueSDKManager.shared.destroy()
     }
 }

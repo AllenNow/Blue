@@ -9,12 +9,12 @@ import Foundation
 import CoreBluetooth
 
 /// BlueSDK 主入口，采用单例模式
-/// 使用方式：`BlueSDK.shared.initialize()`
-@objc public final class BlueSDK: NSObject {
+/// 使用方式：`BlueSDKManager.shared.initialize()`
+@objc public final class BlueSDKManager: NSObject {
 
     // MARK: - 单例
 
-    @objc public static let shared = BlueSDK()
+    @objc public static let shared = BlueSDKManager()
 
     // MARK: - 内部组件
 
@@ -280,7 +280,7 @@ import CoreBluetooth
             }.joined(separator: ":")
             return formatted
         }
-        if let data = KeychainHelper.load(forKey: BlueSDK.keychainPhoneMacKey), data.count == 6 {
+        if let data = KeychainHelper.load(forKey: BlueSDKManager.keychainPhoneMacKey), data.count == 6 {
             return [UInt8](data).map { String(format: "%02X", $0) }.joined(separator: ":")
         }
         return "N/A"
@@ -571,7 +571,7 @@ import CoreBluetooth
         }
 
         // 2. 从 Keychain 读取已存储的 phoneMac
-        if let storedData = KeychainHelper.load(forKey: BlueSDK.keychainPhoneMacKey), storedData.count == 6 {
+        if let storedData = KeychainHelper.load(forKey: BlueSDKManager.keychainPhoneMacKey), storedData.count == 6 {
             return Array(storedData)
         }
         
@@ -580,7 +580,7 @@ import CoreBluetooth
         let uuidBytes = withUnsafeBytes(of: uuid.uuid) { Array($0) }
         let phoneMac = Array(uuidBytes.prefix(6))
         
-        KeychainHelper.save(data: Data(phoneMac), forKey: BlueSDK.keychainPhoneMacKey)
+        KeychainHelper.save(data: Data(phoneMac), forKey: BlueSDKManager.keychainPhoneMacKey)
         
         return phoneMac
     }
