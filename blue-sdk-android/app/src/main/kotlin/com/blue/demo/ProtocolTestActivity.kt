@@ -110,7 +110,6 @@ class ProtocolTestActivity : AppCompatActivity() {
     private fun setupLogHandler() {
         sdk.setLogHandler { level, tag, message ->
             if (message.contains("Send") || message.contains("TX:") || message.contains("RX:") ||
-                message.contains("收到数据") || message.contains("发送帧") ||
                 message.contains("auth") || message.contains("Auth") ||
                 message.contains("failed") || message.contains("success")) {
                 appendLog(message)

@@ -42,7 +42,7 @@ final class BLEConnector: NSObject {
         // 注册为连接事件代理，接收 centralManager 的连接/断开回调
         bleCentral.connectionDelegate = self
         bleCentral.centralManager.connect(peripheral, options: nil)
-        logger.info("正在连接设备：\(peripheral.name ?? peripheral.identifier.uuidString)")
+        logger.info("Connecting to device: \(peripheral.name ?? peripheral.identifier.uuidString)")
     }
 
     /// 断开连接
@@ -59,19 +59,19 @@ final class BLEConnector: NSObject {
         notifyCharacteristic = nil
         self.peripheral = nil
         
-        logger.info("主动断开连接")
+        logger.info("Disconnected manually")
     }
 
     /// 发送数据帧
     func write(_ bytes: [UInt8]) {
         guard let peripheral = peripheral,
               let characteristic = writeCharacteristic else {
-            logger.error("写特征未就绪，无法发送数据")
+            logger.error("Write characteristic not ready")
             return
         }
         let data = Data(bytes)
         peripheral.writeValue(data, for: characteristic, type: .withResponse)
-        logger.debug("发送帧：\(bytes.map { String(format: "%02X", $0) }.joined(separator: " "))")
+        logger.debug("TX: \(bytes.map { String(format: "%02X", $0) }.joined(separator: " "))")
     }
 }
 
@@ -80,19 +80,19 @@ final class BLEConnector: NSObject {
 extension BLEConnector: BLECentralConnectionDelegate {
 
     func centralDidConnect(peripheral: CBPeripheral) {
-        logger.info("设备已连接，开始发现服务")
+        logger.info("Device connected, discovering services")
         peripheral.discoverServices([BLEConnector.serviceUUID])
     }
 
     func centralDidDisconnect(peripheral: CBPeripheral, error: Error?) {
         writeCharacteristic = nil
         notifyCharacteristic = nil
-        logger.info("设备已断开：\(error?.localizedDescription ?? "正常断开")")
+        logger.info("Device disconnected: \(error?.localizedDescription ?? "normal")")
         delegate?.bleConnectorDidDisconnect(error: error)
     }
 
     func centralDidFailToConnect(peripheral: CBPeripheral, error: Error?) {
-        logger.error("连接失败：\(error?.localizedDescription ?? "未知错误")")
+        logger.error("Connection failed: \(error?.localizedDescription ?? "unknown")")
         delegate?.bleConnectorDidDisconnect(error: error)
     }
 }
@@ -104,7 +104,7 @@ extension BLEConnector: CBPeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         guard error == nil,
               let service = peripheral.services?.first(where: { $0.uuid == BLEConnector.serviceUUID }) else {
-            logger.error("服务发现失败：\(error?.localizedDescription ?? "未找到目标服务")")
+            logger.error("Service discovery failed: \(error?.localizedDescription ?? "target service not found")")
             delegate?.bleConnectorDidDisconnect(error: error)
             return
         }
@@ -116,7 +116,7 @@ extension BLEConnector: CBPeripheralDelegate {
 
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         guard error == nil else {
-            logger.error("特征发现失败：\(error!.localizedDescription)")
+            logger.error("Characteristic discovery failed: \(error!.localizedDescription)")
             return
         }
 
@@ -132,20 +132,20 @@ extension BLEConnector: CBPeripheralDelegate {
         }
 
         if writeCharacteristic != nil {
-            logger.info("GATT 特征就绪，连接完成")
+            logger.info("GATT characteristics ready, connection complete")
             delegate?.bleConnectorDidConnect()
         }
     }
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         guard error == nil, let data = characteristic.value else { return }
-        logger.debug("收到数据：\([UInt8](data).map { String(format: "%02X", $0) }.joined(separator: " "))")
+        logger.debug("RX: \([UInt8](data).map { String(format: "%02X", $0) }.joined(separator: " "))")
         delegate?.bleConnectorDidReceiveData(data)
     }
 
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         if let error = error {
-            logger.error("写入失败：\(error.localizedDescription)")
+            logger.error("Write failed: \(error.localizedDescription)")
         }
     }
 }

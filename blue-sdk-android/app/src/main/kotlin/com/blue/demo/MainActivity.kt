@@ -214,15 +214,15 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
 
         audioCard.addView(segmentRow(S.soundType, listOf(
-            "A" to { sdk.setSoundType(SoundType.TYPE_A) { logR("铃声A", it) } },
-            "B" to { sdk.setSoundType(SoundType.TYPE_B) { logR("铃声B", it) } }
+            "A" to { sdk.setSoundType(SoundType.TYPE_A) { logR("Sound A", it) } },
+            "B" to { sdk.setSoundType(SoundType.TYPE_B) { logR("Sound B", it) } }
         )).also { soundTypeSegment = it.getChildAt(1) as LinearLayout })
         audioCard.addView(gap(6))
 
         audioCard.addView(segmentRow(S.volume, listOf(
-            S.low to { sdk.setVolume(VolumeLevel.LOW) { logR("音量低", it) } },
-            S.medium to { sdk.setVolume(VolumeLevel.MEDIUM) { logR("音量中", it) } },
-            S.high to { sdk.setVolume(VolumeLevel.HIGH) { logR("音量高", it) } }
+            S.low to { sdk.setVolume(VolumeLevel.LOW) { logR("Vol Low", it) } },
+            S.medium to { sdk.setVolume(VolumeLevel.MEDIUM) { logR("Vol Med", it) } },
+            S.high to { sdk.setVolume(VolumeLevel.HIGH) { logR("Vol High", it) } }
         )))
         audioCard.addView(gap(6))
 
@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         silRow.addView(label(S.silence))
         val sw = Switch(this).apply {
             setOnCheckedChangeListener { _, on ->
-                sdk.setSilence(on) { logR(if (on) "静音开" else "静音关", it) }
+                sdk.setSilence(on) { logR(if (on) "Mute ON" else "Mute OFF", it) }
             }
         }
         silenceSwitch = sw
@@ -274,7 +274,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                 log("❌ ${S.durationError}")
                 return@pillBtn
             }
-            sdk.setAlertDuration(m) { logR("持续${m}分", it) }
+            sdk.setAlertDuration(m) { logR("Duration ${m}min", it) }
         })
         audioCard.addView(durRow)
         content.addView(audioCard)
@@ -669,7 +669,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     override fun onAuthResult(success: Boolean, error: BlueError?) {
         if (!success) {
             isAuthFailed = true
-            log("🔐 认证失败")
+            log("🔐 Auth failed")
             hideLoading()
             runOnUiThread {
                 statusLabel.text = S.authFailedStatus
@@ -686,9 +686,9 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
     }
 
-    override fun onTimeSyncRequested() { log("⏰ 同步请求"); sdk.syncTime { _ -> } }
+    override fun onTimeSyncRequested() { log("⏰ Time sync request"); sdk.syncTime { _ -> } }
     override fun onAlarmUpdated(alarm: AlarmInfo) {
-        log("⏰ 闹钟${alarm.index} ${String.format("%02d:%02d", alarm.hour, alarm.minute)}")
+        log("⏰ Alarm${alarm.index} ${String.format("%02d:%02d", alarm.hour, alarm.minute)}")
         // 设备上报闹钟变更，同步更新本地存储
         val isSet = !alarm.isDeleted
         val slot = AlarmSlot(
@@ -701,8 +701,8 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         )
         AlarmStorage.save(this, slot)
     }
-    override fun onAlarmRinging(alarmIndex: Int, alarmInfo: AlarmInfo) { log("🔔 闹钟${alarmIndex}响铃") }
-    override fun onAlarmTimeout(alarmIndex: Int, alarmInfo: AlarmInfo) { log("⚠️ 闹钟${alarmIndex}超时") }
+    override fun onAlarmRinging(alarmIndex: Int, alarmInfo: AlarmInfo) { log("🔔 Alarm${alarmIndex} ringing") }
+    override fun onAlarmTimeout(alarmIndex: Int, alarmInfo: AlarmInfo) { log("⚠️ Alarm${alarmIndex} timeout") }
 
     override fun onMedicationResult(alarmIndex: Int, status: MedicationStatus) {
         val statusText = when (status) {
@@ -752,19 +752,19 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
     }
     override fun onTimeFormatChanged(format: TimeFormat) {
-        log("🕐 时制变更")
+        log("🕐 Time format changed")
         runOnUiThread { selectSegment(timeFormatSegment, format.ordinal) }
     }
     override fun onAlertDurationChanged(minutes: Int) {
-        log("⏱ 提醒时长变更：${minutes}分钟")
+        log("⏱ Alert duration: ${minutes}min")
         runOnUiThread { durationInput.setText(minutes.toString()) }
     }
-    override fun onLowBattery() { log("🪫 低电") }
+    override fun onLowBattery() { log("🪫 Low battery") }
 
     override fun onMedicationNotification(type: Int) {
         when (type) {
             1 -> {
-                log("🔔 闹钟响铃，等待取药")
+                log("🔔 Alarm ringing, awaiting medication")
                 runOnUiThread {
                     AlertDialog.Builder(this)
                         .setTitle(S.alarmRingingTitle)
@@ -774,11 +774,11 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                 }
             }
             2 -> {
-                log("⚠️ 超时未取药")
+                log("⚠️ Timeout, medication missed")
                 // 本地通知（漏服提醒）
                 val nm = getSystemService(android.app.NotificationManager::class.java)
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                    nm.createNotificationChannel(android.app.NotificationChannel("med_alert", "用药提醒", android.app.NotificationManager.IMPORTANCE_HIGH))
+                    nm.createNotificationChannel(android.app.NotificationChannel("med_alert", "Medication Reminder", android.app.NotificationManager.IMPORTANCE_HIGH))
                 }
                 val notif = android.app.Notification.Builder(this, "med_alert")
                     .setSmallIcon(android.R.drawable.ic_dialog_alert)
@@ -789,7 +789,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                 nm.notify(System.currentTimeMillis().toInt(), notif)
             }
             3 -> {
-                log("✅ 用户已取药")
+                log("✅ Medication taken")
                 runOnUiThread {
                     AlertDialog.Builder(this)
                         .setTitle(S.takenTitle)
@@ -800,7 +800,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             }
         }
     }
-    override fun onDeviceUnbound() { log("🔓 解绑") }
+    override fun onDeviceUnbound() { log("🔓 Unbound") }
 
     private fun log(msg: String) {
         val t = timeFmt.format(Date())

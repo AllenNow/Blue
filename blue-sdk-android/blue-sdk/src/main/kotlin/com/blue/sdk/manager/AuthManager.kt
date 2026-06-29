@@ -33,7 +33,7 @@ internal class AuthManager(private val commandQueue: CommandQueue) {
             ((sum shr 8) and 0xFF).toByte(),
             (sum and 0xFF).toByte()
         )
-        BlueLogger.debug("发送认证密钥包（密钥值已脱敏）")
+        BlueLogger.debug("Sending auth key packet (key value redacted)")
         val frame = FrameBuilder.build(CommandCode.AUTH_KEY, keyBytes)
         commandQueue.enqueue(CommandCode.AUTH_KEY, frame) { result ->
             result.fold(

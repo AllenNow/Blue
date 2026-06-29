@@ -164,6 +164,8 @@ object S {
     val weekdayDaily get() = this["weekday_daily"]
     val weekdayWeekdays get() = this["weekday_weekdays"]
     val weekdayWeekend get() = this["weekday_weekend"]
+    val am get() = this["am"]
+    val pm get() = this["pm"]
     val delete get() = this["delete"]
     val back get() = this["back"]
     val send get() = this["send"]

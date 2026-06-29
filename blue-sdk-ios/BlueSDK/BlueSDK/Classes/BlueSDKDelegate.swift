@@ -108,13 +108,14 @@ public protocol BlueSDKDelegate: AnyObject {
     /// Gerät meldet niedrigen Akkustand
     func blueSDKDidReportLowBattery(_ sdk: BlueSDK)
 
-    /// 用药结果通知（设备闹钟响铃/超时/取药）
-    /// Medication notification (alarm ringing / timeout / taken)
-    /// Medikamentenbenachrichtigung (Alarm klingelt / Zeitüberschreitung / eingenommen)
-    /// - Parameter type: 1=开始响铃等待取药, 2=超时未取药, 3=用户已取药
-    /// - Parameter type: 1=ringing waiting, 2=timeout missed, 3=taken
-    /// - Parameter type: 1=Klingeln wartet, 2=Zeitüberschreitung, 3=eingenommen
-    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationNotification type: Int)
+    /// 用药结果通知（类型安全版本）
+    /// Medication notification with typed enum
+    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationNotification type: MedicationNotificationType)
+
+    /// 用药结果通知（原始 Int 版本，已废弃）
+    /// Medication notification (raw Int, deprecated)
+    @available(*, deprecated, message: "Use blueSDK(_:didReceiveMedicationNotification type: MedicationNotificationType) instead")
+    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationNotificationRaw type: Int)
 
     /// 设备端执行解绑操作上报
     /// Device reports unbind operation
@@ -154,7 +155,8 @@ public extension BlueSDKDelegate {
     func blueSDK(_ sdk: BlueSDK, didChangeAlertDuration minutes: Int) {}
     func blueSDK(_ sdk: BlueSDK, didChangeTimeFormat format: TimeFormat) {}
     func blueSDKDidReportLowBattery(_ sdk: BlueSDK) {}
-    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationNotification type: Int) {}
+    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationNotification type: MedicationNotificationType) {}
+    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationNotificationRaw type: Int) {}
     func blueSDKDidReportDeviceUnbound(_ sdk: BlueSDK) {}
     func blueSDK(_ sdk: BlueSDK, didEncounterError error: BlueError) {}
     func blueSDK(_ sdk: BlueSDK, didStartReconnecting attempt: Int, maxAttempts: Int) {}

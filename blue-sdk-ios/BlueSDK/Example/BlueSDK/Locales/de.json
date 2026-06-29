@@ -100,6 +100,8 @@
   "weekday_fri": "Fr",
   "weekday_sat": "Sa",
   "weekday_sun": "So",
+  "am": "AM",
+  "pm": "PM",
   "no_bound_devices": "Keine Geräte",
   "no_bound_devices_hint": "Tippen Sie ＋ zum Hinzufügen",
   "device_online": "Online",

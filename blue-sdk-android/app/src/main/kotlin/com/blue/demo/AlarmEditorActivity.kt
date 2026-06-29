@@ -53,12 +53,19 @@ class AlarmEditorActivity : AppCompatActivity() {
         hour = intent.getIntExtra("hour", 8)
         minute = intent.getIntExtra("minute", 0)
         weekMask = intent.getIntExtra("weekMask", 0x7F)
+        // 未设置的槽位 weekMask 可能为 0，默认改为每天
+        if (weekMask == 0) weekMask = 0x7F
         isEnabled = intent.getBooleanExtra("isEnabled", true)
         isSet = intent.getBooleanExtra("isSet", false)
         supportActionBar?.title = String.format(S.alarmSlotLabel, index)
-        // 设置 TimePicker 初始值为传入的当前闹钟时间
+        // 设置 TimePicker 初始值时临时移除 listener，避免触发 onChange 覆盖值
+        timePicker.setOnTimeChangedListener(null)
         timePicker.hour = hour
         timePicker.minute = minute
+        timePicker.setOnTimeChangedListener { _, h, m ->
+            this@AlarmEditorActivity.hour = h
+            this@AlarmEditorActivity.minute = m
+        }
         updateWeekButtons()
     }
 
@@ -80,12 +87,7 @@ class AlarmEditorActivity : AppCompatActivity() {
 
         timePicker = android.widget.TimePicker(this).apply {
             setIs24HourView(sdk.currentTimeFormat == TimeFormat.HOUR_24)
-            hour = this@AlarmEditorActivity.hour
-            minute = this@AlarmEditorActivity.minute
-            setOnTimeChangedListener { _, h, m ->
-                this@AlarmEditorActivity.hour = h
-                this@AlarmEditorActivity.minute = m
-            }
+            // 初始值在 loadExtras() 中设置，这里不设 listener 避免初始化时误触发
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(400))
             setBackgroundColor(Color.parseColor("#2C2C2E"))
         }
@@ -185,6 +187,8 @@ class AlarmEditorActivity : AppCompatActivity() {
     }
 
     private fun saveAlarm() {
+        // 防御性检查：weekMask 不能为 0（至少选一天）
+        if (weekMask == 0) weekMask = 0x7F
         sdk.setAlarm(index, hour, minute, weekMask) { result ->
             runOnUiThread {
                 result.fold(

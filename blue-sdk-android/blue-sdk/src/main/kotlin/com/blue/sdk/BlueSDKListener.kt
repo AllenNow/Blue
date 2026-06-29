@@ -10,6 +10,7 @@
 package com.blue.sdk
 
 import com.blue.sdk.enums.ConnectionState
+import com.blue.sdk.enums.MedicationNotificationType
 import com.blue.sdk.enums.MedicationStatus
 import com.blue.sdk.enums.SoundType
 import com.blue.sdk.enums.TimeFormat
@@ -145,10 +146,15 @@ interface BlueSDKListener {
      * 用药结果通知（设备闹钟响铃/超时/取药）
      * Medication notification (alarm ringing / timeout / taken)
      * Medikamentenbenachrichtigung (Alarm klingelt / Zeitüberschreitung / eingenommen)
-     * @param type 通知类型：1=开始响铃等待取药, 2=超时未取药, 3=用户已取药
-     * @param type Notification type: 1=ringing waiting, 2=timeout missed, 3=taken
-     * @param type Benachrichtigungstyp: 1=Klingeln wartet, 2=Zeitüberschreitung, 3=eingenommen
+     * @param type 通知类型 / Notification type / Benachrichtigungstyp
      */
+    fun onMedicationNotification(type: MedicationNotificationType) {}
+
+    /**
+     * 用药结果通知（原始 Int 版本，已废弃）
+     * @param type 通知类型：1=开始响铃等待取药, 2=超时未取药, 3=用户已取药
+     */
+    @Deprecated("Use onMedicationNotification(type: MedicationNotificationType) instead", ReplaceWith("onMedicationNotification(MedicationNotificationType.fromInt(type)!!)"))
     fun onMedicationNotification(type: Int) {}
 
     /**

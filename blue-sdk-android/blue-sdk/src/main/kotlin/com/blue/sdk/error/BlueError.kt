@@ -60,6 +60,22 @@ sealed class BlueError(message: String) : Exception(message) {
         is Disconnected -> 9
     }
 
+    /**
+     * Whether this error is transient and the operation can be retried
+     * 是否为瞬态错误，可以安全重试
+     */
+    val isRetryable: Boolean get() = when (this) {
+        is Timeout -> true
+        is ProtocolError -> true
+        is BleError -> true
+        is Disconnected -> true
+        is NotInitialized -> false
+        is NotAuthenticated -> false
+        is AuthFailed -> false
+        is PermissionDenied -> false
+        is InvalidParameter -> false
+    }
+
     /** 内部多语言文本 */
     private object L {
         val notInitializedMsg get() = SDKLocale.s("SDK 未初始化，请先调用 initialize()", "SDK not initialized, call initialize() first", "SDK nicht initialisiert, bitte initialize() aufrufen")

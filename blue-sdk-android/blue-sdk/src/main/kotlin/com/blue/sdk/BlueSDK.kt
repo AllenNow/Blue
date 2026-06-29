@@ -281,7 +281,12 @@ class BlueSDK private constructor(private val context: Context) {
         connectionManager.disconnect()
     }
 
-    /** 发送原始指令数据（调试用）*/
+    /**
+     * Send raw command data (debug only)
+     * ⚠️ This method bypasses protocol validation. Use only for debugging and protocol testing.
+     * For production, use the typed API methods (setAlarm, setVolume, etc.)
+     */
+    @Deprecated("Debug only — use typed API methods for production", level = DeprecationLevel.WARNING)
     fun sendRawData(data: ByteArray, completion: (Result<Unit>) -> Unit) {
         if (!requireInitR(completion) || !requireAuthR(completion)) return
         val frame = FrameBuilder.build(CommandCode.SEND_COMMAND, data)
@@ -746,7 +751,14 @@ class BlueSDK private constructor(private val context: Context) {
                 val notifType = if (data.size >= 5) data[4].toInt() and 0xFF else 0
                 if (notifType in 1..3) {
                     BlueLogger.info("Medication notification: type=$notifType")
-                    CallbackDispatcher.dispatch { notifyObservers { it.onMedicationNotification(notifType) } }
+                    val typedNotif = com.blue.sdk.enums.MedicationNotificationType.fromInt(notifType)
+                    CallbackDispatcher.dispatch {
+                        notifyObservers {
+                            if (typedNotif != null) it.onMedicationNotification(typedNotif)
+                            @Suppress("DEPRECATION")
+                            it.onMedicationNotification(notifType)
+                        }
+                    }
                 }
             }
             else -> BlueLogger.debug("Unhandled report DPID: 0x${"%02X".format(dpidInt)}")

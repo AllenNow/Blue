@@ -782,9 +782,9 @@ extension ViewController: BlueSDKDelegate {
         }
     }
 
-    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationNotification type: Int) {
+    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationNotification type: MedicationNotificationType) {
         switch type {
-        case 1:
+        case .ringing:
             log("🔔 闹钟响铃，等待取药")
             // 前台时弹窗提醒
             DispatchQueue.main.async { [weak self] in
@@ -797,7 +797,7 @@ extension ViewController: BlueSDKDelegate {
                 alert.addAction(UIAlertAction(title: S.ok, style: .default))
                 self.present(alert, animated: true)
             }
-        case 2:
+        case .timeout:
             log("⚠️ 超时未取药")
             // 推送漏服通知
             let content = UNMutableNotificationContent()
@@ -806,7 +806,7 @@ extension ViewController: BlueSDKDelegate {
             content.sound = UNNotificationSound.default()
             let request = UNNotificationRequest(identifier: "missed_\(Date().timeIntervalSince1970)", content: content, trigger: nil)
             UNUserNotificationCenter.current().add(request)
-        case 3:
+        case .taken:
             log("✅ 用户已取药")
             // 鼓励通知/弹窗
             DispatchQueue.main.async { [weak self] in
@@ -819,7 +819,7 @@ extension ViewController: BlueSDKDelegate {
                 alert.addAction(UIAlertAction(title: S.ok, style: .default))
                 self.present(alert, animated: true)
             }
-        default: break
+        @unknown default: break
         }
     }
     func blueSDK(_ sdk: BlueSDK, didEncounterError error: BlueError) { log("⚠️ \(error.localizedDescription)") }

@@ -41,7 +41,7 @@ data class AlarmSlot(
                 hour > 12 -> hour - 12
                 else -> hour
             }
-            val amPm = if (hour < 12) "AM" else "PM"
+            val amPm = if (hour < 12) S.am else S.pm
             String.format("%d:%02d %s", displayHour, minute, amPm)
         }
     }
@@ -193,9 +193,10 @@ class AlarmManagerActivity : AppCompatActivity() {
         val now = java.util.Calendar.getInstance()
         val nowHour = now.get(java.util.Calendar.HOUR_OF_DAY)
         val nowMinute = now.get(java.util.Calendar.MINUTE)
-        // 当前星期（协议：bit0=周日, bit1=周一 ... bit6=周六）
+        // Calendar.DAY_OF_WEEK: 1=Sun, 2=Mon ... 7=Sat
+        // weekMask bit 定义: bit0=周日, bit1=周一 ... bit6=周六
         val calDow = now.get(java.util.Calendar.DAY_OF_WEEK) // 1=Sun...7=Sat
-        val todayBit = calDow - 1 // 转为 0=Sun, 1=Mon ... 6=Sat
+        val todayBit = calDow - 1 // 0=Sun, 1=Mon ... 6=Sat
 
         val activeAlarms = alarms.filter { it.isSet && it.isEnabled }
         if (activeAlarms.isEmpty()) {
@@ -204,19 +205,36 @@ class AlarmManagerActivity : AppCompatActivity() {
             return
         }
 
-        // 计算每个闹钟距离当前的分钟数（考虑周期）
         data class Candidate(val slot: AlarmSlot, val minutesAway: Int)
         val candidates = mutableListOf<Candidate>()
 
+        val nowTotalMinutes = nowHour * 60 + nowMinute
+
         for (alarm in activeAlarms) {
+            val alarmTotalMinutes = alarm.hour * 60 + alarm.minute
+            var bestMinutesAway = Int.MAX_VALUE
+
             for (dayOffset in 0..6) {
                 val checkDay = (todayBit + dayOffset) % 7
+                // 检查此天是否在 weekMask 中
                 if (alarm.weekMask and (1 shl checkDay) == 0) continue
-                var minutesAway = dayOffset * 24 * 60 + (alarm.hour - nowHour) * 60 + (alarm.minute - nowMinute)
-                if (dayOffset == 0 && minutesAway <= 0) continue // 今天已过
-                if (minutesAway <= 0) minutesAway += 7 * 24 * 60
-                candidates.add(Candidate(alarm, minutesAway))
+
+                val minutesAway: Int = if (dayOffset == 0) {
+                    // 今天：只有闹钟时间在当前时间之后才算
+                    val diff = alarmTotalMinutes - nowTotalMinutes
+                    if (diff <= 0) continue  // 今天已过，看后面的天
+                    diff
+                } else {
+                    // 未来某天：完整天数 + 闹钟时间偏移
+                    dayOffset * 24 * 60 + alarmTotalMinutes - nowTotalMinutes
+                }
+
+                bestMinutesAway = minutesAway
                 break // 找到该闹钟最近的一次即可
+            }
+
+            if (bestMinutesAway != Int.MAX_VALUE) {
+                candidates.add(Candidate(alarm, bestMinutesAway))
             }
         }
 
@@ -235,7 +253,7 @@ class AlarmManagerActivity : AppCompatActivity() {
                 next.slot.hour > 12 -> next.slot.hour - 12
                 else -> next.slot.hour
             }
-            val amPm = if (next.slot.hour < 12) "AM" else "PM"
+            val amPm = if (next.slot.hour < 12) S.am else S.pm
             String.format("%d:%02d %s", displayHour, next.slot.minute, amPm)
         }
 

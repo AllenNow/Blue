@@ -43,7 +43,7 @@ final class AuthManager {
 
         let phoneMacStr = phoneMac.map { String(format: "%02X", $0) }.joined(separator: ":")
         let deviceMacStr = deviceMac.map { String(format: "%02X", $0) }.joined(separator: ":")
-        logger.debug("认证密钥包：phoneMac=\(phoneMacStr) deviceMac=\(deviceMacStr) key=\(String(format: "%02X%02X", keyHigh, keyLow))")
+        logger.debug("Sending auth key packet (key value redacted)")
 
         // 构建密钥帧：CMD=0x00，数据为 2字节密钥
         let frame = FrameBuilder.build(cmd: CommandCode.authKey, data: keyBytes)

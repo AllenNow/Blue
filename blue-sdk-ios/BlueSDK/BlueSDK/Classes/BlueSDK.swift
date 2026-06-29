@@ -506,10 +506,13 @@ import CoreBluetooth
         completion(.success(()))
     }
 
-    /// 发送原始指令数据（调试用）
+    /// Send raw command data (debug only)
+    /// ⚠️ This method bypasses protocol validation. Use only for debugging and protocol testing.
+    /// For production, use the typed API methods (setAlarm, setVolume, etc.)
     /// - Parameters:
-    ///   - data: 原始数据字节（不含帧头/CRC，SDK 自动封装为 CMD=0x06 帧）
-    ///   - completion: 结果回调
+    ///   - data: Raw data bytes (without frame header/CRC, SDK wraps as CMD=0x06 frame)
+    ///   - completion: Result callback
+    @available(*, deprecated, message: "Debug only — use typed API methods for production")
     public func sendRawData(data: [UInt8], completion: @escaping (Result<Void, BlueError>) -> Void) {
         guard requireInitialized(callback: { completion(.failure($0)) }),
               requireAuthenticated(callback: { completion(.failure($0)) }) else { return }
@@ -819,9 +822,13 @@ import CoreBluetooth
                 let notifType = Int(data[4])
                 if notifType >= 1 && notifType <= 3 {
                     logger.info("Medication notification: type=\(notifType)")
+                    let typed = MedicationNotificationType(rawValue: notifType)
                     CallbackDispatcher.shared.dispatch { [weak self] in
                         guard let self = self else { return }
-                        self.notifyObservers { $0.blueSDK(self, didReceiveMedicationNotification: notifType)}
+                        if let typed = typed {
+                            self.notifyObservers { $0.blueSDK(self, didReceiveMedicationNotification: typed) }
+                        }
+                        self.notifyObservers { $0.blueSDK(self, didReceiveMedicationNotificationRaw: notifType) }
                     }
                 }
             }

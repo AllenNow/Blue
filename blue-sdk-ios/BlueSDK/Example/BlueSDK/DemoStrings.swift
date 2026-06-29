@@ -154,6 +154,8 @@ enum S {
     static var weekdayDaily: String { self["weekday_daily"] }
     static var weekdayWeekdays: String { self["weekday_weekdays"] }
     static var weekdayWeekend: String { self["weekday_weekend"] }
+    static var am: String { self["am"] }
+    static var pm: String { self["pm"] }
     static var delete: String { self["delete"] }
     static var back: String { self["back"] }
     static var send: String { self["send"] }

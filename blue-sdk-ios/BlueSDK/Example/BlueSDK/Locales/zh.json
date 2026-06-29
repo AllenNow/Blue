@@ -100,6 +100,8 @@
   "weekday_fri": "五",
   "weekday_sat": "六",
   "weekday_sun": "日",
+  "am": "上午",
+  "pm": "下午",
   "no_bound_devices": "暂无绑定设备",
   "no_bound_devices_hint": "点击右上角 ＋ 添加您的第一台设备",
   "device_online": "在线",

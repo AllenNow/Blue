@@ -36,13 +36,18 @@ final class AlarmManager {
             return
         }
 
+        // 参数校验：限制在有效范围内
+        let safeHour = min(max(hour, 0), 23)
+        let safeMinute = min(max(minute, 0), 59)
+        let safeWeekMask = weekMask == 0 ? 0x7F : (weekMask & 0x7F)
+
         // 数据格式：[DPID][0x00][0x00][0x07][0x01][hour][minute][weekMask][0x00][0x00][0x00]
         let data: [UInt8] = [
             dpid,
             0x00, 0x00, 0x07, 0x01,
-            UInt8(hour),
-            UInt8(minute),
-            UInt8(weekMask),
+            UInt8(safeHour),
+            UInt8(safeMinute),
+            UInt8(safeWeekMask),
             0x00, 0x00, 0x00
         ]
         let frame = FrameBuilder.build(cmd: CommandCode.sendCommand, data: data)
@@ -52,9 +57,9 @@ final class AlarmManager {
             case .success:
                 let alarm = AlarmInfo(
                     index: index,
-                    hour: hour,
-                    minute: minute,
-                    weekMask: weekMask
+                    hour: safeHour,
+                    minute: safeMinute,
+                    weekMask: safeWeekMask
                 )
                 completion(.success(alarm))
             case .failure(let error):

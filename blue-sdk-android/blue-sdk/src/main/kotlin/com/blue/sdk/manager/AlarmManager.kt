@@ -22,12 +22,16 @@ internal class AlarmManager(private val commandQueue: CommandQueue) {
         val dpid = DPIDConstants.alarmDPID(index) ?: run {
             completion(Result.failure(BlueError.InvalidParameter)); return
         }
+        // 参数校验：限制在有效范围内
+        val safeHour = hour.coerceIn(0, 23)
+        val safeMinute = minute.coerceIn(0, 59)
+        val safeWeekMask = if (weekMask == 0) 0x7F else weekMask and 0x7F
         val data = byteArrayOf(dpid, 0x00, 0x00, 0x07, 0x01,
-            hour.toByte(), minute.toByte(), weekMask.toByte(), 0x00, 0x00, 0x00)
+            safeHour.toByte(), safeMinute.toByte(), safeWeekMask.toByte(), 0x00, 0x00, 0x00)
         val frame = FrameBuilder.build(CommandCode.SEND_COMMAND, data)
         commandQueue.enqueue(CommandCode.SEND_COMMAND, frame) { result ->
             result.fold(
-                onSuccess = { completion(Result.success(AlarmInfo(index = index, isEnabled = true, hour = hour, minute = minute, weekMask = weekMask))) },
+                onSuccess = { completion(Result.success(AlarmInfo(index = index, isEnabled = true, hour = safeHour, minute = safeMinute, weekMask = safeWeekMask))) },
                 onFailure = { completion(Result.failure(it as BlueError)) }
             )
         }

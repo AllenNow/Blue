@@ -61,6 +61,17 @@ public enum BlueError: Error, Equatable {
         return nil
     }
 
+    /// Whether this error is transient and the operation can be retried
+    /// 是否为瞬态错误，可以安全重试
+    public var isRetryable: Bool {
+        switch self {
+        case .timeout, .protocolError, .bleError, .disconnected:
+            return true
+        case .notInitialized, .notAuthenticated, .authFailed, .permissionDenied, .invalidParameter, .deviceNotFound:
+            return false
+        }
+    }
+
     // MARK: - 多语言
 
     /// 错误恢复建议（跟随 SDKLocale 设置，支持中/英/德）

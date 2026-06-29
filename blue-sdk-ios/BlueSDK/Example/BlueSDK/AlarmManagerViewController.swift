@@ -32,7 +32,7 @@ struct AlarmSlot {
             case 1...12: displayHour = hour
             default: displayHour = hour - 12
             }
-            let amPm = hour < 12 ? "AM" : "PM"
+            let amPm = hour < 12 ? S.am : S.pm
             return String(format: "%d:%02d %@", displayHour, minute, amPm)
         }
     }
@@ -177,8 +177,8 @@ class AlarmManagerViewController: UIViewController {
         let now = Calendar.current
         let nowHour = now.component(.hour, from: Date())
         let nowMinute = now.component(.minute, from: Date())
-        // 当前星期: Calendar weekday 1=Sun...7=Sat → bit0=Sun(周日)
-        let calDow = now.component(.weekday, from: Date()) // 1=Sun...7=Sat
+        // Calendar weekday 1=Sun...7=Sat → bit0=Sun
+        let calDow = now.component(.weekday, from: Date())
         let todayBit = calDow - 1
 
         let activeAlarms = alarms.filter { $0.isSet && $0.isEnabled }
@@ -194,15 +194,31 @@ class AlarmManagerViewController: UIViewController {
         }
         var candidates: [Candidate] = []
 
+        let nowTotalMinutes = nowHour * 60 + nowMinute
+
         for alarm in activeAlarms {
+            let alarmTotalMinutes = alarm.hour * 60 + alarm.minute
+            var bestMinutesAway = Int.max
+
             for dayOffset in 0...6 {
                 let checkDay = (todayBit + dayOffset) % 7
                 guard alarm.weekMask & (1 << checkDay) != 0 else { continue }
-                var minutesAway = dayOffset * 24 * 60 + (alarm.hour - nowHour) * 60 + (alarm.minute - nowMinute)
-                if dayOffset == 0 && minutesAway <= 0 { continue } // 今天已过
-                if minutesAway <= 0 { minutesAway += 7 * 24 * 60 }
-                candidates.append(Candidate(slot: alarm, minutesAway: minutesAway))
-                break // 找到该闹钟最近的一次即可
+
+                let minutesAway: Int
+                if dayOffset == 0 {
+                    let diff = alarmTotalMinutes - nowTotalMinutes
+                    if diff <= 0 { continue } // 今天已过
+                    minutesAway = diff
+                } else {
+                    minutesAway = dayOffset * 24 * 60 + alarmTotalMinutes - nowTotalMinutes
+                }
+
+                bestMinutesAway = minutesAway
+                break
+            }
+
+            if bestMinutesAway != Int.max {
+                candidates.append(Candidate(slot: alarm, minutesAway: bestMinutesAway))
             }
         }
 

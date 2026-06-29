@@ -100,6 +100,8 @@
   "weekday_fri": "Fri",
   "weekday_sat": "Sat",
   "weekday_sun": "Sun",
+  "am": "AM",
+  "pm": "PM",
   "no_bound_devices": "No bound devices",
   "no_bound_devices_hint": "Tap ＋ to add your first device",
   "device_online": "Online",
