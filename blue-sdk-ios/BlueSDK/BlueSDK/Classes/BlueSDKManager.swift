@@ -828,6 +828,7 @@ import CoreBluetooth
                         if let typed = typed {
                             self.notifyObservers { $0.blueSDK(self, didReceiveMedicationNotification: typed) }
                         }
+                        // 向后兼容：同时触发旧版 Raw 回调
                         self.notifyObservers { $0.blueSDK(self, didReceiveMedicationNotificationRaw: notifType) }
                     }
                 }

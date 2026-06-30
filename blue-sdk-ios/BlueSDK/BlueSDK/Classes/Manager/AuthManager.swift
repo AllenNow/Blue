@@ -41,8 +41,6 @@ final class AuthManager {
         let keyLow  = UInt8(sum & 0xFF)
         let keyBytes: [UInt8] = [keyHigh, keyLow]
 
-        let phoneMacStr = phoneMac.map { String(format: "%02X", $0) }.joined(separator: ":")
-        let deviceMacStr = deviceMac.map { String(format: "%02X", $0) }.joined(separator: ":")
         logger.debug("Sending auth key packet (key value redacted)")
 
         // 构建密钥帧：CMD=0x00，数据为 2字节密钥

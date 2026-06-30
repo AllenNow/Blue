@@ -229,7 +229,7 @@ class MedicationRecordsViewController: UIViewController {
 // MARK: - BlueSDKDelegate（实时接收用药记录上报）
 
 extension MedicationRecordsViewController: BlueSDKDelegate {
-    func blueSDK(_ sdk: BlueSDKManagerManager, didReceiveMedicationRecord record: MedicationRecord) {
+    func blueSDK(_ sdk: BlueSDKManager, didReceiveMedicationRecord record: MedicationRecord) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             // 重新加载当前视图的数据
@@ -241,7 +241,7 @@ extension MedicationRecordsViewController: BlueSDKDelegate {
         }
     }
 
-    func blueSDK(_ sdk: BlueSDKManagerManager, didReceiveMedicationResult alarmIndex: Int, status: MedicationStatus) {
+    func blueSDK(_ sdk: BlueSDKManager, didReceiveMedicationResult alarmIndex: Int, status: MedicationStatus) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if self.segmentControl.selectedSegmentIndex == 0 {

@@ -112,9 +112,8 @@ public protocol BlueSDKDelegate: AnyObject {
     /// Medication notification with typed enum
     func blueSDK(_ sdk: BlueSDKManager, didReceiveMedicationNotification type: MedicationNotificationType)
 
-    /// 用药结果通知（原始 Int 版本，已废弃）
-    /// Medication notification (raw Int, deprecated)
-    @available(*, deprecated, message: "Use blueSDK(_:didReceiveMedicationNotification type: MedicationNotificationType) instead")
+    /// 用药结果通知（原始 Int 版本，推荐使用类型安全版本替代）
+    /// Medication notification (raw Int, prefer typed version above)
     func blueSDK(_ sdk: BlueSDKManager, didReceiveMedicationNotificationRaw type: Int)
 
     /// 设备端执行解绑操作上报

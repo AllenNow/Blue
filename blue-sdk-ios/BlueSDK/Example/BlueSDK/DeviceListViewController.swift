@@ -429,7 +429,7 @@ extension DeviceListViewController: UITableViewDataSource, UITableViewDelegate {
 // MARK: - BlueSDKDelegate
 
 extension DeviceListViewController: BlueSDKDelegate {
-    func blueSDK(_ sdk: BlueSDKManagerManager, didChangeConnectionState state: ConnectionState) {
+    func blueSDK(_ sdk: BlueSDKManager, didChangeConnectionState state: ConnectionState) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             switch state {
@@ -467,7 +467,7 @@ extension DeviceListViewController: BlueSDKDelegate {
         }
     }
 
-    func blueSDK(_ sdk: BlueSDKManagerManager, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
+    func blueSDK(_ sdk: BlueSDKManager, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
         if !success {
             DispatchQueue.main.async { [weak self] in
                 self?.isAuthFailed = true

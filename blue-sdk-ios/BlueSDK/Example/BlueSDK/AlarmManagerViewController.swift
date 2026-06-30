@@ -347,7 +347,7 @@ extension AlarmManagerViewController: UITableViewDataSource, UITableViewDelegate
 // MARK: - BlueSDKDelegate（实时接收设备上报闹钟变更和时间格式变更）
 
 extension AlarmManagerViewController: BlueSDKDelegate {
-    func blueSDK(_ sdk: BlueSDKManagerManager, didUpdateAlarm alarm: AlarmInfo) {
+    func blueSDK(_ sdk: BlueSDKManager, didUpdateAlarm alarm: AlarmInfo) {
         DispatchQueue.main.async { [weak self] in
             self?.updateAlarm(
                 index: alarm.index,
@@ -360,7 +360,7 @@ extension AlarmManagerViewController: BlueSDKDelegate {
         }
     }
 
-    func blueSDK(_ sdk: BlueSDKManagerManager, didChangeTimeFormat format: TimeFormat) {
+    func blueSDK(_ sdk: BlueSDKManager, didChangeTimeFormat format: TimeFormat) {
         DispatchQueue.main.async { [weak self] in
             // 时间格式切换时刷新整个列表和下一个闹钟显示
             self?.tableView.reloadData()
