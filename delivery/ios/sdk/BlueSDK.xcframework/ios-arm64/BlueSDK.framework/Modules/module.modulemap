@@ -1,0 +1,3 @@
+framework module BlueSDK {
+  header "BlueSDK-Swift.h"
+}

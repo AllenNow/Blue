@@ -1,0 +1,408 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.3.2 effective-5.10 (swiftlang-6.3.2.1.108 clang-2100.1.1.101)
+// swift-module-flags: -target x86_64-apple-ios13.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name BlueSDK
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.3.2
+import CoreBluetooth
+import Foundation
+import Security
+import Swift
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+import os.log
+import os
+public enum BlueSDKLanguage {
+  case system, zh, en, de
+  public static func == (a: BlueSDK.BlueSDKLanguage, b: BlueSDK.BlueSDKLanguage) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public struct BlueSDKConfig {
+  public var fixedAuthKey: Swift.String?
+  public var logLevel: BlueSDK.LogLevel
+  public var autoAuthEnabled: Swift.Bool
+  public var autoReconnect: Swift.Bool
+  public var maxReconnectAttempts: Swift.Int
+  public var language: BlueSDK.BlueSDKLanguage
+  public var customPhoneMac: Swift.String?
+  public init(fixedAuthKey: Swift.String? = nil, logLevel: BlueSDK.LogLevel = .debug, autoAuthEnabled: Swift.Bool = true, autoReconnect: Swift.Bool = true, maxReconnectAttempts: Swift.Int = 5, language: BlueSDK.BlueSDKLanguage = .system, customPhoneMac: Swift.String? = nil)
+}
+public enum SDKLocale {
+  public enum Lang {
+    case zh, en, de
+    public static func == (a: BlueSDK.SDKLocale.Lang, b: BlueSDK.SDKLocale.Lang) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public static var current: BlueSDK.SDKLocale.Lang {
+    get
+  }
+  public static var isZh: Swift.Bool {
+    get
+  }
+  public static var isDe: Swift.Bool {
+    get
+  }
+  public static func s(_ zh: Swift.String, _ en: Swift.String) -> Swift.String
+  public static func s(_ zh: Swift.String, _ en: Swift.String, _ de: Swift.String) -> Swift.String
+}
+public protocol BlueSDKDelegate : AnyObject {
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didChangeConnectionState state: BlueSDK.ConnectionState)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didAuthenticateWithSuccess success: Swift.Bool, error: BlueSDK.BlueError?)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didReceiveDeviceInfo info: BlueSDK.DeviceInfo)
+  func blueSDKDidRequestTimeSync(_ sdk: BlueSDK.BlueSDKManager)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didUpdateAlarm alarm: BlueSDK.AlarmInfo)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didAlarmRinging alarmIndex: Swift.Int, alarmInfo: BlueSDK.AlarmInfo)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didAlarmTimeout alarmIndex: Swift.Int, alarmInfo: BlueSDK.AlarmInfo)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didReceiveMedicationResult alarmIndex: Swift.Int, status: BlueSDK.MedicationStatus)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didReceiveMedicationRecord record: BlueSDK.MedicationRecord)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didChangeSoundType type: BlueSDK.SoundType)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didChangeAlertDuration minutes: Swift.Int)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didChangeTimeFormat format: BlueSDK.TimeFormat)
+  func blueSDKDidReportLowBattery(_ sdk: BlueSDK.BlueSDKManager)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didReceiveMedicationNotification type: BlueSDK.MedicationNotificationType)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didReceiveMedicationNotificationRaw type: Swift.Int)
+  func blueSDKDidReportDeviceUnbound(_ sdk: BlueSDK.BlueSDKManager)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didEncounterError error: BlueSDK.BlueError)
+  func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didStartReconnecting attempt: Swift.Int, maxAttempts: Swift.Int)
+  func blueSDKDidFailReconnection(_ sdk: BlueSDK.BlueSDKManager)
+}
+extension BlueSDK.BlueSDKDelegate {
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didChangeConnectionState state: BlueSDK.ConnectionState)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didAuthenticateWithSuccess success: Swift.Bool, error: BlueSDK.BlueError?)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didReceiveDeviceInfo info: BlueSDK.DeviceInfo)
+  public func blueSDKDidRequestTimeSync(_ sdk: BlueSDK.BlueSDKManager)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didUpdateAlarm alarm: BlueSDK.AlarmInfo)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didAlarmRinging alarmIndex: Swift.Int, alarmInfo: BlueSDK.AlarmInfo)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didAlarmTimeout alarmIndex: Swift.Int, alarmInfo: BlueSDK.AlarmInfo)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didReceiveMedicationResult alarmIndex: Swift.Int, status: BlueSDK.MedicationStatus)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didReceiveMedicationRecord record: BlueSDK.MedicationRecord)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didChangeSoundType type: BlueSDK.SoundType)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didChangeAlertDuration minutes: Swift.Int)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didChangeTimeFormat format: BlueSDK.TimeFormat)
+  public func blueSDKDidReportLowBattery(_ sdk: BlueSDK.BlueSDKManager)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didReceiveMedicationNotification type: BlueSDK.MedicationNotificationType)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didReceiveMedicationNotificationRaw type: Swift.Int)
+  public func blueSDKDidReportDeviceUnbound(_ sdk: BlueSDK.BlueSDKManager)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didEncounterError error: BlueSDK.BlueError)
+  public func blueSDK(_ sdk: BlueSDK.BlueSDKManager, didStartReconnecting attempt: Swift.Int, maxAttempts: Swift.Int)
+  public func blueSDKDidFailReconnection(_ sdk: BlueSDK.BlueSDKManager)
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc final public class BlueSDKManager : ObjectiveC.NSObject {
+  @objc public static let shared: BlueSDK.BlueSDKManager
+  final public var fixedAuthKey: Swift.String? {
+    get
+    set
+  }
+  final public var config: BlueSDK.BlueSDKConfig
+  weak final public var delegate: (any BlueSDK.BlueSDKDelegate)?
+  final public func addObserver(_ observer: any BlueSDK.BlueSDKDelegate)
+  final public func removeObserver(_ observer: any BlueSDK.BlueSDKDelegate)
+  final public func initialize(config: BlueSDK.BlueSDKConfig = BlueSDKConfig())
+  @objc final public func destroy()
+  @objc final public func setLogLevel(_ level: BlueSDK.LogLevel)
+  final public func setLogHandler(_ handler: BlueSDK.BlueLogHandler?)
+  final public func setLanguage(_ language: BlueSDK.BlueSDKLanguage)
+  final public func exportLog(maxLines: Swift.Int? = nil) -> Swift.String
+  @objc final public func clearLogBuffer()
+  @objc final public func checkPermissions() -> BlueSDK.PermissionStatus
+  @objc final public var connectionState: BlueSDK.ConnectionState {
+    @objc get
+  }
+  final public var currentTimeFormat: BlueSDK.TimeFormat {
+    get
+  }
+  @available(*, deprecated, message: "使用 startScan(timeout:callback:) 替代")
+  final public func startScan(onDeviceFound: @escaping (BlueSDK.ScannedDevice) -> Swift.Void, onError: @escaping (BlueSDK.BlueError) -> Swift.Void)
+  final public func startScan(timeout: Foundation.TimeInterval = 10, callback: @escaping (BlueSDK.ScanEvent) -> Swift.Void)
+  @objc final public func stopScan()
+  final public func connect(_ device: BlueSDK.ScannedDevice)
+  final public func connect(byIdentifier identifier: Swift.String, completion: ((BlueSDK.BlueError?) -> Swift.Void)? = nil)
+  final public func clearBinding(completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void = { _ in })
+  final public var currentAuthKeyDisplay: Swift.String {
+    get
+  }
+  @objc final public func disconnect()
+  final public func cancelReconnection()
+  final public func authenticateWithKey(keyHigh: Swift.UInt8, keyLow: Swift.UInt8, completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void)
+  final public func queryDeviceInfo(completion: @escaping (Swift.Result<BlueSDK.DeviceInfo, BlueSDK.BlueError>) -> Swift.Void)
+  final public func syncTime(date: Foundation.Date = Date(), completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void)
+  @available(*, deprecated, message: "使用 setAlarm(index:hour:minute:days:completion:) 替代")
+  final public func setAlarm(index: Swift.Int, hour: Swift.Int, minute: Swift.Int, weekMask: Swift.Int = 0x7F, completion: @escaping (Swift.Result<BlueSDK.AlarmInfo, BlueSDK.BlueError>) -> Swift.Void)
+  final public func setAlarm(index: Swift.Int, hour: Swift.Int, minute: Swift.Int, days: BlueSDK.WeekDays = .all, completion: @escaping (Swift.Result<BlueSDK.AlarmInfo, BlueSDK.BlueError>) -> Swift.Void)
+  final public func deleteAlarm(index: Swift.Int, completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void)
+  final public func clearAllAlarms(completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void)
+  final public func setAlarms(_ alarms: [BlueSDK.AlarmConfig], completion: @escaping (Swift.Result<[BlueSDK.AlarmInfo], BlueSDK.BlueError>) -> Swift.Void)
+  final public func sendMedicationNotification(status: BlueSDK.MedicationStatus, completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void)
+  final public func setVolume(_ level: BlueSDK.VolumeLevel, completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void)
+  final public func setSoundType(_ type: BlueSDK.SoundType, completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void)
+  final public func setSilence(_ enabled: Swift.Bool, completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void)
+  final public func setAlertDuration(_ minutes: Swift.Int, completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void)
+  final public func setTimeFormat(_ format: BlueSDK.TimeFormat, completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void)
+  final public func restoreFactory(completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void)
+  @available(*, deprecated, message: "Debug only — use typed API methods for production")
+  final public func sendRawData(data: [Swift.UInt8], completion: @escaping (Swift.Result<Swift.Void, BlueSDK.BlueError>) -> Swift.Void)
+  final public func queryAlarm(index: Swift.Int, completion: @escaping (Swift.Result<BlueSDK.AlarmInfo, BlueSDK.BlueError>) -> Swift.Void)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class ScannedDevice : ObjectiveC.NSObject {
+  @objc final public let deviceId: Swift.String
+  @objc final public let deviceName: Swift.String
+  @objc final public let rssi: Swift.Int
+  @objc deinit
+}
+@objc public enum ConnectionState : Swift.Int {
+  case disconnected = 0
+  case connecting = 1
+  case connected = 2
+  case authenticated = 3
+  case reconnecting = 4
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc public enum LogLevel : Swift.Int, Swift.Comparable {
+  case none = 0
+  case error = 1
+  case warn = 2
+  case info = 3
+  case debug = 4
+  public static func < (lhs: BlueSDK.LogLevel, rhs: BlueSDK.LogLevel) -> Swift.Bool
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc public enum MedicationNotificationType : Swift.Int {
+  case ringing = 1
+  case timeout = 2
+  case taken = 3
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc public enum MedicationStatus : Swift.Int {
+  case taken = 1
+  case timeout = 2
+  case missed = 3
+  case early = 4
+  public var displayNameZh: Swift.String {
+    get
+  }
+  public var displayNameEn: Swift.String {
+    get
+  }
+  public var displayNameDe: Swift.String {
+    get
+  }
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc public enum PermissionStatus : Swift.Int {
+  case granted = 0
+  case denied = 1
+  case notDetermined = 2
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc public enum SoundType : Swift.Int {
+  case mute = 0
+  case typeA = 1
+  case typeB = 2
+  case typeC = 3
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc public enum TimeFormat : Swift.Int {
+  case hour12 = 0
+  case hour24 = 1
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc public enum VolumeLevel : Swift.Int {
+  case low = 1
+  case medium = 2
+  case high = 3
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public struct WeekDays : Swift.OptionSet, Swift.Sendable {
+  public let rawValue: Swift.Int
+  public init(rawValue: Swift.Int)
+  public static let sunday: BlueSDK.WeekDays
+  public static let monday: BlueSDK.WeekDays
+  public static let tuesday: BlueSDK.WeekDays
+  public static let wednesday: BlueSDK.WeekDays
+  public static let thursday: BlueSDK.WeekDays
+  public static let friday: BlueSDK.WeekDays
+  public static let saturday: BlueSDK.WeekDays
+  public static let all: BlueSDK.WeekDays
+  public static let weekdays: BlueSDK.WeekDays
+  public static let weekend: BlueSDK.WeekDays
+  public typealias ArrayLiteralElement = BlueSDK.WeekDays
+  public typealias Element = BlueSDK.WeekDays
+  public typealias RawValue = Swift.Int
+}
+public typealias BlueLogHandler = (_ level: BlueSDK.LogLevel, _ tag: Swift.String, _ message: Swift.String) -> Swift.Void
+public struct AlarmConfig {
+  public let index: Swift.Int
+  public let hour: Swift.Int
+  public let minute: Swift.Int
+  public let days: BlueSDK.WeekDays
+  public init(index: Swift.Int, hour: Swift.Int, minute: Swift.Int, days: BlueSDK.WeekDays = .all)
+  public init(index: Swift.Int, hour: Swift.Int, minute: Swift.Int, weekMask: Swift.Int)
+}
+@objc public enum AlarmRunState : Swift.Int {
+  case idle = 0
+  case ringing = 1
+  case ended = 2
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc public class AlarmInfo : ObjectiveC.NSObject {
+  @objc final public let index: Swift.Int
+  @objc final public let isEnabled: Swift.Bool
+  @objc final public let hour: Swift.Int
+  @objc final public let minute: Swift.Int
+  @objc final public let weekMask: Swift.Int
+  @objc final public let ringingState: Swift.Int
+  @objc final public let eventStatus: Swift.Int
+  @objc public init(index: Swift.Int, isEnabled: Swift.Bool = true, hour: Swift.Int, minute: Swift.Int, weekMask: Swift.Int, ringingState: Swift.Int = 0, eventStatus: Swift.Int = 0)
+  @objc public var advanceStatus: Swift.Int {
+    @objc get
+  }
+  @objc public var isDeleted: Swift.Bool {
+    @objc get
+  }
+  @objc public var runState: BlueSDK.AlarmRunState {
+    @objc get
+  }
+  @objc deinit
+}
+@objc public class DeviceInfo : ObjectiveC.NSObject {
+  @objc final public let firmwareVersion: Swift.String
+  final public let macAddress: [Swift.UInt8]
+  @objc public var macAddressString: Swift.String {
+    @objc get
+  }
+  public init(firmwareVersion: Swift.String, macAddress: [Swift.UInt8])
+  @objc deinit
+}
+@objc public class MedicationRecord : ObjectiveC.NSObject {
+  @objc final public let timestamp: Swift.Int64
+  @objc final public let alarmIndex: Swift.Int
+  @objc final public let alarmHour: Swift.Int
+  @objc final public let alarmMinute: Swift.Int
+  @objc final public let status: BlueSDK.MedicationStatus
+  @objc public init(timestamp: Swift.Int64, alarmIndex: Swift.Int, alarmHour: Swift.Int, alarmMinute: Swift.Int, status: BlueSDK.MedicationStatus)
+  public var date: Foundation.Date {
+    get
+  }
+  @objc public var alarmTimeString: Swift.String {
+    @objc get
+  }
+  @objc deinit
+}
+public enum ScanEvent {
+  case deviceFound(BlueSDK.ScannedDevice)
+  case error(BlueSDK.BlueError)
+  case stopped
+}
+public enum BlueError : Swift.Error, Swift.Equatable {
+  case notInitialized
+  case notAuthenticated
+  case authFailed
+  case timeout
+  case permissionDenied
+  case invalidParameter
+  case protocolError
+  case bleError(underlying: (any Swift.Error)?)
+  case disconnected
+  case deviceNotFound
+  public static func == (lhs: BlueSDK.BlueError, rhs: BlueSDK.BlueError) -> Swift.Bool
+  public var code: Swift.Int {
+    get
+  }
+  public var underlyingError: (any Swift.Error)? {
+    get
+  }
+  public var isRetryable: Swift.Bool {
+    get
+  }
+  public var recoverySuggestion: Swift.String {
+    get
+  }
+}
+extension BlueSDK.BlueError : Foundation.LocalizedError {
+  public var errorDescription: Swift.String? {
+    get
+  }
+}
+extension BlueSDK.BlueError : Foundation.CustomNSError {
+  public static var errorDomain: Swift.String {
+    get
+  }
+  public var errorCode: Swift.Int {
+    get
+  }
+  public var errorUserInfo: [Swift.String : Any] {
+    get
+  }
+}
+extension BlueSDK.BlueSDKLanguage : Swift.Equatable {}
+extension BlueSDK.BlueSDKLanguage : Swift.Hashable {}
+extension BlueSDK.SDKLocale.Lang : Swift.Equatable {}
+extension BlueSDK.SDKLocale.Lang : Swift.Hashable {}
+extension BlueSDK.ConnectionState : Swift.Equatable {}
+extension BlueSDK.ConnectionState : Swift.Hashable {}
+extension BlueSDK.ConnectionState : Swift.RawRepresentable {}
+extension BlueSDK.LogLevel : Swift.Hashable {}
+extension BlueSDK.LogLevel : Swift.RawRepresentable {}
+extension BlueSDK.MedicationNotificationType : Swift.Equatable {}
+extension BlueSDK.MedicationNotificationType : Swift.Hashable {}
+extension BlueSDK.MedicationNotificationType : Swift.RawRepresentable {}
+extension BlueSDK.MedicationStatus : Swift.Equatable {}
+extension BlueSDK.MedicationStatus : Swift.Hashable {}
+extension BlueSDK.MedicationStatus : Swift.RawRepresentable {}
+extension BlueSDK.PermissionStatus : Swift.Equatable {}
+extension BlueSDK.PermissionStatus : Swift.Hashable {}
+extension BlueSDK.PermissionStatus : Swift.RawRepresentable {}
+extension BlueSDK.SoundType : Swift.Equatable {}
+extension BlueSDK.SoundType : Swift.Hashable {}
+extension BlueSDK.SoundType : Swift.RawRepresentable {}
+extension BlueSDK.TimeFormat : Swift.Equatable {}
+extension BlueSDK.TimeFormat : Swift.Hashable {}
+extension BlueSDK.TimeFormat : Swift.RawRepresentable {}
+extension BlueSDK.VolumeLevel : Swift.Equatable {}
+extension BlueSDK.VolumeLevel : Swift.Hashable {}
+extension BlueSDK.VolumeLevel : Swift.RawRepresentable {}
+extension BlueSDK.AlarmRunState : Swift.Equatable {}
+extension BlueSDK.AlarmRunState : Swift.Hashable {}
+extension BlueSDK.AlarmRunState : Swift.RawRepresentable {}
