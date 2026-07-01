@@ -89,14 +89,18 @@ internal class BLEConnector {
             // 仅在 API 32 及以下使用此回调
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return
             val data = characteristic.value ?: return
-            BlueLogger.debug("RX: ${data.joinToString(" ") { "%02X".format(it) }}")
+            if (BlueLogger.rawFrameLogEnabled) {
+                BlueLogger.debug("RX: ${data.joinToString(" ") { "%02X".format(it) }}")
+            }
             delegate?.onDataReceived(data)
         }
 
         // API 33+ 的新回调
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) {
             if (gatt != this@BLEConnector.gatt) return
-            BlueLogger.debug("RX: ${value.joinToString(" ") { "%02X".format(it) }}")
+            if (BlueLogger.rawFrameLogEnabled) {
+                BlueLogger.debug("RX: ${value.joinToString(" ") { "%02X".format(it) }}")
+            }
             delegate?.onDataReceived(value)
         }
 
@@ -135,7 +139,9 @@ internal class BLEConnector {
             return
         }
         writeCharacteristicCompat(g, char, bytes)
-        BlueLogger.debug("TX: ${bytes.joinToString(" ") { "%02X".format(it) }}")
+        if (BlueLogger.rawFrameLogEnabled) {
+            BlueLogger.debug("TX: ${bytes.joinToString(" ") { "%02X".format(it) }}")
+        }
     }
 
     // MARK: - API 版本兼容方法

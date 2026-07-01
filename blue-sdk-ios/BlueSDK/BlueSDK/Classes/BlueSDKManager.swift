@@ -98,6 +98,7 @@ import CoreBluetooth
         medicationManager = MedicationManager(commandQueue: queue)
         audioManager      = AudioManager(commandQueue: queue)
         logger.logLevel = config.logLevel
+        logger.rawFrameLogEnabled = config.rawFrameLogEnabled
         SDKLocale.setLanguage(config.language)
         logger.info("BlueSDK initialized")
     }

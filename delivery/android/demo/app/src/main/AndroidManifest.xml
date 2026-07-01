@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Android 6-11 -->
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <!-- Android 12+ -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
+
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+
+    <application
+        android:name=".DemoApplication"
+        android:allowBackup="true"
+        android:label="BlueSDK Demo"
+        android:theme="@style/Theme.BlueSDKDemo">
+        <activity
+            android:name=".DeviceListActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ScanActivity"
+            android:exported="false"
+            android:label="扫描设备"/>
+        <activity
+            android:name=".MainActivity"
+            android:launchMode="singleTop"
+            android:exported="false"
+            android:label="设备控制"/>
+        <activity
+            android:name=".MedicationRecordsActivity"
+            android:exported="false"
+            android:label="用药记录"/>
+        <activity
+            android:name=".AlarmManagerActivity"
+            android:exported="false"
+            android:label="闹钟管理"/>
+        <activity
+            android:name=".AlarmEditorActivity"
+            android:exported="false"
+            android:label="闹钟编辑"/>
+        <activity
+            android:name=".FAQActivity"
+            android:exported="false"
+            android:label="常见问题"/>
+        <activity
+            android:name=".FAQDetailActivity"
+            android:exported="false"
+            android:label="解答"/>
+        <activity
+            android:name=".LanguageActivity"
+            android:exported="false"
+            android:label="语言选择"/>
+    </application>
+</manifest>

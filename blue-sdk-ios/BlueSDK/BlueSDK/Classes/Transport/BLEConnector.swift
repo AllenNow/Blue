@@ -71,7 +71,9 @@ final class BLEConnector: NSObject {
         }
         let data = Data(bytes)
         peripheral.writeValue(data, for: characteristic, type: .withResponse)
-        logger.debug("TX: \(bytes.map { String(format: "%02X", $0) }.joined(separator: " "))")
+        if logger.rawFrameLogEnabled {
+            logger.debug("TX: \(bytes.map { String(format: "%02X", $0) }.joined(separator: " "))")
+        }
     }
 }
 
@@ -139,7 +141,9 @@ extension BLEConnector: CBPeripheralDelegate {
 
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         guard error == nil, let data = characteristic.value else { return }
-        logger.debug("RX: \([UInt8](data).map { String(format: "%02X", $0) }.joined(separator: " "))")
+        if logger.rawFrameLogEnabled {
+            logger.debug("RX: \([UInt8](data).map { String(format: "%02X", $0) }.joined(separator: " "))")
+        }
         delegate?.bleConnectorDidReceiveData(data)
     }
 

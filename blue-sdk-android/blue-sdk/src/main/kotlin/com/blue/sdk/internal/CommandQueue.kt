@@ -60,7 +60,9 @@ internal class CommandQueue {
      * 直接发送帧，不经过队列排队和等待应答（用于时间同步等 fire-and-forget 场景）
      */
     fun sendDirect(frame: ByteArray) {
-        BlueLogger.debug("Direct send: ${frame.size} bytes")
+        if (BlueLogger.rawFrameLogEnabled) {
+            BlueLogger.debug("Direct send: ${frame.size} bytes")
+        }
         sendBlock?.invoke(frame)
     }
 
@@ -102,7 +104,9 @@ internal class CommandQueue {
     }
 
     private fun send(command: PendingCommand) {
-        BlueLogger.debug("Send cmd: 0x${"%02X".format(command.cmd.toInt() and 0xFF)} (retry ${command.retryCount})")
+        if (BlueLogger.rawFrameLogEnabled) {
+            BlueLogger.debug("Send cmd: 0x${"%02X".format(command.cmd.toInt() and 0xFF)} (retry ${command.retryCount})")
+        }
         val block = sendBlock
         if (block == null) {
             // 没有连接，立即回调 Disconnected 错误

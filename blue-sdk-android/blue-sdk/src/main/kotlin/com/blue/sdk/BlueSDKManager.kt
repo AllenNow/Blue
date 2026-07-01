@@ -47,11 +47,11 @@ import java.util.UUID
 class BlueSDKManager private constructor(private val context: Context) {
 
     companion object {
-        @Volatile private var instance: BlueSDK? = null
+        @Volatile private var instance: BlueSDKManager? = null
         private const val KEYSTORE_PHONE_MAC_KEY = "com.blue.sdk.phoneMac"
 
         @JvmStatic
-        fun getInstance(context: Context): BlueSDK {
+        fun getInstance(context: Context): BlueSDKManager {
             return instance ?: synchronized(this) {
                 instance ?: BlueSDKManager(context.applicationContext).also { instance = it }
             }
@@ -129,6 +129,7 @@ class BlueSDKManager private constructor(private val context: Context) {
         audioManager      = AudioManager(queue)
         setupConnectionManager()
         BlueLogger.logLevel = config.logLevel
+        BlueLogger.rawFrameLogEnabled = config.rawFrameLogEnabled
         SDKLocale.setLanguage(config.language)
         isInitialized = true
         BlueLogger.info("BlueSDK initialized")

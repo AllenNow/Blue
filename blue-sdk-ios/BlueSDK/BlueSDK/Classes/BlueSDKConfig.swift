@@ -71,6 +71,13 @@ public struct BlueSDKConfig {
     /// - When set, SDK uses this value instead of auto-generating from Keychain/UUID
     public var customPhoneMac: String?
 
+    /// 是否输出原始帧日志（TX/RX 十六进制数据），默认 false
+    /// Whether to output raw frame logs (TX/RX hex data), defaults to false
+    ///
+    /// 开启后日志中会包含完整的 BLE 收发帧数据，用于协议调试
+    /// When enabled, logs will contain full BLE TX/RX frame data for protocol debugging
+    public var rawFrameLogEnabled: Bool
+
     /// 创建配置
     /// Create configuration
     /// - Parameters:
@@ -88,7 +95,8 @@ public struct BlueSDKConfig {
         autoReconnect: Bool = true,
         maxReconnectAttempts: Int = 5,
         language: BlueSDKLanguage = .system,
-        customPhoneMac: String? = nil
+        customPhoneMac: String? = nil,
+        rawFrameLogEnabled: Bool = false
     ) {
         self.fixedAuthKey = fixedAuthKey
         self.logLevel = logLevel
@@ -97,6 +105,7 @@ public struct BlueSDKConfig {
         self.maxReconnectAttempts = maxReconnectAttempts
         self.language = language
         self.customPhoneMac = customPhoneMac
+        self.rawFrameLogEnabled = rawFrameLogEnabled
     }
 }
 

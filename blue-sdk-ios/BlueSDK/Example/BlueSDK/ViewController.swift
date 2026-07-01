@@ -99,7 +99,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         title = "BlueSDK"
         view.backgroundColor = .systemBackground
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: S.debug, style: .plain, target: self, action: #selector(openDebugPanel))
+        navigationItem.rightBarButtonItem = nil
         buildUI()
         
         scanButton.isHidden = false
@@ -211,7 +211,6 @@ class ViewController: UIViewController {
         mainStack.addArrangedSubview(makeButtonRow([
             (S.deviceInfo, .systemIndigo, #selector(queryDeviceInfo)),
             (S.syncTime, .systemIndigo, #selector(syncTime)),
-            (S.protocolTest, .systemPurple, #selector(showProtocolTest)),
         ]))
 
         // 3. 音频设置卡片
@@ -575,10 +574,6 @@ class ViewController: UIViewController {
         pushOrPresent(MedicationRecordsViewController())
     }
 
-    @objc private func showProtocolTest() {
-        pushOrPresent(ProtocolTestViewController())
-    }
-
     @objc private func showFAQ() {
         pushOrPresent(FAQViewController())
     }
@@ -586,11 +581,6 @@ class ViewController: UIViewController {
     // MARK: - 日志
 
     @objc private func clearLog() { logTextView.text = "" }
-
-    @objc private func openDebugPanel() {
-        let debugVC = DebugViewController()
-        navigationController?.pushViewController(debugVC, animated: true)
-    }
 
     private func log(_ msg: String) {
         let ts = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
@@ -843,4 +833,3 @@ extension ViewController: BlueSDKDelegate {
 
 extension AlarmManagerViewController: DismissableVC {}
 extension MedicationRecordsViewController: DismissableVC {}
-extension ProtocolTestViewController: DismissableVC {}

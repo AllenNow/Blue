@@ -118,8 +118,20 @@ class DeviceListViewController: UIViewController {
 
     private func buildUI() {
         // 左上角语言切换按钮
-        let langItem = UIBarButtonItem(title: "🌐", style: .plain, target: self, action: #selector(openLanguageSettings))
-        navigationItem.leftBarButtonItem = langItem
+        let langBtn = UIButton(type: .system)
+        langBtn.setTitle("🌐", for: .normal)
+        langBtn.titleLabel?.font = .systemFont(ofSize: 22)
+        langBtn.addTarget(self, action: #selector(openLanguageSettings), for: .touchUpInside)
+        let langItem = UIBarButtonItem(customView: langBtn)
+
+        // FAQ 按钮
+        let faqBtn = UIButton(type: .system)
+        faqBtn.setTitle("❓", for: .normal)
+        faqBtn.titleLabel?.font = .systemFont(ofSize: 20)
+        faqBtn.addTarget(self, action: #selector(openFAQ), for: .touchUpInside)
+        let faqItem = UIBarButtonItem(customView: faqBtn)
+
+        navigationItem.leftBarButtonItems = [langItem, faqItem]
 
         // 右上角添加按钮
         let addItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(openScanPage))
@@ -240,6 +252,11 @@ class DeviceListViewController: UIViewController {
     @objc private func openScanPage() {
         let scanVC = ScanViewController()
         navigationController?.pushViewController(scanVC, animated: true)
+    }
+
+    @objc private func openFAQ() {
+        let faqVC = FAQViewController()
+        navigationController?.pushViewController(faqVC, animated: true)
     }
 
     private func connectDevice(_ device: BoundDevice) {

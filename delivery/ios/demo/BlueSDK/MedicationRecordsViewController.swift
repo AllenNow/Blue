@@ -72,7 +72,7 @@ class MedicationRecordsViewController: UIViewController {
     /// 时间格式化器 — 跟随药盒当前时制（12H/24H）
     private var dateFormatter: DateFormatter {
         let df = DateFormatter()
-        if BlueSDK.shared.currentTimeFormat == .hour12 {
+        if BlueSDKManager.shared.currentTimeFormat == .hour12 {
             df.dateFormat = "h:mm a"
         } else {
             df.dateFormat = "HH:mm"
@@ -90,7 +90,7 @@ class MedicationRecordsViewController: UIViewController {
         setupUI()
         loadRecords(for: datePicker.date)
         // 注册为 SDK 事件观察者，实时接收用药记录上报
-        BlueSDK.shared.addObserver(self)
+        BlueSDKManager.shared.addObserver(self)
     }
 
     @objc func dismissSelf() {
@@ -229,7 +229,7 @@ class MedicationRecordsViewController: UIViewController {
 // MARK: - BlueSDKDelegate（实时接收用药记录上报）
 
 extension MedicationRecordsViewController: BlueSDKDelegate {
-    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationRecord record: MedicationRecord) {
+    func blueSDK(_ sdk: BlueSDKManager, didReceiveMedicationRecord record: MedicationRecord) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             // 重新加载当前视图的数据
@@ -241,7 +241,7 @@ extension MedicationRecordsViewController: BlueSDKDelegate {
         }
     }
 
-    func blueSDK(_ sdk: BlueSDK, didReceiveMedicationResult alarmIndex: Int, status: MedicationStatus) {
+    func blueSDK(_ sdk: BlueSDKManager, didReceiveMedicationResult alarmIndex: Int, status: MedicationStatus) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if self.segmentControl.selectedSegmentIndex == 0 {
@@ -322,7 +322,7 @@ class MedicationRecordCell: UITableViewCell {
             detailLabel.text = String(format: S.scheduledActualFormat, record.alarmTimeString, eventTime)
         } else if showDate {
             let df = DateFormatter()
-            df.dateFormat = BlueSDK.shared.currentTimeFormat == .hour12 ? "M/d h:mm a" : "M/d HH:mm"
+            df.dateFormat = BlueSDKManager.shared.currentTimeFormat == .hour12 ? "M/d h:mm a" : "M/d HH:mm"
             detailLabel.text = df.string(from: record.date)
         } else {
             detailLabel.text = eventTime

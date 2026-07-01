@@ -75,13 +75,13 @@ class ScanViewController: UIViewController {
         title = S.scanDevicesTitle
         view.backgroundColor = .systemBackground
         buildUI()
-        BlueSDK.shared.addObserver(self)
+        BlueSDKManager.shared.addObserver(self)
         startDeviceScan()
     }
 
     deinit {
-        BlueSDK.shared.removeObserver(self)
-        if isScanning { BlueSDK.shared.stopScan() }
+        BlueSDKManager.shared.removeObserver(self)
+        if isScanning { BlueSDKManager.shared.stopScan() }
     }
 
     // MARK: - UI 构建
@@ -137,7 +137,7 @@ class ScanViewController: UIViewController {
         statusLabel.text = S.searchingNearby
         rescanButton.isHidden = true
 
-        BlueSDK.shared.startScan(timeout: 15) { [weak self] event in
+        BlueSDKManager.shared.startScan(timeout: 15) { [weak self] event in
             guard let self = self else { return }
             switch event {
             case .deviceFound(let device):
@@ -185,27 +185,18 @@ class ScanViewController: UIViewController {
 
     private func bindDevice(_ device: ScannedDevice) {
         if isScanning {
-            BlueSDK.shared.stopScan()
+            BlueSDKManager.shared.stopScan()
             isScanning = false
         }
 
-        // 保存到本地
-        let bound = BoundDevice(
-            deviceId: device.deviceId,
-            deviceName: device.deviceName,
-            bindTime: Date().timeIntervalSince1970,
-            lastConnectedTime: Date().timeIntervalSince1970
-        )
-        DeviceStorage.shared.add(bound)
-
-        // 自动连接
+        // 发起连接（认证成功后才存储到设备列表）
         pendingBindDevice = device
         loadingOverlay.isHidden = false
-        BlueSDK.shared.connect(device)
+        BlueSDKManager.shared.connect(device)
     }
 
     @objc private func cancelBind() {
-        BlueSDK.shared.disconnect()
+        BlueSDKManager.shared.disconnect()
         pendingBindDevice = nil
         loadingOverlay.isHidden = true
     }
@@ -236,13 +227,20 @@ extension ScanViewController: UITableViewDataSource, UITableViewDelegate {
 // MARK: - BlueSDKDelegate
 
 extension ScanViewController: BlueSDKDelegate {
-    func blueSDK(_ sdk: BlueSDK, didChangeConnectionState state: ConnectionState) {
+    func blueSDK(_ sdk: BlueSDKManager, didChangeConnectionState state: ConnectionState) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             switch state {
             case .authenticated:
                 guard let device = self.pendingBindDevice else { return }
-                DeviceStorage.shared.updateLastConnected(deviceId: device.deviceId)
+                // 认证成功，存储到设备列表
+                let bound = BoundDevice(
+                    deviceId: device.deviceId,
+                    deviceName: device.deviceName,
+                    bindTime: Date().timeIntervalSince1970,
+                    lastConnectedTime: Date().timeIntervalSince1970
+                )
+                DeviceStorage.shared.add(bound)
                 self.loadingOverlay.isHidden = true
                 // 跳转控制页
                 let vc = ViewController()
@@ -265,9 +263,13 @@ extension ScanViewController: BlueSDKDelegate {
         }
     }
 
-    func blueSDK(_ sdk: BlueSDK, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
+    func blueSDK(_ sdk: BlueSDKManager, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
         if !success {
             DispatchQueue.main.async { [weak self] in
+                // 认证失败，从设备列表中删除（如果存在）
+                if let deviceId = self?.pendingBindDevice?.deviceId {
+                    DeviceStorage.shared.remove(deviceId: deviceId)
+                }
                 self?.loadingOverlay.isHidden = true
                 self?.pendingBindDevice = nil
                 let msg = S.authFailedStatus

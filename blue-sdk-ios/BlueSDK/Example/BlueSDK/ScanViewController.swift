@@ -189,16 +189,7 @@ class ScanViewController: UIViewController {
             isScanning = false
         }
 
-        // 保存到本地
-        let bound = BoundDevice(
-            deviceId: device.deviceId,
-            deviceName: device.deviceName,
-            bindTime: Date().timeIntervalSince1970,
-            lastConnectedTime: Date().timeIntervalSince1970
-        )
-        DeviceStorage.shared.add(bound)
-
-        // 自动连接
+        // 发起连接（认证成功后才存储到设备列表）
         pendingBindDevice = device
         loadingOverlay.isHidden = false
         BlueSDKManager.shared.connect(device)
@@ -242,7 +233,14 @@ extension ScanViewController: BlueSDKDelegate {
             switch state {
             case .authenticated:
                 guard let device = self.pendingBindDevice else { return }
-                DeviceStorage.shared.updateLastConnected(deviceId: device.deviceId)
+                // 认证成功，存储到设备列表
+                let bound = BoundDevice(
+                    deviceId: device.deviceId,
+                    deviceName: device.deviceName,
+                    bindTime: Date().timeIntervalSince1970,
+                    lastConnectedTime: Date().timeIntervalSince1970
+                )
+                DeviceStorage.shared.add(bound)
                 self.loadingOverlay.isHidden = true
                 // 跳转控制页
                 let vc = ViewController()
@@ -268,6 +266,10 @@ extension ScanViewController: BlueSDKDelegate {
     func blueSDK(_ sdk: BlueSDKManager, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
         if !success {
             DispatchQueue.main.async { [weak self] in
+                // 认证失败，从设备列表中删除（如果存在）
+                if let deviceId = self?.pendingBindDevice?.deviceId {
+                    DeviceStorage.shared.remove(deviceId: deviceId)
+                }
                 self?.loadingOverlay.isHidden = true
                 self?.pendingBindDevice = nil
                 let msg = S.authFailedStatus

@@ -22,6 +22,9 @@ internal object BlueLogger {
     /** 当前日志级别 */
     @Volatile var logLevel: LogLevel = LogLevel.DEBUG
 
+    /** 是否输出原始帧日志（TX/RX），默认 false */
+    @Volatile var rawFrameLogEnabled: Boolean = false
+
     /** 自定义日志处理器（界面展示用） */
     @Volatile var logHandler: BlueLogHandler? = null
 

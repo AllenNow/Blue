@@ -1,0 +1,27 @@
+package com.blue.demo
+
+import android.app.Application
+import androidx.appcompat.app.AppCompatDelegate
+import com.blue.sdk.BlueSDKManager
+import com.blue.sdk.enums.LogLevel
+
+class DemoApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        // 强制深色模式，保证 AlertDialog 等系统弹窗与手写深色 UI 一致
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        // 初始化多语言字符串（从 assets/locales/*.json 加载）
+        S.init(this)
+        // 加载用户语言设置
+        LanguageActivity.applySavedLanguage(this)
+        // 初始化 SDK（在 Application 中调用一次）
+        BlueSDKManager.getInstance(this).initialize()
+        // 开发阶段开启 DEBUG 日志
+        BlueSDKManager.getInstance(this).setLogLevel(LogLevel.DEBUG)
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        BlueSDKManager.getInstance(this).destroy()
+    }
+}

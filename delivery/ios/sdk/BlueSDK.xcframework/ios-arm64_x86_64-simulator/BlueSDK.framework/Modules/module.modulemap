@@ -1,3 +1,11 @@
 framework module BlueSDK {
+  umbrella header "BlueSDK-umbrella.h"
+
+  export *
+  module * { export * }
+}
+
+module BlueSDK.Swift {
   header "BlueSDK-Swift.h"
+  requires objc
 }

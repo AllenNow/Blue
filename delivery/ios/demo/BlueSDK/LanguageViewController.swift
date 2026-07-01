@@ -36,7 +36,7 @@ class LanguageViewController: UIViewController {
         default: sdkLang = .en
         }
         // 通过公开 API 设置语言（SDKLocale.setLanguage 是 internal，外部模块无法直接调用）
-        BlueSDK.shared.setLanguage(sdkLang)
+        BlueSDKManager.shared.setLanguage(sdkLang)
     }
 
     /// 保存语言选择
@@ -52,7 +52,7 @@ class LanguageViewController: UIViewController {
         case "de": sdkLang = .de
         default: sdkLang = .en
         }
-        BlueSDK.shared.setLanguage(sdkLang)
+        BlueSDKManager.shared.setLanguage(sdkLang)
     }
 
     // MARK: - UI

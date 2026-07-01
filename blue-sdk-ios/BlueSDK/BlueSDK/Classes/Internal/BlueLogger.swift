@@ -24,6 +24,9 @@ final class BlueLogger {
     /// 当前日志级别，默认 none（关闭）
     var logLevel: LogLevel = .none
 
+    /// 是否输出原始帧日志（TX/RX），默认 false
+    var rawFrameLogEnabled: Bool = false
+
     /// 自定义日志处理器，nil 时使用默认输出
     var logHandler: BlueLogHandler?
 

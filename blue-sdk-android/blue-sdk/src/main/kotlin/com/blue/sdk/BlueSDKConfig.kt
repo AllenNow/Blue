@@ -80,5 +80,14 @@ data class BlueSDKConfig(
      * - 设置后 SDK 使用此值，不再基于 ANDROID_ID 生成
      * - When set, SDK uses this value instead of generating from ANDROID_ID
      */
-    val customPhoneMac: String? = null
+    val customPhoneMac: String? = null,
+
+    /**
+     * 是否输出原始帧日志（TX/RX 十六进制数据），默认 false
+     * Whether to output raw frame logs (TX/RX hex data), defaults to false
+     *
+     * 开启后日志中会包含完整的 BLE 收发帧数据，用于协议调试
+     * When enabled, logs will contain full BLE TX/RX frame data for protocol debugging
+     */
+    val rawFrameLogEnabled: Boolean = false
 )
