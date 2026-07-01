@@ -1,6 +1,6 @@
 // DeviceStorage.kt
-// BlueSDK Demo - 绑定设备列表本地持久化
-// 使用 SharedPreferences + JSON 存储已绑定设备列表
+// BlueSDK Demo - Local persistence for bound device list
+// Uses SharedPreferences + JSON to store bound devices
 
 package com.blue.demo
 
@@ -9,18 +9,18 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * 绑定设备数据模型
+ * Bound device data model
  */
 data class BoundDevice(
-    val deviceId: String,           // MAC 地址（唯一标识）
-    val deviceName: String,         // 设备广播名称
-    val bindTime: Long,             // 绑定时间戳
-    val lastConnectedTime: Long = 0 // 最后连接时间戳
+    val deviceId: String,           // MAC address (unique identifier)
+    val deviceName: String,         // Device broadcast name
+    val bindTime: Long,             // Bind timestamp
+    val lastConnectedTime: Long = 0 // Last connection timestamp
 )
 
 /**
- * 绑定设备本地存储管理器
- * 使用 SharedPreferences + JSON 持久化绑定设备列表
+ * Bound device local storage manager
+ * Uses SharedPreferences + JSON to persist bound device list
  */
 object DeviceStorage {
 
@@ -30,7 +30,7 @@ object DeviceStorage {
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    /** 加载所有绑定设备（按最后连接时间倒序） */
+    /** Load all bound devices (sorted by last connected time, descending) */
     fun loadAll(context: Context): List<BoundDevice> {
         val json = prefs(context).getString(KEY_DEVICES, null) ?: return emptyList()
         return try {
@@ -49,7 +49,7 @@ object DeviceStorage {
         }
     }
 
-    /** 添加绑定设备（如已存在则更新名称） */
+    /** Add bound device (updates name if already exists) */
     fun add(context: Context, device: BoundDevice) {
         val all = loadAll(context).toMutableList()
         val existing = all.indexOfFirst { it.deviceId == device.deviceId }
@@ -61,14 +61,14 @@ object DeviceStorage {
         persist(context, all)
     }
 
-    /** 删除绑定设备 */
+    /** Remove bound device */
     fun remove(context: Context, deviceId: String) {
         val all = loadAll(context).toMutableList()
         all.removeAll { it.deviceId == deviceId }
         persist(context, all)
     }
 
-    /** 更新最后连接时间 */
+    /** Update last connected time */
     fun updateLastConnected(context: Context, deviceId: String) {
         val all = loadAll(context).toMutableList()
         val idx = all.indexOfFirst { it.deviceId == deviceId }
@@ -78,17 +78,17 @@ object DeviceStorage {
         }
     }
 
-    /** 检查设备是否已绑定 */
+    /** Check if device is already bound */
     fun isBound(context: Context, deviceId: String): Boolean {
         return loadAll(context).any { it.deviceId == deviceId }
     }
 
-    /** 清空所有绑定 */
+    /** Clear all bindings */
     fun clearAll(context: Context) {
         persist(context, emptyList())
     }
 
-    // MARK: - 私有
+    // MARK: - Private
 
     private fun persist(context: Context, devices: List<BoundDevice>) {
         val arr = JSONArray()

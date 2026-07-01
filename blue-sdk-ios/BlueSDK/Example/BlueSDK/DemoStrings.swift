@@ -1,12 +1,12 @@
 // DemoStrings.swift
-// BlueSDK Example - Demo App 多语言字符串
-// 从 Locales/*.json 加载翻译，加新语言只需新增 JSON 文件
+// BlueSDK Example - Demo App Multi-language Strings
+// Loads translations from Locales/*.json, add a new language by adding a new JSON file
 
 import Foundation
 import BlueSDK
 
-/// Demo App 多语言字符串
-/// 从 JSON 文件加载，支持运行时切换
+/// Demo App multi-language strings
+/// Loads from JSON files, supports runtime language switching
 enum S {
     private static var strings: [String: String] = [:]
     private static var fallback: [String: String] = [:]
@@ -14,13 +14,13 @@ enum S {
     static var isZh: Bool { effectiveLang == "zh" }
     static var isDe: Bool { effectiveLang == "de" }
 
-    /// App 启动时调用
+    /// Called at app launch
     static func initialize() {
         fallback = loadJSON(lang: "en")
         reload()
     }
 
-    /// 切换语言后调用
+    /// Called after language switch
     static func setLanguage(_ lang: String?) {
         UserDefaults.standard.set(lang, forKey: "demo_language")
         reload()
@@ -51,14 +51,14 @@ enum S {
         return dict
     }
 
-    /// 按 key 取字符串
+    /// Get string by key
     static subscript(key: String) -> String {
         strings[key] ?? fallback[key] ?? key
     }
 
-    // MARK: - 编译期安全属性（调用端保持 S.xxx 不变）
+    // MARK: - Compile-time safe properties (callers keep using S.xxx)
 
-    // 主页按钮
+    // Home page buttons
     static var scan: String { self["scan"] }
     static var stopScan: String { self["stop_scan"] }
     static var disconnect: String { self["disconnect"] }
@@ -73,7 +73,7 @@ enum S {
     static var clearBinding: String { self["clear_binding"] }
     static var debug: String { self["debug"] }
 
-    // 音频设置
+    // Audio settings
     static var soundType: String { self["sound_type"] }
     static var volume: String { self["volume"] }
     static var timeFormat: String { self["time_format"] }
@@ -85,11 +85,11 @@ enum S {
     static var medium: String { self["medium"] }
     static var high: String { self["high"] }
 
-    // 日志区
+    // Log area
     static var log: String { self["log"] }
     static var clear: String { self["clear"] }
 
-    // 状态
+    // Status
     static var notConnected: String { self["not_connected"] }
     static var connecting: String { self["connecting"] }
     static var authenticating: String { self["authenticating"] }
@@ -102,7 +102,7 @@ enum S {
     static var userCancelled: String { self["user_cancelled"] }
     static var sdkStarted: String { self["sdk_started"] }
 
-    // 对话框
+    // Dialogs
     static var cancel: String { self["cancel"] }
     static var confirm: String { self["confirm"] }
     static var clearAlarmsTitle: String { self["clear_alarms_title"] }
@@ -114,7 +114,7 @@ enum S {
     static var authFailedTitle: String { self["auth_failed_title"] }
     static var authFailedMsg: String { self["auth_failed_msg"] }
 
-    // 日志消息
+    // Log messages
     static var found: String { self["found"] }
     static var disconnected: String { self["disconnected"] }
     static var alarmsCleared: String { self["alarms_cleared"] }
@@ -123,7 +123,7 @@ enum S {
     static var scanningAuto: String { self["scanning_auto"] }
     static var scanStopped: String { self["scan_stopped"] }
 
-    // 用药通知
+    // Medication notifications
     static var alarmRingingTitle: String { self["alarm_ringing_title"] }
     static var alarmRingingMsg: String { self["alarm_ringing_msg"] }
     static var missedTitle: String { self["missed_title"] }
@@ -132,15 +132,15 @@ enum S {
     static var takenMsg: String { self["taken_msg"] }
     static var ok: String { self["ok"] }
 
-    // 断开提示
+    // Disconnect prompt
     static var disconnectedTitle: String { self["disconnected_title"] }
     static var disconnectedMsg: String { self["disconnected_msg"] }
     static var deviceDisconnectedToast: String { self["device_disconnected_toast"] }
 
-    // 响铃时长
+    // Ring duration
     static var durationError: String { self["duration_error"] }
 
-    // 闹钟管理
+    // Alarm management
     static var clearAll: String { self["clear_all"] }
     static var alarmSlotLabel: String { self["alarm_slot_label"] }
     static var alarmStatusOn: String { self["alarm_status_on"] }
@@ -170,7 +170,7 @@ enum S {
          self["weekday_thu"], self["weekday_fri"], self["weekday_sat"], self["weekday_sun"]]
     }
 
-    // 设备列表
+    // Device list
     static var noBoundDevices: String { self["no_bound_devices"] }
     static var noBoundDevicesHint: String { self["no_bound_devices_hint"] }
     static var deviceOnline: String { self["device_online"] }
@@ -189,7 +189,7 @@ enum S {
     static var scanningFixedKey: String { self["scanning_fixed_key"] }
     static var scanTimeout: String { self["scan_timeout"] }
 
-    // 扫描页
+    // Scan page
     static var scanDevicesTitle: String { self["scan_devices_title"] }
     static var searchingNearby: String { self["searching_nearby"] }
     static var rescan: String { self["rescan"] }
@@ -200,7 +200,7 @@ enum S {
     static var bind: String { self["bind"] }
     static var bluetoothPermissionRequired: String { self["bluetooth_permission_required"] }
 
-    // 用药记录
+    // Medication records
     static var byDate: String { self["by_date"] }
     static var allRecords: String { self["all_records"] }
     static var legendTaken: String { self["legend_taken"] }
@@ -216,7 +216,7 @@ enum S {
     static var totalRecordsCount: String { self["total_records_count"] }
     static var dateRecordsCount: String { self["date_records_count"] }
 
-    // 协议测试
+    // Protocol test
     static var startTest: String { self["start_test"] }
     static var testing: String { self["testing"] }
     static var runningProtocolTest: String { self["running_protocol_test"] }
@@ -226,7 +226,7 @@ enum S {
     static var testSummary: String { self["test_summary"] }
     static var protocolTestHint: String { self["protocol_test_hint"] }
 
-    // 调试面板
+    // Debug panel
     static var debugPanelTitle: String { self["debug_panel_title"] }
     static var exportLog: String { self["export_log"] }
     static var debugInputHint: String { self["debug_input_hint"] }

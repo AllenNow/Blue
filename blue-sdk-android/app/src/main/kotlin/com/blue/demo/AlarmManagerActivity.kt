@@ -30,7 +30,7 @@ data class AlarmSlot(
 ) {
     val timeString: String get() = if (isSet) String.format("%02d:%02d", hour, minute) else "--:--"
 
-    /** 根据 12/24 小时制格式化时间显示 */
+    /** Format time display based on 12/24 hour format */
     fun formatTime(is24Hour: Boolean): String {
         if (!isSet) return "--:--"
         return if (is24Hour) {
@@ -49,8 +49,8 @@ data class AlarmSlot(
     val weekDescription: String get() {
         if (!isSet) return ""
         if (weekMask == 0x7F) return S.weekdayDaily
-        if (weekMask == 0x3E) return S.weekdayWeekdays   // bit1~bit5 = 周一~周五
-        if (weekMask == 0x41) return S.weekdayWeekend    // bit0+bit6 = 周日+周六
+        if (weekMask == 0x3E) return S.weekdayWeekdays   // bit1~bit5 = Mon~Fri
+        if (weekMask == 0x41) return S.weekdayWeekend    // bit0+bit6 = Sun+Sat
         val days = S.weekdays
         return (0..6).filter { (weekMask and (1 shl it)) != 0 }.map { days[it] }.joinToString(" ")
     }
@@ -64,7 +64,7 @@ class AlarmManagerActivity : AppCompatActivity() {
 
     private lateinit var alarms: MutableList<AlarmSlot>
 
-    /** 当前是否为 24 小时制 */
+    /** Whether currently in 24-hour format */
     private val is24Hour: Boolean get() = sdk.currentTimeFormat == TimeFormat.HOUR_24
 
     private val alarmObserver = object : com.blue.sdk.BlueSDKListener {
@@ -77,7 +77,7 @@ class AlarmManagerActivity : AppCompatActivity() {
 
         override fun onTimeFormatChanged(format: com.blue.sdk.enums.TimeFormat) {
             runOnUiThread {
-                // 时间格式切换时刷新整个列表和下一个闹钟显示
+                // Refresh entire list and next alarm display when time format changes
                 adapter.notifyDataSetChanged()
                 updateNextAlarm()
             }
@@ -87,7 +87,7 @@ class AlarmManagerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         alarms = AlarmStorage.loadAll(this).toMutableList()
-        // 注册为 SDK 事件观察者，实时接收设备上报的闹钟变更
+        // Register as SDK event observer to receive real-time alarm changes from device
         sdk.addObserver(alarmObserver)
         supportActionBar?.title = S.alarmManager
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -117,7 +117,7 @@ class AlarmManagerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // 每次页面恢复时刷新列表（时间格式可能已切换）并重新计算下一个闹钟
+        // Refresh list on each resume (time format may have changed) and recalculate next alarm
         if (::nextAlarmTimeLabel.isInitialized) {
             adapter.notifyDataSetChanged()
             updateNextAlarm()
@@ -139,7 +139,7 @@ class AlarmManagerActivity : AppCompatActivity() {
             layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         }
 
-        // 顶部：下一个闹钟卡片
+        // Top: next alarm card
         val nextCard = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -188,13 +188,13 @@ class AlarmManagerActivity : AppCompatActivity() {
         return root
     }
 
-    /** 根据当前时间和已启用闹钟计算下一个触发的闹钟 */
+    /** Calculate the next alarm to trigger based on current time and enabled alarms */
     private fun updateNextAlarm() {
         val now = java.util.Calendar.getInstance()
         val nowHour = now.get(java.util.Calendar.HOUR_OF_DAY)
         val nowMinute = now.get(java.util.Calendar.MINUTE)
         // Calendar.DAY_OF_WEEK: 1=Sun, 2=Mon ... 7=Sat
-        // weekMask bit 定义: bit0=周日, bit1=周一 ... bit6=周六
+        // weekMask bit definition: bit0=Sun, bit1=Mon ... bit6=Sat
         val calDow = now.get(java.util.Calendar.DAY_OF_WEEK) // 1=Sun...7=Sat
         val todayBit = calDow - 1 // 0=Sun, 1=Mon ... 6=Sat
 
@@ -216,21 +216,21 @@ class AlarmManagerActivity : AppCompatActivity() {
 
             for (dayOffset in 0..6) {
                 val checkDay = (todayBit + dayOffset) % 7
-                // 检查此天是否在 weekMask 中
+                // Check if this day is in the weekMask
                 if (alarm.weekMask and (1 shl checkDay) == 0) continue
 
                 val minutesAway: Int = if (dayOffset == 0) {
-                    // 今天：只有闹钟时间在当前时间之后才算
+                    // Today: only count if alarm time is after current time
                     val diff = alarmTotalMinutes - nowTotalMinutes
-                    if (diff <= 0) continue  // 今天已过，看后面的天
+                    if (diff <= 0) continue  // Already passed today, check later days
                     diff
                 } else {
-                    // 未来某天：完整天数 + 闹钟时间偏移
+                    // Future day: full days + alarm time offset
                     dayOffset * 24 * 60 + alarmTotalMinutes - nowTotalMinutes
                 }
 
                 bestMinutesAway = minutesAway
-                break // 找到该闹钟最近的一次即可
+                break // Found the nearest occurrence for this alarm
             }
 
             if (bestMinutesAway != Int.MAX_VALUE) {
@@ -353,7 +353,7 @@ class AlarmManagerActivity : AppCompatActivity() {
                     runOnUiThread {
                         result.fold(
                             onSuccess = {
-                                // 原地修改列表（保持 adapter 引用一致）
+                                // Modify list in place (keep adapter reference consistent)
                                 for (i in alarms.indices) {
                                     alarms[i] = AlarmSlot(i + 1, false, 0, 0, 0x7F, false)
                                 }

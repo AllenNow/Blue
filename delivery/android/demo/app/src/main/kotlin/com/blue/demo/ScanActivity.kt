@@ -1,6 +1,6 @@
 // ScanActivity.kt
-// BlueSDK Demo - 扫描添加设备页
-// 扫描附近 LX-PD02 设备，用户选择绑定
+// BlueSDK Demo - Scan and add device page
+// Scan nearby LX-PD02 devices, user selects to bind
 
 package com.blue.demo
 
@@ -32,8 +32,8 @@ import com.blue.sdk.error.BlueError
 import com.blue.sdk.model.ScannedDevice
 
 /**
- * 扫描添加设备页
- * 扫描附近 LX-PD02 设备，排除已绑定设备，用户点击绑定
+ * Scan and add device page
+ * Scans nearby LX-PD02 devices, excludes already bound devices, user taps to bind
  */
 class ScanActivity : AppCompatActivity() {
 
@@ -55,12 +55,12 @@ class ScanActivity : AppCompatActivity() {
     private var isScanning = false
     private var pendingBindDevice: ScannedDevice? = null
 
-    // SDK 监听器 — 监听绑定后自动连接结果
+    // SDK listener — monitor binding auto-connect result
     private val sdkListener = object : BlueSDKListener {
         override fun onConnectionStateChanged(state: ConnectionState) {
             if (state == ConnectionState.AUTHENTICATED) {
                 val device = pendingBindDevice ?: return
-                // 认证成功，存储到设备列表
+                // Auth succeeded, store to device list
                 val bound = BoundDevice(
                     deviceId = device.deviceId,
                     deviceName = device.deviceName,
@@ -70,7 +70,7 @@ class ScanActivity : AppCompatActivity() {
                 DeviceStorage.add(this@ScanActivity, bound)
                 handler.post {
                     hideLoading()
-                    // 跳转控制页
+                    // Navigate to control page
                     val intent = Intent(this@ScanActivity, MainActivity::class.java)
                     intent.putExtra("device_id", device.deviceId)
                     intent.putExtra("device_name", device.deviceName)
@@ -91,7 +91,7 @@ class ScanActivity : AppCompatActivity() {
                 val device = pendingBindDevice
                 handler.post {
                     hideLoading()
-                    // 认证失败，从设备列表中删除（如果存在）
+                    // Auth failed, remove from device list (if exists)
                     if (device != null) {
                         DeviceStorage.remove(this@ScanActivity, device.deviceId)
                     }
@@ -133,14 +133,14 @@ class ScanActivity : AppCompatActivity() {
             layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         }
 
-        // 顶部标题栏
+        // Top title bar
         val titleBar = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(16), dp(12), dp(16), dp(12))
         }
 
-        // 返回按钮
+        // Return button
         titleBar.addView(TextView(this).apply {
             text = "←"
             setTextColor(accentBlue)
@@ -159,13 +159,13 @@ class ScanActivity : AppCompatActivity() {
 
         mainLayout.addView(titleBar)
 
-        // 分割线
+        // Divider
         mainLayout.addView(View(this).apply {
             setBackgroundColor(Color.parseColor("#3A3A3C"))
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(1))
         })
 
-        // 状态提示
+        // Status hint
         statusText = TextView(this).apply {
             text = S.searchingNearby
             setTextColor(textGray)
@@ -175,7 +175,7 @@ class ScanActivity : AppCompatActivity() {
         }
         mainLayout.addView(statusText)
 
-        // 设备列表
+        // Device list
         val scrollView = ScrollView(this).apply {
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f)
         }
@@ -187,7 +187,7 @@ class ScanActivity : AppCompatActivity() {
         scrollView.addView(deviceListContainer)
         mainLayout.addView(scrollView)
 
-        // 底部操作栏
+        // Bottom action bar
         val bottomBar = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
@@ -209,12 +209,12 @@ class ScanActivity : AppCompatActivity() {
         mainLayout.addView(bottomBar)
         root.addView(mainLayout)
 
-        // Loading 遮罩
+        // Loading overlay
         loadingOverlay = FrameLayout(this).apply {
             setBackgroundColor(Color.parseColor("#66000000"))
             visibility = View.GONE
             layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-            setOnClickListener { /* 拦截 */ }
+            setOnClickListener { /* Intercept */ }
 
             val card = LinearLayout(this@ScanActivity).apply {
                 orientation = LinearLayout.VERTICAL
@@ -291,11 +291,11 @@ class ScanActivity : AppCompatActivity() {
             when (event) {
                 is com.blue.sdk.model.ScanEvent.DeviceFound -> {
                     val device = event.device
-                    // 排除已绑定设备
+                    // Exclude already bound devices
                     if (DeviceStorage.isBound(this, device.deviceId)) return@startScan
-                    // 排除已列出的（去重）
+                    // Exclude already listed (dedup)
                     if (discoveredDevices.any { it.deviceId == device.deviceId }) {
-                        // 更新 RSSI
+                        // Update RSSI
                         val idx = discoveredDevices.indexOfFirst { it.deviceId == device.deviceId }
                         if (idx >= 0) discoveredDevices[idx] = device
                         handler.post { refreshDeviceList() }
@@ -372,7 +372,7 @@ class ScanActivity : AppCompatActivity() {
 
         row.addView(info)
 
-        // 绑定按钮
+        // Bind button
         val bindBtn = Button(this).apply {
             text = S.bind
             setTextColor(textWhite)
@@ -389,13 +389,13 @@ class ScanActivity : AppCompatActivity() {
     }
 
     private fun bindDevice(device: ScannedDevice) {
-        // 停止扫描
+        // Stop scanning
         if (isScanning) {
             sdk.stopScan()
             isScanning = false
         }
 
-        // 发起连接（认证成功后才存储到设备列表）
+        // Initiate connection (store to device list only after auth succeeds)
         pendingBindDevice = device
         showLoading()
         sdk.connect(device)
@@ -409,7 +409,7 @@ class ScanActivity : AppCompatActivity() {
         loadingOverlay?.visibility = View.GONE
     }
 
-    // MARK: - 工具方法
+    // MARK: - Utility methods
 
     private fun dp(v: Int) = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), resources.displayMetrics

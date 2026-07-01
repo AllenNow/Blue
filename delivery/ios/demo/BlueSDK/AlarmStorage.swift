@@ -1,10 +1,10 @@
 // AlarmStorage.swift
-// BlueSDK Example - 闹钟配置本地持久化
-// 使用 UserDefaults 存储闹钟槽位配置，退出界面后保留
+// BlueSDK Example - Alarm configuration local persistence
+// Uses UserDefaults to store alarm slot configurations, persists after exiting the UI
 
 import Foundation
 
-/// 闹钟本地存储管理器
+/// Alarm local storage manager
 final class AlarmStorage {
 
     static let shared = AlarmStorage()
@@ -14,19 +14,19 @@ final class AlarmStorage {
 
     private init() {}
 
-    /// 保存单个闹钟槽位
+    /// Save a single alarm slot
     func save(slot: AlarmSlot) {
         var all = loadAll()
         all[slot.index - 1] = slot
         persist(all)
     }
 
-    /// 保存所有闹钟槽位
+    /// Save all alarm slots
     func saveAll(_ slots: [AlarmSlot]) {
         persist(slots)
     }
 
-    /// 加载所有闹钟槽位（7个）
+    /// Load all alarm slots (7 total)
     func loadAll() -> [AlarmSlot] {
         guard let data = defaults.data(forKey: key),
               let stored = try? JSONDecoder().decode([StoredAlarm].self, from: data),
@@ -36,7 +36,7 @@ final class AlarmStorage {
         return stored.map { $0.toSlot() }
     }
 
-    /// 清除指定槽位
+    /// Clear a specific slot
     func clear(index: Int) {
         var all = loadAll()
         guard index >= 1, index <= 7 else { return }
@@ -44,12 +44,12 @@ final class AlarmStorage {
         persist(all)
     }
 
-    /// 清除所有
+    /// Clear all
     func clearAll() {
         persist(defaultSlots())
     }
 
-    // MARK: - 私有
+    // MARK: - Private
 
     private func defaultSlots() -> [AlarmSlot] {
         return (1...7).map {
@@ -65,7 +65,7 @@ final class AlarmStorage {
     }
 }
 
-// MARK: - Codable 中间结构
+// MARK: - Codable intermediate structure
 
 private struct StoredAlarm: Codable {
     let index: Int

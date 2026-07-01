@@ -1,6 +1,6 @@
 // DeviceListViewController.swift
-// BlueSDK Example - 设备列表主页
-// 展示已绑定设备，进入时自动扫描更新在线状态
+// BlueSDK Example - Device List Main Page
+// Displays bound devices, auto-scans on entry to update online status
 
 import UIKit
 import BlueSDK
@@ -8,7 +8,7 @@ import SnapKit
 
 class DeviceListViewController: UIViewController {
 
-    // MARK: - UI 控件
+    // MARK: - UI Controls
 
     private let titleLabel = UILabel()
     private let scanIndicator = UILabel()
@@ -66,23 +66,23 @@ class DeviceListViewController: UIViewController {
     }()
     private weak var loadingLabel: UILabel?
 
-    // MARK: - 状态
+    // MARK: - State
 
     private var devices: [BoundDevice] = []
     private var onlineDevices: Set<String> = []
     private var rssiMap: [String: Int] = [:]
-    /// 缓存扫描到的 ScannedDevice 对象（用于直接连接）
+    /// Cache scanned ScannedDevice objects (for direct connection)
     private var scannedDeviceCache: [String: ScannedDevice] = [:]
     private var isScanning = false
     private var pendingConnectDevice: BoundDevice?
-    /// 当前已连接的设备 ID（跟踪连接状态用）
+    /// Currently connected device ID (for tracking connection state)
     private var connectedDeviceId: String?
-    /// 认证是否失败（防止 .disconnected 事件触发自动重连循环）
+    /// Whether authentication failed (prevents .disconnected event from triggering auto-reconnect loop)
     private var isAuthFailed = false
-    /// 用户是否主动断开（主动断开不触发自动重连）
+    /// Whether user explicitly disconnected (explicit disconnect won't trigger auto-reconnect)
     private var isUserDisconnect = false
 
-    // MARK: - 生命周期
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -94,7 +94,7 @@ class DeviceListViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // 同步当前连接状态（从控制页返回时可能仍已连接或已断开）
+        // Sync current connection state (may still be connected or disconnected when returning from control page)
         if BlueSDKManager.shared.connectionState != .authenticated {
             connectedDeviceId = nil
         }
@@ -114,17 +114,17 @@ class DeviceListViewController: UIViewController {
         BlueSDKManager.shared.removeObserver(self)
     }
 
-    // MARK: - UI 构建
+    // MARK: - UI Build
 
     private func buildUI() {
-        // 左上角语言切换按钮
+        // Top-left language switch button
         let langBtn = UIButton(type: .system)
         langBtn.setTitle("🌐", for: .normal)
         langBtn.titleLabel?.font = .systemFont(ofSize: 22)
         langBtn.addTarget(self, action: #selector(openLanguageSettings), for: .touchUpInside)
         let langItem = UIBarButtonItem(customView: langBtn)
 
-        // FAQ 按钮
+        // FAQ button
         let faqBtn = UIButton(type: .system)
         faqBtn.setTitle("❓", for: .normal)
         faqBtn.titleLabel?.font = .systemFont(ofSize: 20)
@@ -133,11 +133,11 @@ class DeviceListViewController: UIViewController {
 
         navigationItem.leftBarButtonItems = [langItem, faqItem]
 
-        // 右上角添加按钮
+        // Top-right add button
         let addItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(openScanPage))
         navigationItem.rightBarButtonItem = addItem
 
-        // 扫描指示器
+        // Scan indicator
         scanIndicator.text = S.scanning
         scanIndicator.font = .systemFont(ofSize: 13)
         scanIndicator.textColor = .systemBlue
@@ -148,7 +148,7 @@ class DeviceListViewController: UIViewController {
             $0.centerX.equalToSuperview()
         }
 
-        // 表格
+        // Table
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(DeviceCell.self, forCellReuseIdentifier: "DeviceCell")
@@ -160,7 +160,7 @@ class DeviceListViewController: UIViewController {
             $0.leading.trailing.bottom.equalToSuperview()
         }
 
-        // 空态视图
+        // Empty state view
         emptyView.axis = .vertical
         emptyView.alignment = .center
         emptyView.spacing = 8
@@ -188,12 +188,12 @@ class DeviceListViewController: UIViewController {
             $0.center.equalToSuperview()
         }
 
-        // Loading 遮罩
+        // Loading overlay
         view.addSubview(loadingOverlay)
         loadingOverlay.snp.makeConstraints { $0.edges.equalToSuperview() }
     }
 
-    // MARK: - 数据刷新
+    // MARK: - Data Refresh
 
     private func refreshList() {
         devices = DeviceStorage.shared.loadAll()
@@ -202,7 +202,7 @@ class DeviceListViewController: UIViewController {
         tableView.reloadData()
     }
 
-    // MARK: - 在线扫描
+    // MARK: - Online Scan
 
     private func startOnlineScan() {
         guard !isScanning else { return }
@@ -236,14 +236,15 @@ class DeviceListViewController: UIViewController {
         }
     }
 
-    // MARK: - 操作
+    // MARK: - Actions
 
     @objc private func openLanguageSettings() {
         let langVC = LanguageViewController()
         langVC.isFromSettings = true
         langVC.onLanguageChanged = { [weak self] in
-            // 语言切换后刷新页面标题和列表
-            self?.navigationItem.title = "Blue SDK Demo"
+            // Refresh all text after language switch
+            self?.navigationItem.title = "BlueSDK"
+            self?.scanIndicator.text = S.scanning
             self?.refreshList()
         }
         navigationController?.pushViewController(langVC, animated: true)
@@ -260,7 +261,7 @@ class DeviceListViewController: UIViewController {
     }
 
     private func connectDevice(_ device: BoundDevice) {
-        // 如果已经连接认证到该设备，直接跳转
+        // If already authenticated to this device, navigate directly
         if BlueSDKManager.shared.connectionState == .authenticated && connectedDeviceId == device.deviceId {
             navigateToControl(device: device)
             return
@@ -269,30 +270,30 @@ class DeviceListViewController: UIViewController {
         pendingConnectDevice = device
         showLoading()
 
-        // 如果当前有连接，先断开，等断开回调后再连新设备
+        // If currently connected, disconnect first and wait for callback to connect new device
         if BlueSDKManager.shared.connectionState != .disconnected {
-            // 标记等待断开后自动连接
+            // Mark to auto-connect after disconnect
             BlueSDKManager.shared.disconnect()
-            // delegate 中 .disconnected 会触发 reconnectPending
+            // delegate .disconnected will trigger reconnectPending
             return
         }
 
         performConnect(device)
     }
 
-    /// 实际执行连接逻辑
+    /// Execute the actual connection logic
     private func performConnect(_ device: BoundDevice) {
-        isAuthFailed = false  // 重置认证失败标记
-        // 优先使用缓存的 ScannedDevice（扫描到的设备可直接连接）
+        isAuthFailed = false  // Reset auth failed flag
+        // Prefer cached ScannedDevice (scanned devices can connect directly)
         if let cached = scannedDeviceCache[device.deviceId] {
             BlueSDKManager.shared.connect(cached)
             return
         }
 
-        // 没有缓存时，通过 UUID 直接连接
+        // No cache, connect via UUID directly
         BlueSDKManager.shared.connect(byIdentifier: device.deviceId) { [weak self] error in
             if let _ = error {
-                // UUID 连接失败，回退到扫描方式
+                // UUID connection failed, fall back to scan
                 BlueSDKManager.shared.startScan(timeout: 8) { [weak self] event in
                     guard let self = self else { return }
                     switch event {
@@ -322,7 +323,7 @@ class DeviceListViewController: UIViewController {
     }
 
     private func navigateToControl(device: BoundDevice) {
-        // 防止重复跳转：如果导航栈顶部已经是设备控制页则不再 push
+        // Prevent duplicate navigation: don't push if top of navigation stack is already the device control page
         if navigationController?.topViewController is ViewController {
             return
         }
@@ -407,7 +408,7 @@ extension DeviceListViewController: UITableViewDataSource, UITableViewDelegate {
         let device = devices[indexPath.row]
         let isConnected = BlueSDKManager.shared.connectionState == .authenticated &&
             connectedDeviceId == device.deviceId
-        // 已连接的设备视为在线
+        // Connected device is considered online
         let isOnline = isConnected || onlineDevices.contains(device.deviceId)
         let rssi = rssiMap[device.deviceId]
         cell.configure(device: device, isOnline: isOnline, isConnected: isConnected, rssi: rssi)
@@ -424,7 +425,7 @@ extension DeviceListViewController: UITableViewDataSource, UITableViewDelegate {
         if isOnline {
             connectDevice(device)
         } else {
-            // 即使扫描不到也尝试连接（通过 UUID），而不是直接提示离线
+            // Even if not found via scan, try connecting via UUID rather than showing offline message
             connectDevice(device)
         }
     }
@@ -458,7 +459,7 @@ extension DeviceListViewController: BlueSDKDelegate {
                 self.navigateToControl(device: device)
             case .disconnected:
                 self.connectedDeviceId = nil
-                // 主动断开或认证失败后不自动重连
+                // Don't auto-reconnect on explicit disconnect or auth failure
                 if self.isUserDisconnect {
                     self.isUserDisconnect = false
                     self.pendingConnectDevice = nil
@@ -470,7 +471,7 @@ extension DeviceListViewController: BlueSDKDelegate {
                     self.hideLoading()
                     self.refreshList()
                 } else if let pending = self.pendingConnectDevice {
-                    // 切换设备场景：断开后延迟发起新连接
+                    // Device switching scenario: initiate new connection after delay
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                         self?.performConnect(pending)
                     }

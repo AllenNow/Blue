@@ -1,12 +1,12 @@
 // MedicationRecordsViewController.swift
-// BlueSDK Example - 用药记录查看页面（支持日历选择日期查询）
+// BlueSDK Example - Medication Records Page (supports calendar date selection)
 
 import UIKit
 import BlueSDK
 
 class MedicationRecordsViewController: UIViewController {
 
-    // MARK: - UI 组件
+    // MARK: - UI Components
 
     private lazy var datePicker: UIDatePicker = {
         let picker = UIDatePicker()
@@ -63,13 +63,13 @@ class MedicationRecordsViewController: UIViewController {
         return UIBarButtonItem(title: S.clearRecords, style: .plain, target: self, action: #selector(deleteAll))
     }()
 
-    // MARK: - 状态
+    // MARK: - State
 
     private var records: [MedicationEntry] = []
     private let db = MedicationDatabase.shared
     private weak var headerLabel: UILabel?
 
-    /// 时间格式化器 — 跟随药盒当前时制（12H/24H）
+    /// Time formatter — follows pill box current time format (12H/24H)
     private var dateFormatter: DateFormatter {
         let df = DateFormatter()
         if BlueSDKManager.shared.currentTimeFormat == .hour12 {
@@ -80,7 +80,7 @@ class MedicationRecordsViewController: UIViewController {
         return df
     }
 
-    // MARK: - 生命周期
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,7 +89,7 @@ class MedicationRecordsViewController: UIViewController {
         navigationItem.rightBarButtonItem = deleteButton
         setupUI()
         loadRecords(for: datePicker.date)
-        // 注册为 SDK 事件观察者，实时接收用药记录上报
+        // Register as SDK event observer to receive medication records in real time
         BlueSDKManager.shared.addObserver(self)
     }
 
@@ -97,12 +97,12 @@ class MedicationRecordsViewController: UIViewController {
         dismiss(animated: true)
     }
 
-    // MARK: - UI 搭建
+    // MARK: - UI Setup
 
     private func setupUI() {
         view.addSubview(segmentControl)
 
-        // 状态图例
+        // Status legend
         let legendStack = UIStackView()
         legendStack.axis = .horizontal
         legendStack.spacing = 12
@@ -172,7 +172,7 @@ class MedicationRecordsViewController: UIViewController {
         ])
     }
 
-    // MARK: - 数据加载
+    // MARK: - Data Loading
 
     private func loadRecords(for date: Date) {
         records = db.query(date: date)
@@ -197,7 +197,7 @@ class MedicationRecordsViewController: UIViewController {
         }
     }
 
-    // MARK: - 事件
+    // MARK: - Events
 
     @objc private func dateChanged() {
         if segmentControl.selectedSegmentIndex == 0 {
@@ -226,13 +226,13 @@ class MedicationRecordsViewController: UIViewController {
     }
 }
 
-// MARK: - BlueSDKDelegate（实时接收用药记录上报）
+// MARK: - BlueSDKDelegate (receive medication records in real time)
 
 extension MedicationRecordsViewController: BlueSDKDelegate {
     func blueSDK(_ sdk: BlueSDKManager, didReceiveMedicationRecord record: MedicationRecord) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            // 重新加载当前视图的数据
+            // Reload data for the current view
             if self.segmentControl.selectedSegmentIndex == 0 {
                 self.loadRecords(for: self.datePicker.date)
             } else {
@@ -269,7 +269,7 @@ extension MedicationRecordsViewController: UITableViewDataSource, UITableViewDel
     }
 }
 
-// MARK: - 自定义 Cell
+// MARK: - Custom Cell
 
 class MedicationRecordCell: UITableViewCell {
 

@@ -38,17 +38,17 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     private lateinit var disconnectButton: Button
     private lateinit var loadingOverlay: FrameLayout
 
-    // 音频设置 segment 引用（用于设备上报同步 UI）
+    // Audio settings segment references (for syncing UI on device reports)
     private lateinit var soundTypeSegment: LinearLayout
     private lateinit var timeFormatSegment: LinearLayout
     private lateinit var silenceSwitch: Switch
 
     private var isScanning = false
 
-    // 从设备列表页传入的设备信息
+    // From device list page
     private var deviceId: String? = null
     private var deviceName: String? = null
-    /** 是否从设备列表页进入（新流程） */
+    /** Whether entered from device list page (new flow) */
     private val isFromDeviceList: Boolean get() = deviceId != null
 
     private val sdk get() = BlueSDKManager.getInstance(this)
@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         window.navigationBarColor = bgDark
         supportActionBar?.hide()
 
-        // 接收设备列表页传入的设备信息
+        // Receive device info from device list page
         deviceId = intent.getStringExtra("device_id")
         deviceName = intent.getStringExtra("device_name")
 
@@ -95,11 +95,11 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         log(S.sdkStarted)
         log("🔑 ${sdk.currentAuthKeyDisplay}")
 
-        // 如果从设备列表页进入，隐藏扫描相关 UI，显示已连接状态
+        // If entered from device list page, hide scan-related UI and show connected status
         if (isFromDeviceList) {
             scanButton.visibility = View.GONE
             phoneMacInput.visibility = View.GONE
-            // 如果已经认证，直接显示已连接状态
+            // If already authenticated, show connected status directly
             if (sdk.connectionState == ConnectionState.AUTHENTICATED) {
                 updateStatus(S.connected, Color.GREEN)
                 disconnectButton.visibility = View.VISIBLE
@@ -166,12 +166,12 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         connCard.addView(disconnectButton)
         content.addView(connCard)
 
-        // 密钥输入框
+        // Auth key input
         val keyRow = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(dp(12), dp(6), dp(12), dp(6))
-            // 从设备列表进入时隐藏密钥输入框
+            // Hide key input when entering from device list
             if (isFromDeviceList) visibility = View.GONE
         }
         keyRow.addView(TextView(this).apply {
@@ -302,7 +302,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
 
         scrollView.addView(content)
 
-        // 日志区域 — 占据底部剩余空间（不在 ScrollView 内）
+        // Log area — occupies remaining bottom space (not inside ScrollView)
         val logCard = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(bgCard)
@@ -340,7 +340,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
             addView(logTextView, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
         }
-        // 版本号水印
+        // Version watermark
         val versionLabel = TextView(this).apply {
             text = "v${packageManager.getPackageInfo(packageName, 0).versionName}"
             textSize = 28f
@@ -360,12 +360,12 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         root.addView(scrollView)
         root.addView(logCard)
 
-        // Loading 遮罩（连接认证中显示）
+        // Loading overlay (shown during connection authentication)
         loadingOverlay = FrameLayout(this).apply {
             setBackgroundColor(Color.parseColor("#66000000"))
             visibility = View.GONE
             layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-            setOnClickListener { /* 拦截点击 */ }
+            setOnClickListener { /* Intercept clicks */ }
 
             val card = LinearLayout(this@MainActivity).apply {
                 orientation = LinearLayout.VERTICAL
@@ -393,7 +393,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             addView(card)
         }
 
-        // 包裹为 FrameLayout 以叠加 loading
+        // Wrap in FrameLayout to overlay loading
         val frame = FrameLayout(this).apply {
             layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         }
@@ -429,7 +429,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         scanButton.text = S.stopScan
         scanButton.isEnabled = true
 
-        // 读取自定义密钥输入框
+        // Read custom key input
         val customKey = phoneMacInput.text.toString().trim().uppercase()
         if (customKey.length == 12) {
             sdk.config = sdk.config.copy(customPhoneMac = customKey)
@@ -543,7 +543,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                 runOnUiThread {
                     result.fold(
                         onSuccess = {
-                            // 清空本地闹钟缓存和用药记录
+                            // Clear local alarm cache and medication records
                             AlarmStorage.clearAll(this)
                             MedicationDatabase.getInstance(this).deleteAll()
                             log("✅ ${S.unbindSuccess}")
@@ -616,7 +616,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                         updateStatus(text, color)
                         scanButton.isEnabled = true
                     }
-                    // 从设备列表进入时，断开连接自动返回列表页
+                    // When entering from device list, disconnect auto-navigates back to list page
                     if (isFromDeviceList && !isAuthFailed) {
                         Toast.makeText(this,
                             S.deviceDisconnectedToast,
@@ -625,7 +625,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
                         finish()
                         return@runOnUiThread
                     }
-                    // 设备意外断开弹窗提示
+                    // Unexpected device disconnect popup notification
                     if (!isAuthFailed && !isScanning) {
                         log("⚠️ ${S.deviceDisconnectedToast}")
                         AlertDialog.Builder(this)
@@ -684,7 +684,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     override fun onTimeSyncRequested() { log("⏰ Time sync request"); sdk.syncTime { _ -> } }
     override fun onAlarmUpdated(alarm: AlarmInfo) {
         log("⏰ Alarm${alarm.index} ${String.format("%02d:%02d", alarm.hour, alarm.minute)}")
-        // 设备上报闹钟变更，同步更新本地存储
+        // Device reported alarm change, sync update local storage
         val isSet = !alarm.isDeleted
         val slot = AlarmSlot(
             index = alarm.index,
@@ -707,7 +707,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             MedicationStatus.EARLY -> S.statusEarly
         }
         log("💊 ${String.format(S.alarmSlotLabel, alarmIndex)} $statusText")
-        // 不入库 — 等 onMedicationRecordReported 上报完整记录（含设定时间和实际时间）
+        // Not stored here — wait for onMedicationRecordReported for complete record (with scheduled and actual time)
     }
 
     override fun onMedicationRecordReported(record: MedicationRecord) {
@@ -726,11 +726,11 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
     }
 
     override fun onSoundTypeChanged(type: SoundType) {
-        log("🔊 铃声变更: $type")
+        log("🔊 Sound type changed: $type")
         runOnUiThread {
             when (type) {
                 SoundType.MUTE -> {
-                    // 静音：取消铃声选中，开启静音开关
+                    // Mute: deselect sound type, enable silence switch
                     selectSegment(soundTypeSegment, -1)
                     silenceSwitch.isChecked = true
                 }
@@ -770,7 +770,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
             }
             2 -> {
                 log("⚠️ Timeout, medication missed")
-                // 本地通知（漏服提醒）
+                // Local notification (missed dose reminder)
                 val nm = getSystemService(android.app.NotificationManager::class.java)
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                     nm.createNotificationChannel(android.app.NotificationChannel("med_alert", "Medication Reminder", android.app.NotificationManager.IMPORTANCE_HIGH))
@@ -802,7 +802,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         runOnUiThread {
             if (::logTextView.isInitialized) {
                 logTextView.append("[$t] $msg\n")
-                // 自动滚动到底部
+                // Auto-scroll to bottom
                 (logTextView.parent as? ScrollView)?.post {
                     (logTextView.parent as? ScrollView)?.fullScroll(View.FOCUS_DOWN)
                 }
@@ -844,7 +844,7 @@ class MainActivity : AppCompatActivity(), BlueSDKListener {
         }
     }
 
-    /** 更新 segment 控件的选中状态（设备上报同步 UI 用） */
+    /** Update segment control selection state (for syncing UI on device reports) */
     private fun selectSegment(segment: LinearLayout, index: Int) {
         for (i in 0 until segment.childCount) {
             val btn = segment.getChildAt(i) as? Button ?: continue

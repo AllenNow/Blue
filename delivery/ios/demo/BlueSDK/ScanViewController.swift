@@ -1,6 +1,6 @@
 // ScanViewController.swift
-// BlueSDK Example - 扫描添加设备页
-// 扫描附近 LX-PD02 设备，用户选择绑定
+// BlueSDK Example - Scan and Add Device Page
+// Scans for nearby LX-PD02 devices, user selects to bind
 
 import UIKit
 import BlueSDK
@@ -62,13 +62,13 @@ class ScanViewController: UIViewController {
         return overlay
     }()
 
-    // MARK: - 状态
+    // MARK: - State
 
     private var discoveredDevices: [ScannedDevice] = []
     private var isScanning = false
     private var pendingBindDevice: ScannedDevice?
 
-    // MARK: - 生命周期
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -84,7 +84,7 @@ class ScanViewController: UIViewController {
         if isScanning { BlueSDKManager.shared.stopScan() }
     }
 
-    // MARK: - UI 构建
+    // MARK: - UI Build
 
     private func buildUI() {
         statusLabel.text = S.searchingNearby
@@ -127,7 +127,7 @@ class ScanViewController: UIViewController {
         loadingOverlay.snp.makeConstraints { $0.edges.equalToSuperview() }
     }
 
-    // MARK: - 扫描
+    // MARK: - Scan
 
     private func startDeviceScan() {
         guard !isScanning else { return }
@@ -141,9 +141,9 @@ class ScanViewController: UIViewController {
             guard let self = self else { return }
             switch event {
             case .deviceFound(let device):
-                // 排除已绑定设备
+                // Exclude already bound devices
                 if DeviceStorage.shared.isBound(deviceId: device.deviceId) { return }
-                // 去重（更新 RSSI）
+                // Deduplicate (update RSSI)
                 if let idx = self.discoveredDevices.firstIndex(where: { $0.deviceId == device.deviceId }) {
                     self.discoveredDevices[idx] = device
                 } else {
@@ -181,7 +181,7 @@ class ScanViewController: UIViewController {
         startDeviceScan()
     }
 
-    // MARK: - 绑定
+    // MARK: - Bind
 
     private func bindDevice(_ device: ScannedDevice) {
         if isScanning {
@@ -189,7 +189,7 @@ class ScanViewController: UIViewController {
             isScanning = false
         }
 
-        // 发起连接（认证成功后才存储到设备列表）
+        // Initiate connection (only saved to device list after successful authentication)
         pendingBindDevice = device
         loadingOverlay.isHidden = false
         BlueSDKManager.shared.connect(device)
@@ -233,7 +233,7 @@ extension ScanViewController: BlueSDKDelegate {
             switch state {
             case .authenticated:
                 guard let device = self.pendingBindDevice else { return }
-                // 认证成功，存储到设备列表
+                // Authentication succeeded, save to device list
                 let bound = BoundDevice(
                     deviceId: device.deviceId,
                     deviceName: device.deviceName,
@@ -242,13 +242,13 @@ extension ScanViewController: BlueSDKDelegate {
                 )
                 DeviceStorage.shared.add(bound)
                 self.loadingOverlay.isHidden = true
-                // 跳转控制页
+                // Navigate to control page
                 let vc = ViewController()
                 vc.deviceId = device.deviceId
                 vc.deviceName = device.deviceName
-                // 替换导航栈：列表页 → 控制页
+                // Replace navigation stack: list page → control page
                 if var vcs = self.navigationController?.viewControllers {
-                    vcs.removeLast() // 移除 ScanViewController
+                    vcs.removeLast() // Remove ScanViewController
                     vcs.append(vc)
                     self.navigationController?.setViewControllers(vcs, animated: true)
                 }
@@ -266,7 +266,7 @@ extension ScanViewController: BlueSDKDelegate {
     func blueSDK(_ sdk: BlueSDKManager, didAuthenticateWithSuccess success: Bool, error: BlueError?) {
         if !success {
             DispatchQueue.main.async { [weak self] in
-                // 认证失败，从设备列表中删除（如果存在）
+                // Authentication failed, remove from device list if exists
                 if let deviceId = self?.pendingBindDevice?.deviceId {
                     DeviceStorage.shared.remove(deviceId: deviceId)
                 }

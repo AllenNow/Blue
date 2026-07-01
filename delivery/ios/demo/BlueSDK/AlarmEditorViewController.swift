@@ -1,12 +1,12 @@
 // AlarmEditorViewController.swift
-// BlueSDK Example - 闹钟编辑页面
+// BlueSDK Example - Alarm Editor Page
 
 import UIKit
 import BlueSDK
 
 class AlarmEditorViewController: UIViewController {
 
-    // MARK: - 回调
+    // MARK: - Callback
 
     var onSave: ((AlarmSlot) -> Void)?
 
@@ -15,12 +15,12 @@ class AlarmEditorViewController: UIViewController {
     private lazy var timePicker: UIDatePicker = {
         let picker = UIDatePicker()
         picker.datePickerMode = .time
-        // 跟随设备 12/24 小时制设置
+        // Follow device 12/24 hour format setting
         let locale: Locale
         if BlueSDKManager.shared.currentTimeFormat == .hour12 {
             locale = Locale(identifier: "en_US")
         } else {
-            locale = Locale(identifier: "en_GB") // 24 小时制
+            locale = Locale(identifier: "en_GB") // 24-hour format
         }
         picker.locale = locale
         if #available(iOS 13.4, *) {
@@ -64,12 +64,12 @@ class AlarmEditorViewController: UIViewController {
         return btn
     }()
 
-    // MARK: - 状态
+    // MARK: - State
 
     private var slot: AlarmSlot
     private var selectedWeekMask: Int
 
-    // MARK: - 初始化
+    // MARK: - Initialization
 
     init(slot: AlarmSlot) {
         self.slot = slot
@@ -79,7 +79,7 @@ class AlarmEditorViewController: UIViewController {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    // MARK: - 生命周期
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -140,7 +140,7 @@ class AlarmEditorViewController: UIViewController {
     }
 
     private func configureInitialValues() {
-        // 设置时间
+        // Set time
         if slot.isSet {
             var comps = DateComponents()
             comps.hour = slot.hour
@@ -149,7 +149,7 @@ class AlarmEditorViewController: UIViewController {
                 timePicker.date = date
             }
         }
-        // 设置周按钮状态
+        // Set week button states
         updateWeekButtons()
     }
 
@@ -161,11 +161,11 @@ class AlarmEditorViewController: UIViewController {
         }
     }
 
-    // MARK: - 操作
+    // MARK: - Actions
 
     @objc private func weekTapped(_ sender: UIButton) {
         selectedWeekMask ^= (1 << sender.tag)
-        if selectedWeekMask == 0 { selectedWeekMask = (1 << sender.tag) } // 至少选一天
+        if selectedWeekMask == 0 { selectedWeekMask = (1 << sender.tag) } // At least one day must be selected
         updateWeekButtons()
     }
 

@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import java.util.Locale
 
 /**
- * 常见问题页面 — 列表 + 搜索 + 点击进入详情 + 中英双语
+ * FAQ page — list + search + click to detail + multilingual
  */
 class FAQActivity : AppCompatActivity() {
 
@@ -347,7 +347,7 @@ Nach dem Wechsel:
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(Color.BLACK)
         }
-        // 搜索框
+        // Search input
         val searchInput = EditText(this).apply {
             hint = S.searchPlaceholder
             setTextColor(Color.WHITE); setHintTextColor(Color.GRAY); textSize = 14f

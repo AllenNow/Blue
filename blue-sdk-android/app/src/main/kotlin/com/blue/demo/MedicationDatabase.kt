@@ -9,7 +9,7 @@ class MedicationDatabase private constructor(context: Context) : SQLiteOpenHelpe
 
     companion object {
         private const val DB_NAME = "medication.db"
-        private const val DB_VERSION = 2  // v2: 增加 alarmHour, alarmMinute 列
+        private const val DB_VERSION = 2  // v2: added alarmHour, alarmMinute columns
 
         @Volatile
         private var instance: MedicationDatabase? = null
@@ -42,8 +42,8 @@ class MedicationDatabase private constructor(context: Context) : SQLiteOpenHelpe
     }
 
     fun insert(timestamp: Long, alarmIndex: Int, alarmHour: Int, alarmMinute: Int, status: Int) {
-        // 去重：完全相同的 alarmIndex + timestamp + status 不重复入库
-        // timestamp 已精确到毫秒，同一帧重复解析才会命中
+        // Deduplication: same alarmIndex + timestamp + status not stored again
+        // timestamp is millisecond-precise, only hits on duplicate parsing of same frame
         val cursor = readableDatabase.query("records", arrayOf("id"),
             "alarmIndex = ? AND timestamp = ? AND status = ?",
             arrayOf(alarmIndex.toString(), timestamp.toString(), status.toString()),

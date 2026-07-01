@@ -12,7 +12,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 
 /**
- * FAQ 详情页 — 显示问题解答
+ * FAQ detail page — shows question and answer
  */
 class FAQDetailActivity : AppCompatActivity() {
 
@@ -37,7 +37,7 @@ class FAQDetailActivity : AppCompatActivity() {
             setPadding(dp(20), dp(20), dp(20), dp(40))
         }
 
-        // 问题标题
+        // Question title
         content.addView(TextView(this).apply {
             text = question
             setTextColor(Color.WHITE)
@@ -45,7 +45,7 @@ class FAQDetailActivity : AppCompatActivity() {
             typeface = Typeface.DEFAULT_BOLD
         })
 
-        // 分类标签
+        // Category label
         content.addView(TextView(this).apply {
             text = category
             setTextColor(Color.GRAY)
@@ -53,13 +53,13 @@ class FAQDetailActivity : AppCompatActivity() {
             setPadding(0, dp(8), 0, dp(16))
         })
 
-        // 分隔线
+        // Divider
         content.addView(View(this).apply {
             setBackgroundColor(Color.parseColor("#3A3A3C"))
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(1)).apply { bottomMargin = dp(16) }
         })
 
-        // 解答内容
+        // Answer content
         content.addView(TextView(this).apply {
             text = answer
             setTextColor(Color.parseColor("#E5E5E7"))

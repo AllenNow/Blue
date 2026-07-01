@@ -1,22 +1,22 @@
 // ProtocolTestViewController.swift
-// BlueSDK Example - 协议指令自动化验证页面
-// 逐条执行所有 BLE 协议指令，成功 ✅ / 失败 ❌ 并中断测试
+// BlueSDK Example - Protocol Command Automated Verification Page
+// Executes all BLE protocol commands sequentially, pass ✅ / fail ❌ and skip on failure
 
 import UIKit
 import BlueSDK
 
-/// 单条测试用例
+/// Single test case
 struct TestCase {
     let name: String
     let execute: (@escaping (Result<String, Error>) -> Void) -> Void
 }
 
-/// 测试结果
+/// Test result
 enum TestResult {
     case pending
     case running
-    case passed(String)  // 附加信息
-    case failed(String)  // 错误信息
+    case passed(String)  // Additional info
+    case failed(String)  // Error message
 }
 
 class ProtocolTestViewController: UIViewController {
@@ -55,7 +55,7 @@ class ProtocolTestViewController: UIViewController {
         return label
     }()
 
-    // MARK: - 状态
+    // MARK: - State
 
     private var testCases: [TestCase] = []
     private var results: [TestResult] = []
@@ -73,7 +73,7 @@ class ProtocolTestViewController: UIViewController {
         return tv
     }()
 
-    // MARK: - 生命周期
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -83,10 +83,10 @@ class ProtocolTestViewController: UIViewController {
         buildTestCases()
         results = Array(repeating: .pending, count: testCases.count)
 
-        // 监听 SDK 日志，显示收发数据
+        // Listen to SDK logs, show send/receive data
         BlueSDKManager.shared.setLogHandler { [weak self] level, tag, message in
             print("[BlueSDK][\(level)][\(tag)] \(message)")
-            // 只显示收发帧和关键信息
+            // Only show send/receive frames and key information
             if message.contains("TX:") || message.contains("RX:") ||
                message.contains("收到数据") || message.contains("发送帧") ||
                message.contains("auth") || message.contains("Auth") ||
@@ -98,7 +98,7 @@ class ProtocolTestViewController: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        // 恢复主页的 logHandler
+        // Restore main page logHandler
         BlueSDKManager.shared.setLogHandler(nil)
     }
 
@@ -143,12 +143,12 @@ class ProtocolTestViewController: UIViewController {
         }
     }
 
-    // MARK: - 构建测试用例
+    // MARK: - Build Test Cases
 
     private func buildTestCases() {
         testCases = [
-            // 1. 查询设备信息
-            TestCase(name: "查询设备信息 (CMD=0x01)") { completion in
+            // 1. Query device info
+            TestCase(name: "Query Device Info (CMD=0x01)") { completion in
                 BlueSDKManager.shared.queryDeviceInfo { result in
                     switch result {
                     case .success(let info):
@@ -159,143 +159,143 @@ class ProtocolTestViewController: UIViewController {
                 }
             },
 
-            // 2. 时间同步
-            TestCase(name: "同步时间 (CMD=0xE1)") { completion in
+            // 2. Sync time
+            TestCase(name: "Sync Time (CMD=0xE1)") { completion in
                 BlueSDKManager.shared.syncTime { result in
                     switch result {
-                    case .success: completion(.success("已下发"))
+                    case .success: completion(.success("Sent"))
                     case .failure(let error): completion(.failure(error))
                     }
                 }
             },
 
-            // 3. 设置闹钟1
-            TestCase(name: "设置闹钟1 08:00 (DPID=0x66)") { completion in
+            // 3. Set alarm 1
+            TestCase(name: "Set Alarm 1 08:00 (DPID=0x66)") { completion in
                 BlueSDKManager.shared.setAlarm(index: 1, hour: 8, minute: 0, days: .all) { result in
                     switch result {
-                    case .success(let a): completion(.success("\(String(format: "%02d:%02d", a.hour, a.minute)) 每天"))
+                    case .success(let a): completion(.success("\(String(format: "%02d:%02d", a.hour, a.minute)) Daily"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
             },
 
-            // 4. 设置闹钟2
-            TestCase(name: "设置闹钟2 12:30 (DPID=0x67)") { completion in
+            // 4. Set alarm 2
+            TestCase(name: "Set Alarm 2 12:30 (DPID=0x67)") { completion in
                 BlueSDKManager.shared.setAlarm(index: 2, hour: 12, minute: 30, days: .weekdays) { result in
                     switch result {
-                    case .success(let a): completion(.success("\(String(format: "%02d:%02d", a.hour, a.minute)) 工作日"))
+                    case .success(let a): completion(.success("\(String(format: "%02d:%02d", a.hour, a.minute)) Weekdays"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
             },
 
-            // 5. 删除闹钟2
-            TestCase(name: "删除闹钟2 (DPID=0x67 FF)") { completion in
+            // 5. Delete alarm 2
+            TestCase(name: "Delete Alarm 2 (DPID=0x67 FF)") { completion in
                 BlueSDKManager.shared.deleteAlarm(index: 2) { result in
                     switch result {
-                    case .success: completion(.success("已删除"))
+                    case .success: completion(.success("Deleted"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
             },
 
-            // 6. 设置铃声类型A
-            TestCase(name: "设置铃声-类型A (DPID=0x6F val=01)") { completion in
+            // 6. Set sound type A
+            TestCase(name: "Set Sound Type A (DPID=0x6F val=01)") { completion in
                 BlueSDKManager.shared.setSoundType(.typeA) { result in
                     switch result {
-                    case .success: completion(.success("类型A"))
+                    case .success: completion(.success("Type A"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
             },
 
-            // 7. 设置铃声类型B
-            TestCase(name: "设置铃声-类型B (DPID=0x6F val=02)") { completion in
+            // 7. Set sound type B
+            TestCase(name: "Set Sound Type B (DPID=0x6F val=02)") { completion in
                 BlueSDKManager.shared.setSoundType(.typeB) { result in
                     switch result {
-                    case .success: completion(.success("类型B"))
+                    case .success: completion(.success("Type B"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
             },
 
-            // 8. 设置时间格式24H
-            TestCase(name: "设置时间格式-24H (DPID=0x73 val=01)") { completion in
+            // 8. Set time format 24H
+            TestCase(name: "Set Time Format 24H (DPID=0x73 val=01)") { completion in
                 BlueSDKManager.shared.setTimeFormat(.hour24) { result in
                     switch result {
-                    case .success: completion(.success("24小时制"))
+                    case .success: completion(.success("24-hour"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
             },
 
-            // 9. 设置时间格式12H
-            TestCase(name: "设置时间格式-12H (DPID=0x73 val=00)") { completion in
+            // 9. Set time format 12H
+            TestCase(name: "Set Time Format 12H (DPID=0x73 val=00)") { completion in
                 BlueSDKManager.shared.setTimeFormat(.hour12) { result in
                     switch result {
-                    case .success: completion(.success("12小时制"))
+                    case .success: completion(.success("12-hour"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
             },
 
-            // 10. 清空所有闹钟
-            TestCase(name: "清空所有闹钟 (DPID=0x70)") { completion in
+            // 10. Clear all alarms
+            TestCase(name: "Clear All Alarms (DPID=0x70)") { completion in
                 BlueSDKManager.shared.clearAllAlarms { result in
                     switch result {
-                    case .success: completion(.success("已清空"))
+                    case .success: completion(.success("Cleared"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
             },
 
-            // --- 以下指令低电模式可能失败 ---
+            // --- Commands below may fail in low-power mode ---
 
-            // 11. 设置音量-低
-            TestCase(name: "⚡设置音量-低 (DPID=0x6E val=01)") { completion in
+            // 11. Set volume low
+            TestCase(name: "⚡Set Volume Low (DPID=0x6E val=01)") { completion in
                 BlueSDKManager.shared.setVolume(.low) { result in
                     switch result {
-                    case .success: completion(.success("低音量"))
+                    case .success: completion(.success("Low"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
             },
 
-            // 12. 设置音量-高
-            TestCase(name: "⚡设置音量-高 (DPID=0x6E val=03)") { completion in
+            // 12. Set volume high
+            TestCase(name: "⚡Set Volume High (DPID=0x6E val=03)") { completion in
                 BlueSDKManager.shared.setVolume(.high) { result in
                     switch result {
-                    case .success: completion(.success("高音量"))
+                    case .success: completion(.success("High"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
             },
 
-            // 13. 静音开
-            TestCase(name: "⚡静音开 (DPID=0x74 val=01)") { completion in
+            // 13. Silence on
+            TestCase(name: "⚡Silence On (DPID=0x74 val=01)") { completion in
                 BlueSDKManager.shared.setSilence(true) { result in
                     switch result {
-                    case .success: completion(.success("静音已开"))
+                    case .success: completion(.success("Silence on"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
             },
 
-            // 14. 静音关
-            TestCase(name: "⚡静音关 (DPID=0x74 val=00)") { completion in
+            // 14. Silence off
+            TestCase(name: "⚡Silence Off (DPID=0x74 val=00)") { completion in
                 BlueSDKManager.shared.setSilence(false) { result in
                     switch result {
-                    case .success: completion(.success("静音已关"))
+                    case .success: completion(.success("Silence off"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
             },
 
-            // 15. 设置提醒持续时间
-            TestCase(name: "⚡提醒持续时间5分钟 (DPID=0x70)") { completion in
+            // 15. Set alert duration
+            TestCase(name: "⚡Alert Duration 5min (DPID=0x70)") { completion in
                 BlueSDKManager.shared.setAlertDuration(5) { result in
                     switch result {
-                    case .success: completion(.success("5分钟"))
+                    case .success: completion(.success("5 min"))
                     case .failure(let e): completion(.failure(e))
                     }
                 }
@@ -303,7 +303,7 @@ class ProtocolTestViewController: UIViewController {
         ]
     }
 
-    // MARK: - 测试执行
+    // MARK: - Test Execution
 
     @objc private func startTests() {
         guard !isRunning else { return }
@@ -328,7 +328,7 @@ class ProtocolTestViewController: UIViewController {
         tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
         scrollToRow(index)
 
-        // 每条测试之间间隔 0.5 秒
+        // 0.5 second interval between tests
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             guard let self = self else { return }
             self.testCases[index].execute { [weak self] result in
@@ -344,7 +344,7 @@ class ProtocolTestViewController: UIViewController {
                     case .failure(let error):
                         self.results[index] = .failed(error.localizedDescription)
                         self.tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
-                        // 失败跳过，继续下一条
+                        // Failed, skip and continue to next
                         self.currentIndex += 1
                         self.statusLabel.text = "[\(index + 1)/\(self.testCases.count)] \(self.testCases[index].name) ❌ \(S.testSkipped)"
                         self.statusLabel.textColor = .systemOrange

@@ -1,6 +1,6 @@
 // FAQViewController.swift
-// BlueSDK Example - 常见问题页面
-// 列表 + 搜索 + 点击进入详情 + 中英双语
+// BlueSDK Example - FAQ Page
+// List + search + tap for details + multilingual
 
 import UIKit
 
@@ -42,9 +42,9 @@ struct FAQItem {
 enum FAQLocale {
     enum Lang { case zh, en, de }
     static var lang: Lang {
-        let l = Locale.preferredLanguages.first ?? "en"
-        if l.hasPrefix("zh") { return .zh }
-        if l.hasPrefix("de") { return .de }
+        // Follow app language setting (DemoStrings/S), not system locale
+        if S.isDe { return .de }
+        if S.isZh { return .zh }
         return .en
     }
     static var isZh: Bool { lang == .zh }
@@ -80,7 +80,7 @@ enum FAQLocale {
 
 class FAQViewController: UIViewController {
 
-    // MARK: - 数据
+    // MARK: - Data
 
     private let allItems: [FAQItem] = [
         FAQItem(
@@ -116,6 +116,7 @@ class FAQViewController: UIViewController {
         FAQItem(
             questionZh: "认证失败是什么原因？",
             questionEn: "Why does authentication fail?",
+            questionDe: "Warum schlägt die Authentifizierung fehl?",
             answerZh: """
             认证失败通常有以下原因：
 
@@ -140,11 +141,24 @@ class FAQViewController: UIViewController {
             3. Firmware version incompatibility
                → Solution: Check version via queryDeviceInfo()
             """,
+            answerDe: """
+            Häufige Ursachen:
+
+            1. Gerät ist bereits mit einem anderen Handy gekoppelt
+               → Lösung: Werksreset durchführen, dann clearBinding() aufrufen
+
+            2. fixedAuthKey ist falsch
+               → Lösung: Stellen Sie sicher, dass es ein 4-stelliger Hex-String ist (z. B. "05FA"), oder setzen Sie nil für automatische Berechnung
+
+            3. Firmware-Version inkompatibel
+               → Lösung: Version über queryDeviceInfo() prüfen
+            """,
             category: "连接 / Connection"),
 
         FAQItem(
             questionZh: "连接后自动断开是怎么回事？",
             questionEn: "Why does it disconnect automatically after connecting?",
+            questionDe: "Warum trennt sich die Verbindung nach dem Verbinden automatisch?",
             answerZh: """
             常见原因：
             1. 认证失败后 SDK 会自动断开（查看 onAuthResult 回调）
@@ -163,11 +177,21 @@ class FAQViewController: UIViewController {
 
             SDK will auto-reconnect (up to 5 times, delays 2s/4s/8s). Monitor via onReconnecting callback.
             """,
+            answerDe: """
+            Häufige Ursachen:
+            1. Authentifizierung fehlgeschlagen — SDK trennt automatisch (prüfen Sie onAuthResult)
+            2. Niedriger Geräteakku
+            3. Entfernung zu groß (>3 m) oder Hindernisse
+            4. iOS hat die Hintergrundverbindung beendet
+
+            SDK verbindet automatisch erneut (bis zu 5 Mal, Verzögerungen 2s/4s/8s). Überwachung über onReconnecting Callback.
+            """,
             category: "连接 / Connection"),
 
         FAQItem(
             questionZh: "如何在后台保持连接？",
             questionEn: "How to maintain connection in background?",
+            questionDe: "Wie kann die Verbindung im Hintergrund aufrechterhalten werden?",
             answerZh: """
             iOS 后台 BLE 连接需要：
             1. 在 Info.plist 的 UIBackgroundModes 中添加 bluetooth-central
@@ -182,11 +206,19 @@ class FAQViewController: UIViewController {
 
             Note: Even with background modes, the system may terminate connections under memory pressure.
             """,
+            answerDe: """
+            iOS-Hintergrund-BLE erfordert:
+            1. bluetooth-central zu UIBackgroundModes in Info.plist hinzufügen
+            2. Core Bluetooth State Preservation and Restoration verwenden
+
+            Hinweis: Auch mit Hintergrundmodi kann das System Verbindungen bei Speicherdruck beenden.
+            """,
             category: "连接 / Connection"),
 
         FAQItem(
             questionZh: "最多能设置几个闹钟？",
             questionEn: "How many alarms can be set?",
+            questionDe: "Wie viele Alarme können eingestellt werden?",
             answerZh: """
             LX-PD02 支持最多 7 个闹钟槽位（index 1~7）。
             每个可独立设置时间和重复周期（WeekDays）。
@@ -197,11 +229,17 @@ class FAQViewController: UIViewController {
             Each can have independent time and repeat schedule (WeekDays).
             Use setAlarm() to set, deleteAlarm() to remove, clearAllAlarms() to clear all.
             """,
+            answerDe: """
+            LX-PD02 unterstützt bis zu 7 Alarm-Slots (Index 1~7).
+            Jeder kann eine unabhängige Zeit und einen Wiederholungsplan (WeekDays) haben.
+            Verwenden Sie setAlarm() zum Einstellen, deleteAlarm() zum Entfernen, clearAllAlarms() zum Löschen aller.
+            """,
             category: "闹钟 / Alarm"),
 
         FAQItem(
             questionZh: "批量设置闹钟会覆盖已有的吗？",
             questionEn: "Does batch setting overwrite existing alarms?",
+            questionDe: "Überschreibt die Stapeleinstellung vorhandene Alarme?",
             answerZh: """
             是的。setAlarms() 按索引逐个设置，已有闹钟会被覆盖。
             如果只想追加，先通过 queryAlarm(index:) 查询空闲槽位（isDeleted=true）。
@@ -210,11 +248,16 @@ class FAQViewController: UIViewController {
             Yes. setAlarms() sets each by index, overwriting existing ones.
             To append only, first query free slots via queryAlarm(index:) where isDeleted=true.
             """,
+            answerDe: """
+            Ja. setAlarms() setzt jeden nach Index und überschreibt vorhandene.
+            Um nur hinzuzufügen, fragen Sie zuerst freie Slots über queryAlarm(index:) ab, bei denen isDeleted=true ist.
+            """,
             category: "闹钟 / Alarm"),
 
         FAQItem(
             questionZh: "用药事件有哪几种状态？",
             questionEn: "What medication event statuses are there?",
+            questionDe: "Welche Medikamentenereignis-Status gibt es?",
             answerZh: """
             MedicationStatus 有 4 种：
             • TAKEN (0x01) — 按时取药
@@ -233,11 +276,21 @@ class FAQViewController: UIViewController {
 
             Received via onMedicationResult and onMedicationRecordReported callbacks.
             """,
+            answerDe: """
+            MedicationStatus hat 4 Typen:
+            • TAKEN (0x01) — Pünktlich eingenommen
+            • TIMEOUT (0x02) — Verspätet eingenommen
+            • MISSED (0x03) — Dosis versäumt
+            • EARLY (0x04) — Vorzeitig eingenommen
+
+            Empfang über onMedicationResult und onMedicationRecordReported Callbacks.
+            """,
             category: "用药 / Medication"),
 
         FAQItem(
             questionZh: "设备断线后用药记录会丢失吗？",
             questionEn: "Will medication records be lost after disconnection?",
+            questionDe: "Gehen Medikamentenaufzeichnungen nach einer Trennung verloren?",
             answerZh: """
             不会。设备会在本地缓存记录。
             下次连接后设备会自动上报，SDK 通过 onMedicationRecordReported 通知。
@@ -248,11 +301,17 @@ class FAQViewController: UIViewController {
             After reconnection, the device auto-reports them via onMedicationRecordReported.
             Recommend using SQLite for persistent storage in your app.
             """,
+            answerDe: """
+            Nein. Das Gerät speichert Aufzeichnungen lokal zwischen.
+            Nach erneuter Verbindung meldet das Gerät diese automatisch über onMedicationRecordReported.
+            Es wird empfohlen, SQLite für die persistente Speicherung in Ihrer App zu verwenden.
+            """,
             category: "用药 / Medication"),
 
         FAQItem(
             questionZh: "铃声和静音是什么关系？",
             questionEn: "What's the relationship between sound type and silence?",
+            questionDe: "Was ist der Zusammenhang zwischen Klingeltontyp und Stummschaltung?",
             answerZh: """
             静音通过设置铃声类型为 MUTE(0x00) 实现。
             • setSilence(true) = setSoundType(.mute)
@@ -265,11 +324,18 @@ class FAQViewController: UIViewController {
             • setSilence(false) = setSoundType(.typeA)
             They're the same thing; setSilence is just a convenience method.
             """,
+            answerDe: """
+            Stummschaltung wird durch Setzen des Klingeltontyps auf MUTE(0x00) umgesetzt.
+            • setSilence(true) = setSoundType(.mute)
+            • setSilence(false) = setSoundType(.typeA)
+            Beides ist identisch; setSilence ist lediglich eine Hilfsmethode.
+            """,
             category: "音频 / Audio"),
 
         FAQItem(
             questionZh: "多个指令可以连续调用吗？",
             questionEn: "Can multiple commands be called consecutively?",
+            questionDe: "Können mehrere Befehle nacheinander aufgerufen werden?",
             answerZh: """
             可以。SDK 内部 CommandQueue 自动串行排队。
             • 同时只有一条指令在等待应答
@@ -282,11 +348,18 @@ class FAQViewController: UIViewController {
             • Minimum 200ms interval between commands
             • 5-second timeout with up to 3 retries
             """,
+            answerDe: """
+            Ja. Die interne CommandQueue verarbeitet die serielle Warteschlange automatisch.
+            • Es wartet jeweils nur ein Befehl auf eine Antwort
+            • Mindestens 200 ms Abstand zwischen Befehlen
+            • 5-Sekunden-Timeout mit bis zu 3 Wiederholungsversuchen
+            """,
             category: "SDK"),
 
         FAQItem(
             questionZh: "SDK 初始化耗时多久？",
             questionEn: "How long does SDK initialization take?",
+            questionDe: "Wie lange dauert die SDK-Initialisierung?",
             answerZh: """
             initialize() 耗时极短（< 100ms），仅做内存初始化，不涉及 BLE 操作。
             建议在 AppDelegate 中调用一次。
@@ -295,11 +368,16 @@ class FAQViewController: UIViewController {
             initialize() is very fast (<100ms), only memory initialization, no BLE operations.
             Recommended to call once in AppDelegate.
             """,
+            answerDe: """
+            initialize() ist sehr schnell (<100 ms), nur Speicherinitialisierung, keine BLE-Operationen.
+            Es wird empfohlen, dies einmal in AppDelegate aufzurufen.
+            """,
             category: "SDK"),
 
         FAQItem(
             questionZh: "如何调试 BLE 通信问题？",
             questionEn: "How to debug BLE communication issues?",
+            questionDe: "Wie können BLE-Kommunikationsprobleme debuggt werden?",
             answerZh: """
             1. 开启 DEBUG 日志：setLogLevel(.debug)
             2. 自定义处理器：setLogHandler { ... }
@@ -312,11 +390,18 @@ class FAQViewController: UIViewController {
             3. Export logs: exportLog() — last 1000 entries
             4. Use the "Protocol Test" page for automated testing
             """,
+            answerDe: """
+            1. DEBUG-Protokolle aktivieren: setLogLevel(.debug)
+            2. Benutzerdefinierter Handler: setLogHandler { ... }
+            3. Protokolle exportieren: exportLog() — letzte 1000 Einträge
+            4. Verwenden Sie die Seite „Protokolltest" für automatisierte Tests
+            """,
             category: "SDK"),
 
         FAQItem(
             questionZh: "恢复出厂设置后需要做什么？",
             questionEn: "What to do after factory reset?",
+            questionDe: "Was ist nach einem Werksreset zu tun?",
             answerZh: """
             设备恢复出厂后：
             1. 设备断开蓝牙连接
@@ -332,6 +417,14 @@ class FAQViewController: UIViewController {
             3. Call clearBinding() to clear local keys
             4. Re-scan and connect (SDK generates new phoneMac)
             Note: This operation is irreversible.
+            """,
+            answerDe: """
+            Nach dem Werksreset:
+            1. Gerät trennt die Bluetooth-Verbindung
+            2. Gerät löscht alle Alarme und Kopplungsinformationen
+            3. Rufen Sie clearBinding() auf, um lokale Schlüssel zu löschen
+            4. Erneut scannen und verbinden (SDK generiert neuen phoneMac)
+            Hinweis: Dieser Vorgang ist nicht umkehrbar.
             """,
             category: "设备 / Device"),
     ]
@@ -438,7 +531,7 @@ extension FAQViewController: UISearchBarDelegate {
     }
 }
 
-// MARK: - 详情页
+// MARK: - Detail Page
 
 class FAQDetailViewController: UIViewController {
     private let item: FAQItem

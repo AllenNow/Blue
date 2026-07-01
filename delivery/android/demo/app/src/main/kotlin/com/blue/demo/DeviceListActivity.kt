@@ -1,6 +1,6 @@
 // DeviceListActivity.kt
-// BlueSDK Demo - 设备列表主页
-// 展示已绑定设备，进入时自动扫描更新在线状态
+// BlueSDK Demo - Device list main page
+// Shows bound devices, auto-scans on entry to update online status
 
 package com.blue.demo
 
@@ -34,12 +34,12 @@ import com.blue.sdk.error.BlueError
 import com.blue.sdk.model.ScannedDevice
 
 /**
- * 设备列表页 — Demo 主入口
- * 展示已绑定设备列表，进入时自动扫描 5 秒更新在线状态
+ * Device list page — Demo main entry
+ * Shows bound device list, auto-scans for 5 seconds on entry to update online status
  */
 class DeviceListActivity : AppCompatActivity() {
 
-    // 主题色
+    // Theme colors
     private val bgDark = Color.parseColor("#1C1C1E")
     private val bgCard = Color.parseColor("#2C2C2E")
     private val textWhite = Color.WHITE
@@ -55,20 +55,20 @@ class DeviceListActivity : AppCompatActivity() {
 
     private val sdk get() = BlueSDKManager.getInstance(this)
 
-    // 运行时在线状态
+    // Runtime online status
     private val onlineDevices = mutableSetOf<String>()
     private val rssiMap = mutableMapOf<String, Int>()
     private var isScanning = false
-    /** 当前已连接的设备 ID（跟踪连接状态用） */
+    /** Currently connected device ID (for tracking connection state) */
     private var connectedDeviceId: String? = null
-    /** 用户是否主动断开（主动断开不触发自动重连） */
+    /** Whether user manually disconnected (manual disconnect does not trigger auto-reconnect) */
     private var isUserDisconnect = false
 
-    // SDK 监听器 — 监听连接状态变化
+    // SDK listener — monitor connection state changes
     private val sdkListener = object : BlueSDKListener {
         override fun onConnectionStateChanged(state: ConnectionState) {
             if (state == ConnectionState.AUTHENTICATED) {
-                // 连接认证成功，跳转控制页（防止重复跳转）
+                // Connection authenticated, navigate to control page (prevent duplicate navigation)
                 val device = pendingConnectDevice ?: return
                 pendingConnectDevice = null
                 connectedDeviceId = device.deviceId
@@ -84,7 +84,7 @@ class DeviceListActivity : AppCompatActivity() {
             } else if (state == ConnectionState.DISCONNECTED) {
                 connectedDeviceId = null
                 handler.post {
-                    // 主动断开或认证失败不自动重连
+                    // User disconnect or auth failure does not trigger auto-reconnect
                     if (isUserDisconnect) {
                         isUserDisconnect = false
                         pendingConnectDevice = null
@@ -125,7 +125,7 @@ class DeviceListActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 首次启动时跳转语言选择页
+        // Navigate to language selection on first launch
         if (LanguageActivity.needsLanguageSelection(this)) {
             startActivity(Intent(this, LanguageActivity::class.java))
             finish()
@@ -141,7 +141,7 @@ class DeviceListActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // 同步当前连接状态（从控制页返回时可能仍已连接或已断开）
+        // Sync current connection state (may still be connected or disconnected when returning from control page)
         if (sdk.connectionState != ConnectionState.AUTHENTICATED) {
             connectedDeviceId = null
         }
@@ -152,7 +152,7 @@ class DeviceListActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 200 && resultCode == RESULT_OK) {
-            // 语言已切换，重建 Activity 使 UI 刷新
+            // Language switched, recreate Activity to refresh UI
             recreate()
         }
     }
@@ -174,7 +174,7 @@ class DeviceListActivity : AppCompatActivity() {
             layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         }
 
-        // 顶部标题栏
+        // Top title bar
         val titleBar = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -198,7 +198,7 @@ class DeviceListActivity : AppCompatActivity() {
         }
         titleBar.addView(scanIndicator)
 
-        // 语言切换按钮
+        // Language switch button
         val langBtn = TextView(this).apply {
             text = "🌐"
             textSize = 20f
@@ -215,7 +215,7 @@ class DeviceListActivity : AppCompatActivity() {
         }
         titleBar.addView(langBtn)
 
-        // FAQ 按钮
+        // FAQ button
         val faqBtn = TextView(this).apply {
             text = "❓"
             textSize = 18f
@@ -227,7 +227,7 @@ class DeviceListActivity : AppCompatActivity() {
         }
         titleBar.addView(faqBtn)
 
-        // 添加按钮
+        // Add button
         val addBtn = TextView(this).apply {
             text = "＋"
             setTextColor(accentBlue)
@@ -242,13 +242,13 @@ class DeviceListActivity : AppCompatActivity() {
         titleBar.addView(addBtn)
         mainLayout.addView(titleBar)
 
-        // 分割线
+        // Divider
         mainLayout.addView(View(this).apply {
             setBackgroundColor(Color.parseColor("#3A3A3C"))
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(1))
         })
 
-        // 设备列表滚动区
+        // Device list scroll area
         val scrollView = ScrollView(this).apply {
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f)
         }
@@ -259,7 +259,7 @@ class DeviceListActivity : AppCompatActivity() {
         }
         scrollView.addView(deviceListContainer)
 
-        // 空态视图
+        // Empty state view
         emptyView = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
@@ -289,7 +289,7 @@ class DeviceListActivity : AppCompatActivity() {
 
         mainLayout.addView(scrollView)
 
-        // 底部版本号
+        // Bottom version number
         mainLayout.addView(TextView(this).apply {
             text = try { "v${packageManager.getPackageInfo(packageName, 0).versionName}" } catch (e: Exception) { "" }
             setTextColor(Color.parseColor("#3A3A3C"))
@@ -300,12 +300,12 @@ class DeviceListActivity : AppCompatActivity() {
 
         root.addView(mainLayout)
 
-        // Loading 遮罩
+        // Loading overlay
         loadingOverlay = FrameLayout(this).apply {
             setBackgroundColor(Color.parseColor("#66000000"))
             visibility = View.GONE
             layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-            setOnClickListener { /* 拦截点击 */ }
+            setOnClickListener { /* Intercept clicks */ }
 
             val card = LinearLayout(this@DeviceListActivity).apply {
                 orientation = LinearLayout.VERTICAL
@@ -357,10 +357,10 @@ class DeviceListActivity : AppCompatActivity() {
         for (device in devices) {
             val isConnected = sdk.connectionState == ConnectionState.AUTHENTICATED &&
                     connectedDeviceId == device.deviceId
-            // 已连接的设备视为在线
+            // Connected device is considered online
             val isOnline = isConnected || onlineDevices.contains(device.deviceId)
             deviceListContainer.addView(buildDeviceCard(device, isOnline, isConnected))
-            // 间距
+            // Spacer
             deviceListContainer.addView(View(this).apply {
                 layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, dp(8))
             })
@@ -381,7 +381,7 @@ class DeviceListActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
         }
 
-        // 第一行：设备名称 + 状态标签
+        // Row 1: device name + status badge
         val row1 = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -395,7 +395,7 @@ class DeviceListActivity : AppCompatActivity() {
             layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f)
         })
 
-        // 状态标签
+        // Status badge
         val statusText: String
         val statusColor: Int
         when {
@@ -423,7 +423,7 @@ class DeviceListActivity : AppCompatActivity() {
 
         card.addView(row1)
 
-        // 第二行：MAC 地址 + RSSI
+        // Row 2: MAC address + RSSI
         val row2 = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -453,12 +453,12 @@ class DeviceListActivity : AppCompatActivity() {
 
         card.addView(row2)
 
-        // 点击事件 — 所有设备都允许尝试连接（Android 可通过 MAC 直接连）
+        // Click event — all devices can attempt connection (Android can connect directly via MAC)
         card.setOnClickListener {
             connectDevice(device)
         }
 
-        // 长按删除
+        // Long press to delete
         card.setOnLongClickListener {
             showDeleteDialog(device)
             true
@@ -468,7 +468,7 @@ class DeviceListActivity : AppCompatActivity() {
     }
 
     private fun connectDevice(device: BoundDevice) {
-        // 如果已经连接到该设备，直接跳转
+        // If already connected to this device, navigate directly
         if (sdk.connectionState == ConnectionState.AUTHENTICATED && connectedDeviceId == device.deviceId) {
             val intent = Intent(this, MainActivity::class.java)
             intent.putExtra("device_id", device.deviceId)
@@ -481,17 +481,17 @@ class DeviceListActivity : AppCompatActivity() {
         pendingConnectDevice = device
         showLoading()
 
-        // 如果当前有连接，先断开，等断开回调后再连新设备
+        // If currently connected, disconnect first, wait for callback then connect new device
         if (sdk.connectionState != ConnectionState.DISCONNECTED) {
             sdk.disconnect()
-            // sdkListener 中 DISCONNECTED 会检测 pendingConnectDevice 并自动调用 performConnect
+            // sdkListener DISCONNECTED will check pendingConnectDevice and auto-call performConnect
             return
         }
 
         performConnect(device)
     }
 
-    /** 实际执行连接逻辑 */
+    /** Execute the actual connection logic */
     private fun performConnect(device: BoundDevice) {
         val btManager = getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
         val adapter = btManager?.adapter
@@ -537,7 +537,7 @@ class DeviceListActivity : AppCompatActivity() {
             .setMessage(S.removeDeviceMsg.replace("%@", device.deviceName))
             .setNegativeButton(S.cancel, null)
             .setPositiveButton(S.confirm) { _, _ ->
-                // 如果正在连接该设备，先断开
+                // If currently connecting to this device, disconnect first
                 if (pendingConnectDevice?.deviceId == device.deviceId) {
                     sdk.disconnect()
                     pendingConnectDevice = null
@@ -556,7 +556,7 @@ class DeviceListActivity : AppCompatActivity() {
         loadingOverlay?.visibility = View.GONE
     }
 
-    // MARK: - 扫描逻辑
+    // MARK: - Scan logic
 
     private fun requestPermsAndScan() {
         val perms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
@@ -615,7 +615,7 @@ class DeviceListActivity : AppCompatActivity() {
         }
     }
 
-    // MARK: - 工具方法
+    // MARK: - Utility methods
 
     private fun dp(v: Int) = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), resources.displayMetrics

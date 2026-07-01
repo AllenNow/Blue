@@ -5,9 +5,9 @@ import org.json.JSONObject
 import java.util.Locale
 
 /**
- * Demo App 多语言字符串管理
- * 从 assets/locales/{lang}.json 加载翻译
- * 加新语言只需新增 JSON 文件 + effectiveLang 加一行判断
+ * Demo App multi-language string management
+ * Loads translations from assets/locales/{lang}.json
+ * To add a new language, just add a JSON file + one line in effectiveLang
  */
 object S {
     private var strings: JSONObject = JSONObject()
@@ -17,13 +17,13 @@ object S {
     val isZh: Boolean get() = effectiveLang == "zh"
     val isDe: Boolean get() = effectiveLang == "de"
 
-    /** App 启动时调用，加载翻译文件 */
+    /** Called at app startup to load translation files */
     fun init(context: Context) {
         fallback = loadJson(context, "en")
         reload(context)
     }
 
-    /** 设置用户选择的语言 */
+    /** Set user-selected language */
     fun setUserLanguage(lang: String?, context: Context? = null) {
         userLang = lang
         context?.let { reload(it) }
@@ -52,14 +52,14 @@ object S {
         }
     }
 
-    /** 按 key 取字符串，找不到时用英文兜底，再找不到返回 key 本身 */
+    /** Get string by key, fall back to English, then return key itself if not found */
     operator fun get(key: String): String {
         return strings.optString(key, fallback.optString(key, key))
     }
 
-    // MARK: - 编译期安全属性（调用端保持 S.xxx 不变）
+    // MARK: - Compile-time safe properties (callers keep using S.xxx unchanged)
 
-    // 主页
+    // Main page
     val scan get() = this["scan"]
     val stopScan get() = this["stop_scan"]
     val disconnect get() = this["disconnect"]
@@ -83,7 +83,7 @@ object S {
     val restoreFactory get() = this["restore_factory"]
     val clearBinding get() = this["clear_binding"]
 
-    // 铃声/音量/时制
+    // Sound/Volume/Time format
     val soundType get() = this["sound_type"]
     val volume get() = this["volume"]
     val timeFormat get() = this["time_format"]
@@ -95,11 +95,11 @@ object S {
     val medium get() = this["medium"]
     val high get() = this["high"]
 
-    // 日志
+    // Log
     val log get() = this["log"]
     val clear get() = this["clear"]
 
-    // 对话框
+    // Dialogs
     val cancel get() = this["cancel"]
     val confirm get() = this["confirm"]
     val clearAlarmsTitle get() = this["clear_alarms_title"]
@@ -111,13 +111,13 @@ object S {
     val authFailedTitle get() = this["auth_failed_title"]
     val authFailedMsg get() = this["auth_failed_msg"]
 
-    // 连接状态
+    // Connection status
     val userCancelled get() = this["user_cancelled"]
     val disconnected get() = this["disconnected"]
     val connectFirst get() = this["connect_first"]
     val scanningAuto get() = this["scanning_auto"]
 
-    // 操作日志
+    // Operation logs
     val queryingDevice get() = this["querying_device"]
     val syncingTime get() = this["syncing_time"]
     val timeSynced get() = this["time_synced"]
@@ -130,14 +130,14 @@ object S {
     val scanStopped get() = this["scan_stopped"]
     val found get() = this["found"]
 
-    // 语言选择
+    // Language selection
     val selectLanguage get() = this["select_language"]
     val languageSettings get() = this["language_settings"]
     val langChinese get() = "中文"
     val langEnglish get() = "English"
     val langGerman get() = "Deutsch"
 
-    // 通知
+    // Notifications
     val alarmRingingTitle get() = this["alarm_ringing_title"]
     val alarmRingingMsg get() = this["alarm_ringing_msg"]
     val missedTitle get() = this["missed_title"]
@@ -150,7 +150,7 @@ object S {
     val deviceDisconnectedToast get() = this["device_disconnected_toast"]
     val durationError get() = this["duration_error"]
 
-    // 闹钟管理
+    // Alarm management
     val clearAll get() = this["clear_all"]
     val alarmSlotLabel get() = this["alarm_slot_label"]
     val alarmStatusOn get() = this["alarm_status_on"]
@@ -174,7 +174,7 @@ object S {
         this["weekday_wed"], this["weekday_thu"], this["weekday_fri"], this["weekday_sat"]
     )
 
-    // 设备列表
+    // Device list
     val noBoundDevices get() = this["no_bound_devices"]
     val noBoundDevicesHint get() = this["no_bound_devices_hint"]
     val deviceOnline get() = this["device_online"]
@@ -193,7 +193,7 @@ object S {
     val scanningFixedKey get() = this["scanning_fixed_key"]
     val scanTimeout get() = this["scan_timeout"]
 
-    // 扫描页
+    // Scan page
     val scanDevicesTitle get() = this["scan_devices_title"]
     val searchingNearby get() = this["searching_nearby"]
     val rescan get() = this["rescan"]
@@ -204,7 +204,7 @@ object S {
     val bind get() = this["bind"]
     val bluetoothPermissionRequired get() = this["bluetooth_permission_required"]
 
-    // 用药记录
+    // Medication records
     val byDate get() = this["by_date"]
     val allRecords get() = this["all_records"]
     val legendTaken get() = this["legend_taken"]
@@ -218,7 +218,7 @@ object S {
     val totalRecordsCount get() = this["total_records_count"]
     val dateRecordsCount get() = this["date_records_count"]
 
-    // 协议测试
+    // Protocol test
     val startTest get() = this["start_test"]
     val testing get() = this["testing"]
     val runningProtocolTest get() = this["running_protocol_test"]
@@ -228,7 +228,7 @@ object S {
     val testSummary get() = this["test_summary"]
     val protocolTestHint get() = this["protocol_test_hint"]
 
-    // 调试面板
+    // Debug panel
     val debugPanelTitle get() = this["debug_panel_title"]
     val exportLog get() = this["export_log"]
     val debugInputHint get() = this["debug_input_hint"]
@@ -243,7 +243,7 @@ object S {
     val searchPlaceholder get() = this["search_placeholder"]
     val noMatchingQuestions get() = this["no_matching_questions"]
 
-    // 下一个闹钟 / 用药记录多语言
+    // Next alarm / medication records i18n
     val nextAlarmTitle get() = this["next_alarm_title"]
     val noActiveAlarms get() = this["no_active_alarms"]
     val nextAlarmHoursMins get() = this["next_alarm_hours_mins"]

@@ -1,32 +1,32 @@
 // LanguageViewController.swift
-// BlueSDK Example - 语言选择页面
-// 首次启动时显示，选择后保存到 UserDefaults
-// 也可从设备列表页进入切换语言
+// BlueSDK Example - Language Selection Page
+// Shown on first launch, saves selection to UserDefaults
+// Can also be accessed from device list page to switch language
 
 import UIKit
 import BlueSDK
 
 class LanguageViewController: UIViewController {
 
-    // MARK: - 常量
+    // MARK: - Constants
 
     private static let kLanguageKey = "blue_demo_selected_language"
     private static let kLanguageSet = "blue_demo_language_has_been_set"
 
-    /// 是否从设置页进入（而非首次启动）
+    /// Whether entering from settings page (not first launch)
     var isFromSettings = false
 
-    /// 语言切换后的回调（供设置页使用）
+    /// Callback after language switch (for settings page)
     var onLanguageChanged: (() -> Void)?
 
-    // MARK: - 工具方法
+    // MARK: - Utility Methods
 
-    /// 检查是否需要显示语言选择页（首次启动）
+    /// Check if language selection page needs to be shown (first launch)
     static func needsLanguageSelection() -> Bool {
         return !UserDefaults.standard.bool(forKey: kLanguageSet)
     }
 
-    /// 加载已保存的语言设置并应用到 SDKLocale
+    /// Load saved language settings and apply to SDKLocale
     static func applySavedLanguage() {
         guard let lang = UserDefaults.standard.string(forKey: kLanguageKey) else { return }
         let sdkLang: BlueSDKLanguage
@@ -35,17 +35,17 @@ class LanguageViewController: UIViewController {
         case "de": sdkLang = .de
         default: sdkLang = .en
         }
-        // 通过公开 API 设置语言（SDKLocale.setLanguage 是 internal，外部模块无法直接调用）
+        // Set language via public API (SDKLocale.setLanguage is internal, cannot be called from external modules)
         BlueSDKManager.shared.setLanguage(sdkLang)
     }
 
-    /// 保存语言选择
+    /// Save language selection
     static func saveLanguage(_ langCode: String) {
         UserDefaults.standard.set(langCode, forKey: kLanguageKey)
         UserDefaults.standard.set(true, forKey: kLanguageSet)
-        // 更新 Demo App 字符串
+        // Update Demo App strings
         S.setLanguage(langCode)
-        // 同步 SDK 语言
+        // Sync SDK language
         let sdkLang: BlueSDKLanguage
         switch langCode {
         case "zh": sdkLang = .zh
@@ -70,7 +70,7 @@ class LanguageViewController: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        // pop 时恢复导航栏
+        // Restore navigation bar when popping
         navigationController?.setNavigationBarHidden(false, animated: animated)
     }
 
@@ -87,14 +87,14 @@ class LanguageViewController: UIViewController {
             stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32)
         ])
 
-        // 图标
+        // Icon
         let icon = UILabel()
         icon.text = "🌐"
         icon.font = .systemFont(ofSize: 48)
         icon.textAlignment = .center
         stack.addArrangedSubview(icon)
 
-        // 标题
+        // Title
         let title = UILabel()
         title.text = "Select Language\n选择语言\nSprache wählen"
         title.font = .boldSystemFont(ofSize: 20)
@@ -107,7 +107,7 @@ class LanguageViewController: UIViewController {
         spacer.heightAnchor.constraint(equalToConstant: 24).isActive = true
         stack.addArrangedSubview(spacer)
 
-        // 语言按钮
+        // Language buttons
         stack.addArrangedSubview(makeButton(title: "中文", langCode: "zh"))
         stack.addArrangedSubview(makeButton(title: "English", langCode: "en"))
         stack.addArrangedSubview(makeButton(title: "Deutsch", langCode: "de"))
@@ -121,7 +121,7 @@ class LanguageViewController: UIViewController {
         btn.contentHorizontalAlignment = .leading
         btn.backgroundColor = bgCard
         btn.layer.cornerRadius = 12
-        // iOS 15+ 使用 configuration，低版本用 contentEdgeInsets
+        // iOS 15+ uses configuration, lower versions use contentEdgeInsets
         if #available(iOS 15.0, *) {
             var config = UIButton.Configuration.plain()
             config.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20)
@@ -145,7 +145,7 @@ class LanguageViewController: UIViewController {
             onLanguageChanged?()
             navigationController?.popViewController(animated: true)
         } else {
-            // 首次启动，跳转到设备列表页
+            // First launch, navigate to device list page
             let nav = UINavigationController(rootViewController: DeviceListViewController())
             nav.modalPresentationStyle = .fullScreen
             if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,

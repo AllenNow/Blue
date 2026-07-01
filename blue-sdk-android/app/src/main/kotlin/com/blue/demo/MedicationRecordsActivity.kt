@@ -94,7 +94,7 @@ class MedicationRecordsActivity : AppCompatActivity() {
         }
         root.addView(segmentControl)
 
-        // 状态图例
+        // Status legend
         val legendLayout = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
@@ -135,7 +135,7 @@ class MedicationRecordsActivity : AppCompatActivity() {
         }
         root.addView(summaryLabel)
 
-        // 标题说明
+        // Title description
         root.addView(TextView(this).apply {
             text = S.scheduledVsActual
             textSize = 12f

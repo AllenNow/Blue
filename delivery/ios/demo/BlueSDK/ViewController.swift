@@ -1,6 +1,6 @@
 // ViewController.swift
-// BlueSDK Example - LX-PD02 智能药盒 SDK 集成演示
-// 紧凑单页布局，SnapKit 约束，适配 Dark/Light Mode
+// BlueSDK Example - LX-PD02 Smart Pill Box SDK Integration Demo
+// Compact single-page layout, SnapKit constraints, adapts Dark/Light Mode
 
 import UIKit
 import BlueSDK
@@ -9,14 +9,14 @@ import UserNotifications
 
 class ViewController: UIViewController {
 
-    // MARK: - 从设备列表传入的设备信息
+    // MARK: - Device info passed from device list
 
     var deviceId: String?
     var deviceName: String?
-    /// 是否从设备列表页进入（新流程）
+    /// Whether entered from device list page (new flow)
     private var isFromDeviceList: Bool { deviceId != nil }
 
-    // MARK: - 连接状态区
+    // MARK: - Connection Status Area
 
     private let statusDot = UIView()
     private let statusLabel = UILabel()
@@ -25,7 +25,7 @@ class ViewController: UIViewController {
     private let loadingIndicator = UIActivityIndicatorView()
     private let phoneMacField = UITextField()
 
-    // MARK: - 全屏 Loading 遮罩
+    // MARK: - Full-screen Loading Overlay
 
     private lazy var loadingOverlay: UIView = {
         let overlay = UIView()
@@ -78,7 +78,7 @@ class ViewController: UIViewController {
     }()
     private weak var loadingLabel: UILabel?
 
-    // MARK: - 功能控件
+    // MARK: - Function Controls
 
     private let soundTypeSegment = UISegmentedControl(items: ["A", "B"])
     private let volumeSegment = UISegmentedControl(items: [S.low, S.medium, S.high])
@@ -87,13 +87,13 @@ class ViewController: UIViewController {
     private let durationField = UITextField()
     private let logTextView = UITextView()
 
-    // MARK: - 状态
+    // MARK: - State
 
     private var scannedDevices: [ScannedDevice] = []
     private var previousConnectionState: ConnectionState = .disconnected
     private var isAuthFailed = false
 
-    // MARK: - 生命周期
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -108,7 +108,7 @@ class ViewController: UIViewController {
         BlueSDKManager.shared.initialize()
         BlueSDKManager.shared.delegate = self
         
-        // 如果从设备列表进入，隐藏扫描相关 UI
+        // If entered from device list, hide scan-related UI
         if isFromDeviceList {
             scanButton.isHidden = true
             phoneMacField.isHidden = true
@@ -122,11 +122,11 @@ class ViewController: UIViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tap.cancelsTouchesInView = false
         view.addGestureRecognizer(tap)
-        // 将 SDK 内部所有日志（含收发数据）转发到界面日志窗口，同时保留终端输出
+        // Forward all SDK internal logs (including send/receive data) to the UI log view, while keeping terminal output
         BlueSDKManager.shared.setLogHandler { [weak self] level, tag, message in
-            // 保留终端打印
+            // Keep terminal printing
             print("[BlueSDK][\(level)][\(tag)] \(message)")
-            // 转发到界面
+            // Forward to UI
             let prefix: String
             switch level {
             case .debug: prefix = "📋"
@@ -141,7 +141,7 @@ class ViewController: UIViewController {
         log("🔑 \(BlueSDKManager.shared.currentAuthKeyDisplay)")
     }
 
-    // MARK: - UI 构建
+    // MARK: - UI Build
 
     private func buildUI() {
         let mainStack = UIStackView()
@@ -152,7 +152,7 @@ class ViewController: UIViewController {
             $0.edges.equalTo(view.safeAreaLayoutGuide).inset(12)
         }
 
-        // 1. 连接状态卡片
+        // 1. Connection status card
         let connCard = makeCard()
         mainStack.addArrangedSubview(connCard)
 
@@ -187,7 +187,7 @@ class ViewController: UIViewController {
         connStack.addArrangedSubview(scanButton)
         connStack.addArrangedSubview(disconnectButton)
 
-        // 密钥输入框（连接卡片下方）
+        // Key input field (below connection card)
         let keyRow = UIStackView()
         keyRow.spacing = 6
         keyRow.alignment = .center
@@ -207,13 +207,13 @@ class ViewController: UIViewController {
             $0.bottom.equalToSuperview().offset(-8)
         }
 
-        // 2. 快捷操作
+        // 2. Quick actions
         mainStack.addArrangedSubview(makeButtonRow([
             (S.deviceInfo, .systemIndigo, #selector(queryDeviceInfo)),
             (S.syncTime, .systemIndigo, #selector(syncTime)),
         ]))
 
-        // 3. 音频设置卡片
+        // 3. Audio settings card
         let audioCard = makeCard()
         mainStack.addArrangedSubview(audioCard)
 
@@ -254,7 +254,7 @@ class ViewController: UIViewController {
         durRow.alignment = .center
         audioStack.addArrangedSubview(durRow)
 
-        // 4. 工具 & 系统
+        // 4. Tools & System
         mainStack.addArrangedSubview(makeButtonRow([
             (S.medicationRecords, .systemOrange, #selector(showRecords)),
             (S.alarmManager, .systemIndigo, #selector(showAlarmManager)),
@@ -267,7 +267,7 @@ class ViewController: UIViewController {
             (S.clearBinding, .systemRed, #selector(clearLocalBinding)),
         ]))
 
-        // 5. 日志（填充剩余空间）
+        // 5. Log (fills remaining space)
         let logHeader = UIStackView(arrangedSubviews: [makeSmallLabel(S.log), makeSpacer()])
         let clearBtn = UIButton(type: .system)
         configureCompactButton(clearBtn, title: S.clear, color: .systemGray)
@@ -276,12 +276,12 @@ class ViewController: UIViewController {
         logHeader.spacing = 8
         mainStack.addArrangedSubview(logHeader)
 
-        // 日志区域（带版本号水印）
+        // Log area (with version number watermark)
         let logContainer = UIView()
         logContainer.layer.cornerRadius = 8
         logContainer.clipsToBounds = true
 
-        // 版本号水印
+        // Version watermark
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
         let watermark = UILabel()
         watermark.text = "v\(version)"
@@ -302,12 +302,12 @@ class ViewController: UIViewController {
         logTextView.snp.makeConstraints { $0.edges.equalToSuperview() }
         watermark.snp.makeConstraints { $0.center.equalToSuperview() }
 
-        // 全屏 Loading 遮罩（最后添加，确保在最上层）
+        // Full-screen Loading overlay (added last to ensure it's on top)
         view.addSubview(loadingOverlay)
         loadingOverlay.snp.makeConstraints { $0.edges.equalToSuperview() }
     }
 
-    // MARK: - UI 工具
+    // MARK: - UI Utilities
 
     private func makeCard() -> UIView {
         let v = UIView()
@@ -374,7 +374,7 @@ class ViewController: UIViewController {
     @objc private func cancelConnection() {
         BlueSDKManager.shared.stopScan()
         BlueSDKManager.shared.disconnect()
-        // 立即同步更新 UI（不依赖 delegate 回调）
+        // Immediately sync UI (don't rely on delegate callback)
         loadingOverlay.isHidden = true
         loadingIndicator.stopAnimating()
         scannedDevices.removeAll()
@@ -398,13 +398,13 @@ class ViewController: UIViewController {
         loadingOverlay.isHidden = true
     }
 
-    // MARK: - 扫描连接
+    // MARK: - Scan & Connect
 
     @objc private func startScan() {
         scanButton.isEnabled = false
         showLoading(S.scanConnecting)
 
-        // 读取自定义密钥输入框
+        // Read custom key input field
         let customKey = phoneMacField.text?.trimmingCharacters(in: .whitespaces).uppercased() ?? ""
         if customKey.count == 12 {
             BlueSDKManager.shared.config.customPhoneMac = customKey
@@ -485,7 +485,7 @@ class ViewController: UIViewController {
         }
     }
 
-    // MARK: - 音频
+    // MARK: - Audio
 
     @objc private func soundTypeChanged(_ s: UISegmentedControl) {
         s.isEnabled = false
@@ -532,7 +532,7 @@ class ViewController: UIViewController {
         }
     }
 
-    // MARK: - 系统
+    // MARK: - System
 
     @objc private func restoreFactory() {
         confirm(S.restoreFactoryTitle, msg: S.restoreFactoryMsg) {
@@ -557,7 +557,7 @@ class ViewController: UIViewController {
                         MedicationDatabase.shared.deleteAll()
                         self?.log("✅ \(S.unbindSuccess)")
                         self?.hideLoading()
-                        // 返回设备列表页
+                        // Return to device list page
                         if self?.isFromDeviceList == true {
                             self?.navigationController?.popViewController(animated: true)
                         }
@@ -578,7 +578,7 @@ class ViewController: UIViewController {
         pushOrPresent(FAQViewController())
     }
 
-    // MARK: - 日志
+    // MARK: - Log
 
     @objc private func clearLog() { logTextView.text = "" }
 
@@ -598,7 +598,7 @@ class ViewController: UIViewController {
         }
     }
 
-    // MARK: - 辅助
+    // MARK: - Helpers
 
     @objc private func handleAuthFailed() {
         isAuthFailed = true
@@ -663,14 +663,14 @@ extension ViewController: BlueSDKDelegate {
                     self.loadingIndicator.stopAnimating()
                     self.scanButton.isEnabled = true
                     self.hideLoading()
-                    // 从设备列表进入时，断开连接自动返回
+                    // When entered from device list, auto-return on disconnect
                     if self.isFromDeviceList {
                         if self.previousConnectionState == .authenticated || self.previousConnectionState == .connected {
                             self.navigationController?.popViewController(animated: true)
                             return
                         }
                     }
-                    // 设备意外断开弹窗提示
+                    // Show alert on unexpected device disconnect
                     if self.previousConnectionState == .authenticated || self.previousConnectionState == .connected {
                         self.log("⚠️ \(S.deviceDisconnectedToast)")
                         let alert = UIAlertController(
@@ -721,7 +721,7 @@ extension ViewController: BlueSDKDelegate {
     func blueSDKDidRequestTimeSync(_ sdk: BlueSDKManager) { log("⏰ Time sync (auto)") }
     func blueSDK(_ sdk: BlueSDKManager, didUpdateAlarm alarm: AlarmInfo) {
         log("⏰ Alarm\(alarm.index) \(String(format: "%02d:%02d", alarm.hour, alarm.minute))")
-        // 设备上报闹钟变更，同步更新本地存储
+        // Device reported alarm change, sync local storage
         let slot = AlarmSlot(
             index: alarm.index,
             isEnabled: true,
@@ -738,7 +738,7 @@ extension ViewController: BlueSDKDelegate {
     func blueSDK(_ sdk: BlueSDKManager, didReceiveMedicationResult alarmIndex: Int, status: MedicationStatus) {
         let statusText = S.isZh ? status.displayNameZh : status.displayNameEn
         log("💊 Alarm\(alarmIndex) \(statusText)")
-        // 不入库 — 等 didReceiveMedicationRecord 上报完整记录（含设定时间和实际时间）
+        // Don't save to DB — wait for didReceiveMedicationRecord to report complete record (with scheduled and actual time)
     }
 
     func blueSDK(_ sdk: BlueSDKManager, didReceiveMedicationRecord record: MedicationRecord) {
@@ -786,7 +786,7 @@ extension ViewController: BlueSDKDelegate {
         switch type {
         case .ringing:
             log("🔔 Alarm ringing, awaiting medication")
-            // 前台时弹窗提醒
+            // Show alert when in foreground
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 let alert = UIAlertController(
@@ -799,7 +799,7 @@ extension ViewController: BlueSDKDelegate {
             }
         case .timeout:
             log("⚠️ Timeout, medication missed")
-            // 推送漏服通知
+            // Push missed dose notification
             let content = UNMutableNotificationContent()
             content.title = S.missedTitle
             content.body = S.missedMsg
@@ -808,7 +808,7 @@ extension ViewController: BlueSDKDelegate {
             UNUserNotificationCenter.current().add(request)
         case .taken:
             log("✅ Medication taken")
-            // 鼓励通知/弹窗
+            // Encouragement notification/alert
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 let alert = UIAlertController(

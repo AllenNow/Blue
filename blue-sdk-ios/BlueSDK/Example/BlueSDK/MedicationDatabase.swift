@@ -1,18 +1,18 @@
 // MedicationDatabase.swift
-// BlueSDK Example - 用药记录 SQLite 持久化
+// BlueSDK Example - Medication records SQLite persistence
 
 import Foundation
 import SQLite3
 import BlueSDK
 
-/// 用药记录数据库条目
+/// Medication record database entry
 struct MedicationEntry {
     let id: Int64
-    let timestamp: Int64        // 毫秒时间戳（实际事件时间）
+    let timestamp: Int64        // Millisecond timestamp (actual event time)
     let alarmIndex: Int
-    let alarmHour: Int          // 闹钟设定小时
-    let alarmMinute: Int        // 闹钟设定分钟
-    let status: Int             // 1=取药 2=超时 3=漏服 4=提前
+    let alarmHour: Int          // Alarm scheduled hour
+    let alarmMinute: Int        // Alarm scheduled minute
+    let status: Int             // 1=taken 2=late 3=missed 4=early
     let createdAt: Date
 
     var date: Date {
@@ -45,7 +45,7 @@ struct MedicationEntry {
     }
 }
 
-/// 用药记录数据库管理器（SQLite）
+/// Medication record database manager (SQLite)
 final class MedicationDatabase {
 
     static let shared = MedicationDatabase()
@@ -61,7 +61,7 @@ final class MedicationDatabase {
         sqlite3_close(db)
     }
 
-    // MARK: - 数据库操作
+    // MARK: - Database Operations
 
     private func openDatabase() {
         let fileURL = try! FileManager.default
@@ -69,7 +69,7 @@ final class MedicationDatabase {
             .appendingPathComponent("medication_records.sqlite")
 
         if sqlite3_open(fileURL.path, &db) != SQLITE_OK {
-            print("[MedicationDB] 打开数据库失败")
+            print("[MedicationDB] Failed to open database")
         }
     }
 
@@ -88,19 +88,19 @@ final class MedicationDatabase {
         """
         var errMsg: UnsafeMutablePointer<Int8>?
         if sqlite3_exec(db, sql, nil, nil, &errMsg) != SQLITE_OK {
-            let err = errMsg.map { String(cString: $0) } ?? "未知错误"
-            print("[MedicationDB] 建表失败：\(err)")
+            let err = errMsg.map { String(cString: $0) } ?? "Unknown error"
+            print("[MedicationDB] Failed to create table: \(err)")
             sqlite3_free(errMsg)
         }
-        // 升级旧表（添加新列，忽略已存在的错误）
+        // Upgrade old table (add new columns, ignore already-exists errors)
         sqlite3_exec(db, "ALTER TABLE medication_records ADD COLUMN alarm_hour INTEGER NOT NULL DEFAULT 0", nil, nil, nil)
         sqlite3_exec(db, "ALTER TABLE medication_records ADD COLUMN alarm_minute INTEGER NOT NULL DEFAULT 0", nil, nil, nil)
     }
 
-    /// 插入一条用药记录（去重：相同 alarmIndex + timestamp + status 不重复入库）
+    /// Insert a medication record (dedup: same alarmIndex + timestamp + status won't be inserted twice)
     @discardableResult
     func insert(timestamp: Int64, alarmIndex: Int, alarmHour: Int = 0, alarmMinute: Int = 0, status: Int) -> Bool {
-        // 去重：完全相同的 alarmIndex + timestamp + status 才跳过
+        // Dedup: only skip if alarmIndex + timestamp + status are exactly the same
         let checkSql = "SELECT COUNT(*) FROM medication_records WHERE alarm_index = ? AND timestamp = ? AND status = ?"
         var checkStmt: OpaquePointer?
         if sqlite3_prepare_v2(db, checkSql, -1, &checkStmt, nil) == SQLITE_OK {
@@ -131,7 +131,7 @@ final class MedicationDatabase {
         return sqlite3_step(stmt) == SQLITE_DONE
     }
 
-    /// 查询指定日期的所有记录
+    /// Query all records for a specific date
     func query(date: Date) -> [MedicationEntry] {
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: date)
@@ -143,7 +143,7 @@ final class MedicationDatabase {
         return query(fromTimestamp: startMs, toTimestamp: endMs)
     }
 
-    /// 查询时间范围内的记录
+    /// Query records within a time range
     func query(fromTimestamp: Int64, toTimestamp: Int64) -> [MedicationEntry] {
         let sql = "SELECT id, timestamp, alarm_index, alarm_hour, alarm_minute, status, created_at FROM medication_records WHERE timestamp >= ? AND timestamp < ? ORDER BY timestamp DESC"
         var stmt: OpaquePointer?
@@ -169,7 +169,7 @@ final class MedicationDatabase {
         return results
     }
 
-    /// 查询所有记录
+    /// Query all records
     func queryAll() -> [MedicationEntry] {
         let sql = "SELECT id, timestamp, alarm_index, alarm_hour, alarm_minute, status, created_at FROM medication_records ORDER BY timestamp DESC"
         var stmt: OpaquePointer?
@@ -192,7 +192,7 @@ final class MedicationDatabase {
         return results
     }
 
-    /// 查询记录总数
+    /// Query total record count
     func count() -> Int {
         let sql = "SELECT COUNT(*) FROM medication_records"
         var stmt: OpaquePointer?
@@ -201,7 +201,7 @@ final class MedicationDatabase {
         return sqlite3_step(stmt) == SQLITE_ROW ? Int(sqlite3_column_int(stmt, 0)) : 0
     }
 
-    /// 清空所有记录
+    /// Delete all records
     func deleteAll() {
         sqlite3_exec(db, "DELETE FROM medication_records", nil, nil, nil)
     }

@@ -1,11 +1,11 @@
 // DebugViewController.swift
-// BlueSDK Demo - BLE 原始帧调试面板（Story 10.1）
+// BlueSDK Demo - BLE Raw Frame Debug Panel (Story 10.1)
 //
-// 功能：
-// - 手动输入十六进制帧并发送
-// - 实时显示设备应答帧
-// - 可选自动补 CRC8
-// - 历史收发记录
+// Features:
+// - Manual hex frame input and send
+// - Real-time device response display
+// - Optional auto CRC8 append
+// - Send/receive history log
 
 import UIKit
 import BlueSDK
@@ -64,7 +64,7 @@ class DebugViewController: UIViewController {
         return btn
     }()
 
-    // MARK: - 生命周期
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -75,7 +75,7 @@ class DebugViewController: UIViewController {
         appendLog(S.debugCrcHint)
     }
 
-    // MARK: - UI 搭建
+    // MARK: - UI Setup
 
     private func setupUI() {
         let stackView = UIStackView()
@@ -91,12 +91,12 @@ class DebugViewController: UIViewController {
             stackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12)
         ])
 
-        // 输入行
+        // Input row
         let inputRow = UIStackView(arrangedSubviews: [inputField, sendButton])
         inputRow.spacing = 8
         stackView.addArrangedSubview(inputRow)
 
-        // CRC 开关行
+        // CRC switch row
         let crcRow = UIStackView(arrangedSubviews: [
             makeLabel(S.autoCrcLabel),
             autoCRCSwitch,
@@ -107,16 +107,16 @@ class DebugViewController: UIViewController {
         crcRow.spacing = 8
         stackView.addArrangedSubview(crcRow)
 
-        // 日志区
+        // Log area
         stackView.addArrangedSubview(logTextView)
     }
 
-    // MARK: - 动作
+    // MARK: - Actions
 
     @objc private func sendFrame() {
         guard let text = inputField.text, !text.isEmpty else { return }
 
-        // 解析十六进制字符串
+        // Parse hex string
         let hexString = text.replacingOccurrences(of: " ", with: "")
         guard hexString.count % 2 == 0 else {
             appendLog("❌ \(S.debugErrorEven)")
@@ -136,20 +136,20 @@ class DebugViewController: UIViewController {
             index = nextIndex
         }
 
-        // 自动补 CRC8
+        // Auto append CRC8
         if autoCRCSwitch.isOn {
-            // CRC8: 所有字节累加和 % 256
+            // CRC8: sum of all bytes % 256
             let crc = UInt8(bytes.reduce(0) { $0 + Int($1) } % 256)
             bytes.append(crc)
-            appendLog("📤 自动补 CRC8: 0x\(String(format: "%02X", crc))")
+            appendLog("📤 Auto CRC8 appended: 0x\(String(format: "%02X", crc))")
         }
 
         let frameStr = bytes.map { String(format: "%02X", $0) }.joined(separator: " ")
         appendLog("📤 TX: \(frameStr)")
 
-        // 通过 SDK 底层发送（需要设备已连接）
-        // 注意：此处直接访问 SDK 内部发送方法，仅用于调试
-        appendLog("⚠️ 注意：帧已通过日志记录，实际 BLE 发送需要设备已连接")
+        // Send via SDK low-level API (requires device to be connected)
+        // Note: This directly accesses SDK internal send method, for debugging only
+        appendLog("⚠️ Note: Frame logged, actual BLE send requires device to be connected")
 
         inputField.text = ""
     }
@@ -158,16 +158,16 @@ class DebugViewController: UIViewController {
         let log = BlueSDKManager.shared.exportLog()
         let ac = UIActivityViewController(activityItems: [log], applicationActivities: nil)
         present(ac, animated: true)
-        appendLog("📋 日志已导出（\(BlueSDKManager.shared.exportLog(maxLines: 1).count) 字符）")
+        appendLog("📋 Log exported (\(BlueSDKManager.shared.exportLog(maxLines: 1).count) chars)")
     }
 
     @objc private func clearLog() {
         logTextView.text = ""
         BlueSDKManager.shared.clearLogBuffer()
-        appendLog("🗑️ 日志已清空")
+        appendLog("🗑️ Log cleared")
     }
 
-    // MARK: - 辅助
+    // MARK: - Helpers
 
     private func appendLog(_ message: String) {
         let timestamp = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)

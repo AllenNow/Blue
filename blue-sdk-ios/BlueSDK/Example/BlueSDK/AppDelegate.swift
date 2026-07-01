@@ -1,5 +1,5 @@
 // AppDelegate.swift
-// BlueSDK Example - LX-PD02 智能药盒 SDK 集成演示
+// BlueSDK Example - LX-PD02 Smart Pill Box SDK Integration Demo
 
 import UIKit
 import BlueSDK
@@ -13,28 +13,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // 初始化 SDK（在 App 启动时调用一次）
+        // Initialize SDK (call once at app launch)
         BlueSDKManager.shared.initialize()
 
-        // 初始化多语言字符串（从 Locales/*.json 加载）
+        // Initialize multi-language strings (load from Locales/*.json)
         S.initialize()
 
-        // 加载用户语言设置（必须在 initialize 之后，否则会被 config.language 覆盖）
+        // Load user language settings (must be after initialize, otherwise overridden by config.language)
         LanguageViewController.applySavedLanguage()
 
-        // 开发阶段开启 DEBUG 日志，生产环境改为 .none
+        // Enable DEBUG logging in development, change to .none for production
         BlueSDKManager.shared.setLogLevel(.debug)
 
-        // 设置根视图
+        // Set root view
         window = UIWindow(frame: UIScreen.main.bounds)
 
         if LanguageViewController.needsLanguageSelection() {
-            // 首次启动：显示语言选择页
+            // First launch: show language selection page
             let langVC = LanguageViewController()
             let nav = UINavigationController(rootViewController: langVC)
             window?.rootViewController = nav
         } else {
-            // 已选择过语言：直接进入设备列表
+            // Language already selected: go directly to device list
             let deviceListVC = DeviceListViewController()
             let nav = UINavigationController(rootViewController: deviceListVC)
             window?.rootViewController = nav
@@ -45,7 +45,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
-        // App 退出时销毁 SDK，释放 BLE 资源
+        // Destroy SDK on app exit to release BLE resources
         BlueSDKManager.shared.destroy()
     }
 }

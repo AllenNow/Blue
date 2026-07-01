@@ -1,26 +1,26 @@
 // AlarmManagerViewController.swift
-// BlueSDK Example - 闹钟管理页面
-// 展示 7 个闹钟槽位状态，支持点击编辑、开关启用、删除
+// BlueSDK Example - Alarm Manager Page
+// Displays 7 alarm slot states, supports tap to edit, toggle enable, and delete
 
 import UIKit
 import BlueSDK
 
-/// 闹钟槽位状态
+/// Alarm slot state
 struct AlarmSlot {
     let index: Int          // 1~7
     var isEnabled: Bool
     var hour: Int
     var minute: Int
-    var weekMask: Int       // bit0=周一...bit6=周日
-    var isSet: Bool         // 是否已设置（未设置时 hour=0xFF）
-    var runState: AlarmRunState = .idle  // 运行状态：空闲/响铃中/已结束
+    var weekMask: Int       // bit0=Mon...bit6=Sun
+    var isSet: Bool         // Whether set (unset when hour=0xFF)
+    var runState: AlarmRunState = .idle  // Run state: idle/ringing/ended
 
     var timeString: String {
         guard isSet else { return "--:--" }
         return String(format: "%02d:%02d", hour, minute)
     }
 
-    /// 根据 12/24 小时制格式化时间显示
+    /// Format time display based on 12/24 hour format
     func formatTime(is24Hour: Bool) -> String {
         guard isSet else { return "--:--" }
         if is24Hour {
@@ -79,7 +79,7 @@ class AlarmManagerViewController: UIViewController {
         UIBarButtonItem(title: S.clearAll, style: .plain, target: self, action: #selector(clearAll))
     }()
 
-    // 顶部"下一个闹钟"卡片
+    // "Next alarm" card at top
     private let nextAlarmTimeLabel: UILabel = {
         let label = UILabel()
         label.text = "--:--"
@@ -126,16 +126,16 @@ class AlarmManagerViewController: UIViewController {
         return card
     }()
 
-    // MARK: - 状态
+    // MARK: - State
 
     private var alarms: [AlarmSlot] = AlarmStorage.shared.loadAll()
 
-    /// 当前是否为 24 小时制
+    /// Whether currently using 24-hour format
     private var is24Hour: Bool {
         return BlueSDKManager.shared.currentTimeFormat == .hour24
     }
 
-    // MARK: - 生命周期
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -143,13 +143,13 @@ class AlarmManagerViewController: UIViewController {
         view.backgroundColor = .systemBackground
         navigationItem.rightBarButtonItem = clearButton
         setupUI()
-        // 注册为 SDK 事件观察者，实时接收设备上报的闹钟变更
+        // Register as SDK event observer to receive alarm changes from device in real time
         BlueSDKManager.shared.addObserver(self)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // 从本地存储刷新（可能在其他页面有更新）
+        // Refresh from local storage (may have been updated on other pages)
         alarms = AlarmStorage.shared.loadAll()
         tableView.reloadData()
         updateNextAlarm()
@@ -171,7 +171,7 @@ class AlarmManagerViewController: UIViewController {
         ])
     }
 
-    // MARK: - 下一个闹钟计算
+    // MARK: - Next Alarm Calculation
 
     private func updateNextAlarm() {
         let now = Calendar.current
@@ -207,7 +207,7 @@ class AlarmManagerViewController: UIViewController {
                 let minutesAway: Int
                 if dayOffset == 0 {
                     let diff = alarmTotalMinutes - nowTotalMinutes
-                    if diff <= 0 { continue } // 今天已过
+                    if diff <= 0 { continue } // Already passed today
                     minutesAway = diff
                 } else {
                     minutesAway = dayOffset * 24 * 60 + alarmTotalMinutes - nowTotalMinutes
@@ -239,7 +239,7 @@ class AlarmManagerViewController: UIViewController {
         }
     }
 
-    // MARK: - 更新闹钟显示
+    // MARK: - Update Alarm Display
 
     func updateAlarm(index: Int, hour: Int, minute: Int, weekMask: Int, enabled: Bool, runState: AlarmRunState = .idle) {
         guard index >= 1, index <= 7 else { return }
@@ -259,7 +259,7 @@ class AlarmManagerViewController: UIViewController {
         updateNextAlarm()
     }
 
-    // MARK: - 操作
+    // MARK: - Actions
 
     @objc func dismissSelf() {
         dismiss(animated: true)
@@ -344,7 +344,7 @@ extension AlarmManagerViewController: UITableViewDataSource, UITableViewDelegate
     }
 }
 
-// MARK: - BlueSDKDelegate（实时接收设备上报闹钟变更和时间格式变更）
+// MARK: - BlueSDKDelegate (receive alarm changes and time format changes from device in real time)
 
 extension AlarmManagerViewController: BlueSDKDelegate {
     func blueSDK(_ sdk: BlueSDKManager, didUpdateAlarm alarm: AlarmInfo) {
@@ -362,7 +362,7 @@ extension AlarmManagerViewController: BlueSDKDelegate {
 
     func blueSDK(_ sdk: BlueSDKManager, didChangeTimeFormat format: TimeFormat) {
         DispatchQueue.main.async { [weak self] in
-            // 时间格式切换时刷新整个列表和下一个闹钟显示
+            // Refresh entire list and next alarm display when time format changes
             self?.tableView.reloadData()
             self?.updateNextAlarm()
         }
@@ -430,7 +430,7 @@ class AlarmSlotCell: UITableViewCell {
 
         if slot.isSet {
             timeLabel.textColor = .label
-            // 根据运行状态显示不同标签
+            // Show different labels based on run state
             switch slot.runState {
             case .ringing:
                 statusBadge.text = " 🔔 \(S.alarmRinging) "

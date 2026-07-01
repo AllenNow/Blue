@@ -1,18 +1,18 @@
 // DeviceStorage.swift
-// BlueSDK Example - 绑定设备列表本地持久化
-// 使用 UserDefaults + Codable 存储已绑定设备列表
+// BlueSDK Example - Bound device list local persistence
+// Uses UserDefaults + Codable to store the bound device list
 
 import Foundation
 
-/// 绑定设备数据模型
+/// Bound device data model
 struct BoundDevice: Codable {
-    let deviceId: String           // UUID 字符串（唯一标识）
-    let deviceName: String         // 设备广播名称
-    let bindTime: TimeInterval     // 绑定时间戳
-    var lastConnectedTime: TimeInterval // 最后连接时间戳
+    let deviceId: String           // UUID string (unique identifier)
+    let deviceName: String         // Device broadcast name
+    let bindTime: TimeInterval     // Bind timestamp
+    var lastConnectedTime: TimeInterval // Last connected timestamp
 }
 
-/// 绑定设备本地存储管理器
+/// Bound device local storage manager
 final class DeviceStorage {
 
     static let shared = DeviceStorage()
@@ -22,7 +22,7 @@ final class DeviceStorage {
 
     private init() {}
 
-    /// 加载所有绑定设备（按最后连接时间倒序）
+    /// Load all bound devices (sorted by last connected time descending)
     func loadAll() -> [BoundDevice] {
         guard let data = defaults.data(forKey: key),
               let devices = try? JSONDecoder().decode([BoundDevice].self, from: data) else {
@@ -31,7 +31,7 @@ final class DeviceStorage {
         return devices.sorted { $0.lastConnectedTime > $1.lastConnectedTime }
     }
 
-    /// 添加绑定设备（如已存在则更新名称）
+    /// Add a bound device (updates name if already exists)
     func add(_ device: BoundDevice) {
         var all = loadAll()
         if let idx = all.firstIndex(where: { $0.deviceId == device.deviceId }) {
@@ -42,14 +42,14 @@ final class DeviceStorage {
         persist(all)
     }
 
-    /// 删除绑定设备
+    /// Remove a bound device
     func remove(deviceId: String) {
         var all = loadAll()
         all.removeAll { $0.deviceId == deviceId }
         persist(all)
     }
 
-    /// 更新最后连接时间
+    /// Update last connected time
     func updateLastConnected(deviceId: String) {
         var all = loadAll()
         if let idx = all.firstIndex(where: { $0.deviceId == deviceId }) {
@@ -58,17 +58,17 @@ final class DeviceStorage {
         }
     }
 
-    /// 检查设备是否已绑定
+    /// Check if device is bound
     func isBound(deviceId: String) -> Bool {
         return loadAll().contains { $0.deviceId == deviceId }
     }
 
-    /// 清空所有绑定
+    /// Clear all bindings
     func clearAll() {
         persist([])
     }
 
-    // MARK: - 私有
+    // MARK: - Private
 
     private func persist(_ devices: [BoundDevice]) {
         if let data = try? JSONEncoder().encode(devices) {

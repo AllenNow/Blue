@@ -1,6 +1,6 @@
 // AlarmStorage.kt
-// BlueSDK Demo - 闹钟配置本地持久化
-// 使用 SharedPreferences 存储闹钟槽位配置，退出界面后保留
+// BlueSDK Demo - Local persistence for alarm configuration
+// Uses SharedPreferences to store alarm slot configs, preserved after exiting
 
 package com.blue.demo
 
@@ -9,8 +9,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * 闹钟本地存储管理器
- * 使用 SharedPreferences + JSON 持久化 7 个闹钟槽位配置
+ * Alarm local storage manager
+ * Uses SharedPreferences + JSON to persist 7 alarm slot configurations
  */
 object AlarmStorage {
 
@@ -20,7 +20,7 @@ object AlarmStorage {
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    /** 保存单个闹钟槽位 */
+    /** Save a single alarm slot */
     fun save(context: Context, slot: AlarmSlot) {
         val all = loadAll(context).toMutableList()
         if (slot.index in 1..7) {
@@ -29,12 +29,12 @@ object AlarmStorage {
         persist(context, all)
     }
 
-    /** 保存所有闹钟槽位 */
+    /** Save all alarm slots */
     fun saveAll(context: Context, slots: List<AlarmSlot>) {
         persist(context, slots)
     }
 
-    /** 加载所有闹钟槽位（7个） */
+    /** Load all alarm slots (7 total) */
     fun loadAll(context: Context): List<AlarmSlot> {
         val json = prefs(context).getString(KEY_SLOTS, null) ?: return defaultSlots()
         return try {
@@ -56,7 +56,7 @@ object AlarmStorage {
         }
     }
 
-    /** 清除指定槽位 */
+    /** Clear a specific slot */
     fun clear(context: Context, index: Int) {
         val all = loadAll(context).toMutableList()
         if (index in 1..7) {
@@ -65,12 +65,12 @@ object AlarmStorage {
         persist(context, all)
     }
 
-    /** 清除所有 */
+    /** Clear all */
     fun clearAll(context: Context) {
         persist(context, defaultSlots())
     }
 
-    // MARK: - 私有
+    // MARK: - Private
 
     private fun defaultSlots(): List<AlarmSlot> =
         (1..7).map { AlarmSlot(it, false, 0, 0, 0x7F, false) }
